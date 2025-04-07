@@ -1,0 +1,9 @@
+root = true
+
+[*.{c,h,cpp,hpp}]
+indent_style = space
+indent_size = 2
+
+[meson.{build,options}]
+indent_style = space
+indent_size = 2
