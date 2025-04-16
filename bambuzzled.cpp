@@ -13,8 +13,12 @@ T get_fn(const std::string& name) {
   static dyn_lib_loader* loader{};
   try {
     if (loader == nullptr) {
-      // TODO: resolve path
-      loader = new dyn_lib_loader("/home/peelz/.config/OrcaSlicer/plugins/libbambu_networking.so.orig");
+      std::string forward_path(std::getenv("BAMBUZZLED_FORWARD") ?: "");
+      if (forward_path.empty()) {
+        return nullptr;
+      }
+
+      loader = new dyn_lib_loader(forward_path);
     }
 
     return loader->get_symbol<T>(name);
