@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <mutex>
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 #elif defined(__APPLE__) || defined(__linux__)
 #include <dlfcn.h>
@@ -16,7 +16,7 @@
 
 class dyn_lib_loader {
 private:
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
   HMODULE handle = nullptr;
 #else
   void* handle = nullptr;
@@ -29,16 +29,31 @@ private:
   bool ensure_loaded() {
     if (handle != nullptr) return true;
 
-#ifdef _WIN32
-    handle = LoadLibraryA(m_libPath.c_str());
+#if defined(_WIN32) || defined(__CYGWIN__)
+    handle = LoadLibraryA(lib_path.c_str());
 #elif defined(__APPLE__) || defined(__linux__)
     handle = dlopen(lib_path.c_str(), RTLD_LAZY);
     #endif
 
     if (!handle) {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
       DWORD error = GetLastError();
-      throw std::runtime_error("Failed to load library: " + lib_path + ", error: " + error);
+      LPSTR buf = nullptr;
+      size_t size = FormatMessageA(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr,
+        error,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPSTR)&buf,
+        0,
+        nullptr
+      );
+
+      std::string message(buf, size);
+
+      throw std::runtime_error("Failed to load library: " + lib_path + ", error: " + message);
 #else
       throw std::runtime_error("Failed to load library: " + lib_path + ", error: " + dlerror());
 #endif
@@ -55,7 +70,7 @@ public:
 
   ~dyn_lib_loader() {
     if (handle) {
-  #ifdef _WIN32
+  #if defined(_WIN32) || defined(__CYGWIN__)
       FreeLibrary(handle);
   #else
       dlclose(handle);
@@ -77,14 +92,14 @@ public:
     }
 
     void* addr = nullptr;
-  #ifdef _WIN32
+  #if defined(_WIN32) || defined(__CYGWIN__)
     addr = reinterpret_cast<void*>(GetProcAddress(handle, name.c_str()));
   #else
     addr = dlsym(handle, name.c_str());
   #endif
 
     if (!addr) {
-  #ifdef _WIN32
+  #if defined(_WIN32) || defined(__CYGWIN__)
       DWORD error = GetLastError();
       throw std::runtime_error("failed to get symbol '" + name + "', error code: " + std::to_string(error));
   #else
