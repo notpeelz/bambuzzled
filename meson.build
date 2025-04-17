@@ -8,6 +8,8 @@ project(
   ]
 )
 
+subdir('test-client')
+
 shlib = shared_library(
   'bambu_networking',
   'bambuzzled.cpp',
