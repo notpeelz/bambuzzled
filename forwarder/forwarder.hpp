@@ -4,10 +4,10 @@
 #include <vector>
 #include <functional>
 #include <map>
-#include "bambu_networking.hpp"
-#include "project_task.hpp"
+#include <bambuzzled/api/bambu_networking.hpp>
+#include <bambuzzled/api/project_task.hpp>
 
-#if defined _WIN32 || defined __CYGWIN__
+#if defined(_WIN32) || defined(__CYGWIN__)
   #define BBZL_EXPORT __declspec(dllexport)
 #else
   #define BBZL_EXPORT extern "C" __attribute__((visibility("default")))
