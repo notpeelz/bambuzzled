@@ -25,6 +25,8 @@ void signal_handler(int signum) {
 
 // Callback for connection status
 void on_connect(struct mosquitto *mosq, void *obj, int reason_code) {
+  (void)mosq;
+  (void)obj;
   if (reason_code != 0) {
     std::cerr << "Error connecting to broker: " << mosquitto_connack_string(reason_code) << std::endl;
     return;
@@ -33,7 +35,7 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code) {
   std::cout << "Connected to MQTT broker successfully" << std::endl;
 
   // Subscribe to the topic after successful connection
-  const char* topic = "device/serial-goes-here/report";
+  constexpr const char* topic = "device/serial-goes-here/report";
   int qos = 1; // QoS level 1 (at least once)
 
   int rc = mosquitto_subscribe(mosq, NULL, topic, qos);
@@ -46,12 +48,16 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code) {
 
 // Callback for message reception
 void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message) {
+  (void)mosq;
+  (void)obj;
   std::cout << "Received message on topic: " << message->topic << std::endl;
   std::cout << "Message: " << std::string((char*)message->payload, message->payloadlen) << std::endl;
 }
 
 // Callback for disconnection
 void on_disconnect(struct mosquitto *mosq, void *obj, int reason_code) {
+  (void)mosq;
+  (void)obj;
   std::cout << "Disconnected from broker" << std::endl;
   if (reason_code != 0) {
     std::cerr << "Unexpected disconnect: " << mosquitto_strerror(reason_code) << std::endl;
@@ -129,7 +135,7 @@ int main() {
   mosquitto_lib_init();
 
   // Create a client instance
-  const char* client_id = "cpp_subscriber"; // Client ID
+  constexpr const char* client_id = "cpp_subscriber"; // Client ID
   bool clean_session = true;
 
   mosq = mosquitto_new(client_id, clean_session, NULL);
@@ -174,15 +180,15 @@ int main() {
     return 1;
   }
 
-  constexpr char* username = "bblp";
-  constexpr char* password = "password-goes-here";
+  constexpr const char* username = "bblp";
+  constexpr const char* password = "password-goes-here";
   mosquitto_username_pw_set(mosq, username, password);
 
   mosquitto_connect_callback_set(mosq, on_connect);
   mosquitto_message_callback_set(mosq, on_message);
   mosquitto_disconnect_callback_set(mosq, on_disconnect);
 
-  constexpr char* host = "ip-goes-here";
+  constexpr const char* host = "ip-goes-here";
   constexpr int port = 8883;
   constexpr int keepalive = 60;
 
