@@ -5,7 +5,7 @@ bbzl_shlib = shared_library(
   cpp_args: [],
   gnu_symbol_visibility: 'hidden',
   dependencies: [
-    bbzl_api_dep,
+    bbzl_shared_dep,
     dependency('libmosquitto'),
     dependency('openssl'),
     dependency('nlohmann_json'),
