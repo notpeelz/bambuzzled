@@ -8,7 +8,7 @@
 #include <bambuzzled/api/project_task.hpp>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-  #define BBZL_EXPORT __declspec(dllexport)
+  #define BBZL_EXPORT extern "C" __declspec(dllexport)
 #else
   #define BBZL_EXPORT extern "C" __attribute__((visibility("default")))
 #endif
