@@ -6,6 +6,30 @@
 #include <type_traits>
 #include <typeinfo>
 #include <memory>
+
+#if defined (_WIN32) && defined(_MSC_VER)
+
+#include <DbgHelp.h>
+#pragma comment(lib, "DbgHelp.lib")
+
+std::string demangle(const char* name) {
+  if (name[0] != '?') {
+    return name;
+  }
+
+  char undecorated_name[1024];
+  if (UnDecorateSymbolName(
+    name,
+    undecorated_name,
+    sizeof(undecorated_name),
+    UNDNAME_COMPLETE
+  )) {
+    return undecorated_name;
+  }
+}
+
+#else
+
 #include <cxxabi.h>
 
 // Helper to get demangled type name
@@ -17,6 +41,8 @@ std::string demangle(const char* name) {
   };
   return status == 0 ? res.get() : name;
 }
+
+#endif
 
 // Forward declarations
 template<typename T>
