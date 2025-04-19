@@ -1,6 +1,10 @@
 bbzl_shlib = shared_library(
   'bambu_networking',
-  'bambuzzled.cpp',
+  [
+    'bambuzzled.cpp',
+    'stubs.cpp',
+    'network_agent.cpp',
+  ],
   install: false,
   cpp_args: [],
   gnu_symbol_visibility: 'hidden',

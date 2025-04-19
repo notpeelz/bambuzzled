@@ -3,9 +3,9 @@
 #include <string>
 #include <sstream>
 
-#include "forwarder.hpp"
 #include "dyn_lib_loader.hpp"
 #include "to_string.hpp"
+#include "forwarder.hpp"
 
 template<typename T>
 T get_fn(const std::string& name) {
@@ -70,7 +70,7 @@ typedef std::string (*func_get_version)(void);
 std::string bambu_network_get_version(void) {
   return call_fn<func_get_version>(
     "bambu_network_get_version",
-    "01.10.01.50"
+    BAMBU_NETWORK_AGENT_VERSION
   );
 }
 
