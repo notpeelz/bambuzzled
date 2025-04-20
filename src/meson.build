@@ -4,6 +4,7 @@ bbzl_shlib = shared_library(
     'bambuzzled.cpp',
     'stubs.cpp',
     'network_agent.cpp',
+    'mosquitto.cpp',
   ],
   install: false,
   cpp_args: [],

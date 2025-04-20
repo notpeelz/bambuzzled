@@ -9,18 +9,32 @@
 #include "network_agent.hpp"
 #include "bambuzzled.hpp"
 
-template<typename T, typename F>
-static T try_or_default(F fn) requires std::invocable<F> {
+template<typename F>
+static void try_(F fn) requires std::invocable<F> {
+  try {
+    fn();
+  } catch (std::exception& ex) {
+    std::cerr << "ERROR: " << ex.what() << std::endl;
+  }
+}
+
+template<typename F>
+static auto try_or_default(
+  F fn
+) -> typename std::invoke_result_t<F> requires std::invocable<F> {
   try {
     return fn();
   } catch (std::exception& ex) {
     std::cerr << "ERROR: " << ex.what() << std::endl;
-    return T();
+    return typename std::invoke_result_t<F>{};
   }
 }
 
-template<typename T, typename F>
-static T try_or(T fallback, F fn) requires std::invocable<F> {
+template<typename F>
+static auto try_or(
+  typename std::invoke_result<F>::type fallback,
+  F fn
+) -> typename std::invoke_result<F>::type requires std::invocable<F> {
   try {
     return fn();
   } catch (std::exception& ex) {
@@ -43,20 +57,86 @@ std::string bambu_network_get_version(void) {
 typedef void* (*func_create_agent)(std::string log_dir);
 void* bambu_network_create_agent(std::string&& log_dir) {
   (void)log_dir;
-  return new network_agent();
+  return try_or(nullptr, []() {
+    return new network_agent();
+  });
 }
 
 typedef int (*func_destroy_agent)(void* agentp);
 int bambu_network_destroy_agent(void* agentp) {
   auto agent = reinterpret_cast<network_agent*>(agentp);
-  delete agent;
+  try_([&]() {
+    delete agent;
+  });
+  return 0;
+}
+
+typedef int (*func_start)(void* agentp);
+int bambu_network_start(void* agentp) {
+  auto agent = reinterpret_cast<network_agent*>(agentp);
+  return try_or(1, [&agent]() {
+    return agent->start();
+  });
+}
+
+typedef bool (*func_start_discovery)(void* agentp, bool start, bool sending);
+bool bambu_network_start_discovery(void* agentp, bool start, bool sending) {
+  (void)agentp;
+  (void)start;
+  (void)sending;
+  std::cerr << "start_discovery" << std::endl;
+  return 1;
+}
+
+typedef std::string (*func_get_user_selected_machine)(void* agentp);
+std::string bambu_network_get_user_selected_machine(void* agentp) {
+  (void)agentp;
+  // TODO
+  std::cerr << "get_user_selected_machine" << std::endl;
+  return "";
+}
+
+typedef int (*func_set_user_selected_machine)(void* agentp, std::string dev_id);
+int bambu_network_set_user_selected_machine(void* agentp, std::string&& dev_id) {
+  (void)agentp;
+  (void)dev_id;
+  std::cerr << "set_user_selected_machine" << std::endl;
+  // TODO
+  return 0;
+}
+
+typedef int (*func_connect_printer)(
+  void* agentp,
+  std::string dev_id,
+  std::string dev_ip,
+  std::string username,
+  std::string password,
+  bool use_ssl
+);
+int bambu_network_connect_printer(
+  void* agentp,
+  std::string&& dev_id,
+  std::string&& dev_ip,
+  std::string&& username,
+  std::string&& password,
+  bool use_ssl
+) {
+  auto agent = reinterpret_cast<network_agent*>(agentp);
+  return try_or(1, [&]() {
+    return agent->connect_printer(dev_id, dev_ip, username, password, use_ssl);
+  });
+}
+
+typedef int (*func_disconnect_printer)(void* agentp);
+int bambu_network_disconnect_printer(void* agentp) {
+  (void)agentp;
   return 0;
 }
 
 typedef int (*func_set_config_dir)(void* agentp, std::string config_dir);
 int bambu_network_set_config_dir(void* agentp, std::string&& config_dir) {
   auto agent = reinterpret_cast<network_agent*>(agentp);
-  return try_or(1, [&agent, &config_dir]() {
+  return try_or(1, [&]() {
     agent->set_config_dir(config_dir);
     return 0;
   });
@@ -65,7 +145,7 @@ int bambu_network_set_config_dir(void* agentp, std::string&& config_dir) {
 typedef std::string (*func_build_logout_cmd)(void* agentp);
 std::string bambu_network_build_logout_cmd(void* agentp) {
   (void)agentp;
-  return try_or_default<std::string>([]() {
+  return try_or_default([]() {
     auto json = R"({
       "command": "studio_useroffline",
       "sequence_id": "10001"

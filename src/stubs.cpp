@@ -27,12 +27,6 @@ int bambu_network_set_country_code(void* agentp, std::string&& country_code) {
   return 0;
 }
 
-typedef int (*func_start)(void* agentp);
-int bambu_network_start(void* agentp) {
-  (void)agentp;
-  return 0;
-}
-
 typedef int (*func_set_on_ssdp_msg_fn)(void* agentp, OnMsgArrivedFn fn);
 int bambu_network_set_on_ssdp_msg_fn(void* agentp, OnMsgArrivedFn&& fn) {
   (void)agentp;
@@ -190,37 +184,12 @@ int bambu_network_send_message(void* agentp, std::string&& dev_id, std::string&&
   return 0;
 }
 
-typedef int (*func_connect_printer)(void* agentp, std::string dev_id, std::string dev_ip, std::string username, std::string password, bool use_ssl);
-int bambu_network_connect_printer(void* agentp, std::string&& dev_id, std::string&& dev_ip, std::string&& username, std::string&& password, bool use_ssl) {
-  (void)agentp;
-  (void)dev_id;
-  (void)dev_ip;
-  (void)username;
-  (void)password;
-  (void)use_ssl;
-  return 0;
-}
-
-typedef int (*func_disconnect_printer)(void* agentp);
-int bambu_network_disconnect_printer(void* agentp) {
-  (void)agentp;
-  return 0;
-}
-
 typedef int (*func_send_message_to_printer)(void* agentp, std::string dev_id, std::string json_str, int qos);
 int bambu_network_send_message_to_printer(void* agentp, std::string&& dev_id, std::string&& json_str, int qos) {
   (void)agentp;
   (void)dev_id;
   (void)json_str;
   (void)qos;
-  return 0;
-}
-
-typedef bool (*func_start_discovery)(void* agentp, bool start, bool sending);
-bool bambu_network_start_discovery(void* agentp, bool start, bool sending) {
-  (void)agentp;
-  (void)start;
-  (void)sending;
   return 0;
 }
 
@@ -334,19 +303,6 @@ typedef std::string (*func_get_bambulab_host)(void* agentp);
 std::string bambu_network_get_bambulab_host(void* agentp) {
   (void)agentp;
   return "";
-}
-
-typedef std::string (*func_get_user_selected_machine)(void* agentp);
-std::string bambu_network_get_user_selected_machine(void* agentp) {
-  (void)agentp;
-  return "";
-}
-
-typedef int (*func_set_user_selected_machine)(void* agentp, std::string dev_id);
-int bambu_network_set_user_selected_machine(void* agentp, std::string&& dev_id) {
-  (void)agentp;
-  (void)dev_id;
-  return 0;
 }
 
 typedef int (*func_start_print)(void* agentp, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn);

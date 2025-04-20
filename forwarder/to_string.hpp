@@ -44,6 +44,21 @@ std::string demangle(const char* name) {
 
 #endif
 
+void replace_all_mut(std::string& str, const std::string& from, const std::string& to) {
+  size_t start_pos = 0;
+  while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+    str.replace(start_pos, from.length(), to);
+    start_pos += to.length();
+  }
+}
+
+std::string quote_string(std::string s) {
+  std::ostringstream oss;
+  replace_all_mut(s, "\"", "\\\"");
+  oss << "\"" << s << "\"";
+  return oss.str();
+}
+
 // Forward declarations
 template<typename T>
 std::string stringify_value(const T& value);
@@ -56,24 +71,20 @@ std::string stringify_void_pointer(const void* ptr);
 // Base stringification function - tests for streamability
 template<typename T>
 std::string stringify_value(const T& value) {
-  // Try using operator<< if available
-  if constexpr (std::is_convertible_v<T, std::string> || 
-    std::is_arithmetic_v<T> ||
-    std::is_enum_v<T>) {
-    std::ostringstream oss;
+  std::ostringstream oss;
+  if constexpr (std::is_arithmetic_v<T> || std::is_enum_v<T>) {
     oss << value;
-    return oss.str();
+  } else if constexpr (std::is_convertible_v<T, std::string>) {
+    oss << quote_string(value);
   } else {
-    // Fallback for types without stream operators
-    std::ostringstream oss;
     oss << "[Object of type " << demangle(typeid(value).name()) << " at " << &value << "]";
-    return oss.str();
   }
+  return oss.str();
 }
 
 // Special case for strings
 std::string stringify_value(const std::string& value) {
-  return value;
+  return quote_string(value);
 }
 
 // Special case for nullptr
@@ -90,7 +101,11 @@ std::string stringify_pointer(const T* ptr) {
   oss << "ptr(" << demangle(typeid(T).name()) << ")[" << ptr << "]";
 
   // For simple types, try to show their value
-  if constexpr (std::is_arithmetic_v<T> || std::is_enum_v<T> || std::is_same_v<T, std::string>) {
+  if constexpr (
+    std::is_arithmetic_v<T>
+    || std::is_convertible_v<T, std::string>
+    || std::is_enum_v<T>
+  ) {
     oss << "→" << stringify_value(*ptr);
   }
 

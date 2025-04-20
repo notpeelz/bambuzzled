@@ -36,8 +36,11 @@ void call_fn_void(const char* name, Args&&... args) {
 }
 
 template<typename F, typename... Args>
-inline auto call_fn(const char* name, typename std::invoke_result<F, Args...>::type fallback, Args&&... args)
-  -> typename std::invoke_result<F, Args...>::type {
+inline auto call_fn(
+  const char* name,
+  typename std::invoke_result_t<F, Args...> fallback,
+  Args&&... args
+) -> typename std::invoke_result_t<F, Args...> {
   std::ostringstream oss;
 
   (([&](const auto& arg) {
