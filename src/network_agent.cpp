@@ -32,7 +32,7 @@ void on_connect(
   std::string topic = "device/" + agent->dev_id + "/report";
   int qos = 1; // QoS level 1 (at least once)
 
-  int rc = mosquitto_subscribe(mosq, NULL, topic.c_str(), qos);
+  int rc = mosquitto_subscribe(mosq, nullptr, topic.c_str(), qos);
   if (rc != MOSQ_ERR_SUCCESS) {
     std::cerr << "Error subscribing to topic: " << mosquitto_strerror(rc) << std::endl;
   } else {
