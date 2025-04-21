@@ -156,8 +156,10 @@ int bambu_network_set_config_dir(void* agentp, std::string&& config_dir) {
 typedef int (*func_set_on_printer_connected_fn)(void* agentp, OnPrinterConnectedFn fn);
 int bambu_network_set_on_printer_connected_fn(void* agentp, OnPrinterConnectedFn&& fn) {
   auto agent = reinterpret_cast<network_agent*>(agentp);
-  agent->set_on_printer_connected_fn(std::move(fn));
-  return 0;
+  return try_or(1, [&]() {
+    agent->set_on_printer_connected_fn(std::move(fn));
+    return 0;
+  });
 }
 
 typedef int (*func_set_on_server_connected_fn)(void* agentp, OnServerConnectedFn fn);
