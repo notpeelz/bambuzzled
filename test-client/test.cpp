@@ -10,7 +10,7 @@
 // Thanks Claude
 
 // Global mosquitto client instance
-struct mosquitto *mosq = NULL;
+mosquitto* mosq = NULL;
 
 // Signal handler for clean termination
 void signal_handler(int signum) {
@@ -24,7 +24,7 @@ void signal_handler(int signum) {
 }
 
 // Callback for connection status
-void on_connect(struct mosquitto *mosq, void *obj, int reason_code) {
+void on_connect(mosquitto* mosq, void* obj, int reason_code) {
   (void)mosq;
   (void)obj;
   if (reason_code != 0) {
@@ -47,7 +47,7 @@ void on_connect(struct mosquitto *mosq, void *obj, int reason_code) {
 }
 
 // Callback for message reception
-void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message) {
+void on_message(mosquitto* mosq, void* obj, const struct mosquitto_message* message) {
   (void)mosq;
   (void)obj;
   std::cout << "Received message on topic: " << message->topic << std::endl;
@@ -55,7 +55,7 @@ void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_messag
 }
 
 // Callback for disconnection
-void on_disconnect(struct mosquitto *mosq, void *obj, int reason_code) {
+void on_disconnect(mosquitto* mosq, void* obj, int reason_code) {
   (void)mosq;
   (void)obj;
   std::cout << "Disconnected from broker" << std::endl;

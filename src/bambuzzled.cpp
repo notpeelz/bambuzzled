@@ -32,9 +32,9 @@ static auto try_or_default(
 
 template<typename F>
 static auto try_or(
-  typename std::invoke_result<F>::type fallback,
+  typename std::invoke_result_t<F> fallback,
   F fn
-) -> typename std::invoke_result<F>::type requires std::invocable<F> {
+) -> typename std::invoke_result_t<F> requires std::invocable<F> {
   try {
     return fn();
   } catch (std::exception& ex) {
@@ -100,8 +100,8 @@ typedef int (*func_set_user_selected_machine)(void* agentp, std::string dev_id);
 int bambu_network_set_user_selected_machine(void* agentp, std::string&& dev_id) {
   (void)agentp;
   (void)dev_id;
-  std::cerr << "set_user_selected_machine" << std::endl;
   // TODO
+  std::cerr << "set_user_selected_machine: " << dev_id << std::endl;
   return 0;
 }
 
@@ -127,6 +127,17 @@ int bambu_network_connect_printer(
   });
 }
 
+typedef int (*func_send_message_to_printer)(void* agentp, std::string dev_id, std::string json_str, int qos);
+int bambu_network_send_message_to_printer(void* agentp, std::string&& dev_id, std::string&& json_str, int qos) {
+  (void)agentp;
+  (void)dev_id;
+  (void)json_str;
+  (void)qos;
+  // TODO
+  std::cerr << "send_message_to_printer: " << dev_id << std::endl;
+  return 0;
+}
+
 typedef int (*func_disconnect_printer)(void* agentp);
 int bambu_network_disconnect_printer(void* agentp) {
   (void)agentp;
@@ -137,7 +148,41 @@ typedef int (*func_set_config_dir)(void* agentp, std::string config_dir);
 int bambu_network_set_config_dir(void* agentp, std::string&& config_dir) {
   auto agent = reinterpret_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
-    agent->set_config_dir(config_dir);
+    agent->set_config_dir(std::move(config_dir));
+    return 0;
+  });
+}
+
+typedef int (*func_set_on_printer_connected_fn)(void* agentp, OnPrinterConnectedFn fn);
+int bambu_network_set_on_printer_connected_fn(void* agentp, OnPrinterConnectedFn&& fn) {
+  auto agent = reinterpret_cast<network_agent*>(agentp);
+  agent->set_on_printer_connected_fn(std::move(fn));
+  return 0;
+}
+
+typedef int (*func_set_on_server_connected_fn)(void* agentp, OnServerConnectedFn fn);
+int bambu_network_set_on_server_connected_fn(void* agentp, OnServerConnectedFn&& fn) {
+  auto agent = reinterpret_cast<network_agent*>(agentp);
+  return try_or(1, [&]() {
+    agent->set_on_server_connected_fn(std::move(fn));
+    return 0;
+  });
+}
+
+typedef int (*func_set_on_local_connect_fn)(void* agentp, OnLocalConnectedFn fn);
+int bambu_network_set_on_local_connect_fn(void* agentp, OnLocalConnectedFn&& fn) {
+  auto agent = reinterpret_cast<network_agent*>(agentp);
+  return try_or(1, [&]() {
+    agent->set_on_local_connected_fn(std::move(fn));
+    return 0;
+  });
+}
+
+typedef int (*func_set_on_local_message_fn)(void* agentp, OnMessageFn fn);
+int bambu_network_set_on_local_message_fn(void* agentp, OnMessageFn&& fn) {
+  auto agent = reinterpret_cast<network_agent*>(agentp);
+  return try_or(1, [&]() {
+    agent->set_on_local_message_fn(std::move(fn));
     return 0;
   });
 }

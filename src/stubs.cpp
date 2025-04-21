@@ -41,20 +41,6 @@ int bambu_network_set_on_user_login_fn(void* agentp, OnUserLoginFn&& fn) {
   return 0;
 }
 
-typedef int (*func_set_on_printer_connected_fn)(void* agentp, OnPrinterConnectedFn fn);
-int bambu_network_set_on_printer_connected_fn(void* agentp, OnPrinterConnectedFn&& fn) {
-  (void)agentp;
-  (void)fn;
-  return 0;
-}
-
-typedef int (*func_set_on_server_connected_fn)(void* agentp, OnServerConnectedFn fn);
-int bambu_network_set_on_server_connected_fn(void* agentp, OnServerConnectedFn&& fn) {
-  (void)agentp;
-  (void)fn;
-  return 0;
-}
-
 typedef int (*func_set_on_http_error_fn)(void* agentp, OnHttpErrorFn fn);
 int bambu_network_set_on_http_error_fn(void* agentp, OnHttpErrorFn&& fn) {
   (void)agentp;
@@ -85,20 +71,6 @@ int bambu_network_set_on_message_fn(void* agentp, OnMessageFn&& fn) {
 
 typedef int (*func_set_on_user_message_fn)(void* agentp, OnMessageFn fn);
 int bambu_network_set_on_user_message_fn(void* agentp, OnMessageFn&& fn) {
-  (void)agentp;
-  (void)fn;
-  return 0;
-}
-
-typedef int (*func_set_on_local_connect_fn)(void* agentp, OnLocalConnectedFn fn);
-int bambu_network_set_on_local_connect_fn(void* agentp, OnLocalConnectedFn&& fn) {
-  (void)agentp;
-  (void)fn;
-  return 0;
-}
-
-typedef int (*func_set_on_local_message_fn)(void* agentp, OnMessageFn fn);
-int bambu_network_set_on_local_message_fn(void* agentp, OnMessageFn&& fn) {
   (void)agentp;
   (void)fn;
   return 0;
@@ -177,15 +149,6 @@ int bambu_network_stop_device_subscribe(void* agentp) {
 
 typedef int (*func_send_message)(void* agentp, std::string dev_id, std::string json_str, int qos);
 int bambu_network_send_message(void* agentp, std::string&& dev_id, std::string&& json_str, int qos) {
-  (void)agentp;
-  (void)dev_id;
-  (void)json_str;
-  (void)qos;
-  return 0;
-}
-
-typedef int (*func_send_message_to_printer)(void* agentp, std::string dev_id, std::string json_str, int qos);
-int bambu_network_send_message_to_printer(void* agentp, std::string&& dev_id, std::string&& json_str, int qos) {
   (void)agentp;
   (void)dev_id;
   (void)json_str;

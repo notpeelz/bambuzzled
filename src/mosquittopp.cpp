@@ -4,7 +4,7 @@
 
 #include <openssl/err.h>
 
-#include "mosquitto.hpp"
+#include "mosquittopp.hpp"
 
 std::string get_openssl_err() {
   BIO* bio = BIO_new(BIO_s_mem());
@@ -39,7 +39,7 @@ openssl_ctx_ptr create_openssl_context() {
   return ctx;
 }
 
-mosquitto::mosquitto(void* userdata) {
+mosquittopp::mosquittopp(void* userdata) {
   int rc;
 
   static std::once_flag once;
@@ -81,18 +81,18 @@ mosquitto::mosquitto(void* userdata) {
   }
 }
 
-mosquitto::~mosquitto() {
+mosquittopp::~mosquittopp() {
   (void)mosquitto_disconnect(this->mosq.get());
   if (this->started) {
     (void)mosquitto_loop_stop(this->mosq.get(), false);
   }
 }
 
-mosquitto* mosquitto::get() {
+mosquitto* mosquittopp::get() {
   return this->mosq.get();
 }
 
-void mosquitto::start() {
+void mosquittopp::start() {
   if (this->started) {
     throw std::runtime_error("Mosquitto thread was already started");
   }
@@ -107,7 +107,7 @@ void mosquitto::start() {
   this->started = true;
 }
 
-void mosquitto::stop() {
+void mosquittopp::stop() {
   if (!this->started) {
     throw std::runtime_error("Mosquitto thread is not running");
   }

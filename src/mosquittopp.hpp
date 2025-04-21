@@ -24,14 +24,14 @@ struct mosquitto_deleter {
 using openssl_ctx_ptr = std::unique_ptr<SSL_CTX, openssl_ctx_deleter>;
 using mosquitto_ptr = std::unique_ptr<mosquitto, mosquitto_deleter>;
 
-class mosquitto {
+class mosquittopp {
 private:
   openssl_ctx_ptr openssl_ctx;
   mosquitto_ptr mosq;
-  bool started;
+  bool started = false;
 public:
-  mosquitto(void* obj);
-  ~mosquitto();
+  mosquittopp(void* obj);
+  ~mosquittopp();
   mosquitto* get();
   void start();
   void stop();
