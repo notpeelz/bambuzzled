@@ -32,7 +32,6 @@ std::string demangle(const char* name) {
 
 #include <cxxabi.h>
 
-// Helper to get demangled type name
 std::string demangle(const char* name) {
   int status = 0;
   std::unique_ptr<char, void(*)(void*)> res {
@@ -59,16 +58,6 @@ std::string quote_string(std::string s) {
   return oss.str();
 }
 
-// Forward declarations
-template<typename T>
-std::string stringify_value(const T& value);
-
-template<typename T>
-std::string stringify_pointer(const T* ptr);
-
-std::string stringify_void_pointer(const void* ptr);
-
-// Base stringification function - tests for streamability
 template<typename T>
 std::string stringify_value(const T& value) {
   std::ostringstream oss;
@@ -82,25 +71,23 @@ std::string stringify_value(const T& value) {
   return oss.str();
 }
 
-// Special case for strings
 std::string stringify_value(const std::string& value) {
   return quote_string(value);
 }
 
-// Special case for nullptr
 std::string stringify_value(std::nullptr_t) {
   return "nullptr";
 }
 
-// Pointer stringification
 template<typename T>
 std::string stringify_pointer(const T* ptr) {
-  if (!ptr) return "nullptr";
+  if (!ptr) {
+    return "nullptr";
+  }
 
   std::ostringstream oss;
   oss << "ptr(" << demangle(typeid(T).name()) << ")[" << ptr << "]";
 
-  // For simple types, try to show their value
   if constexpr (
     std::is_arithmetic_v<T>
     || std::is_convertible_v<T, std::string>
@@ -112,33 +99,30 @@ std::string stringify_pointer(const T* ptr) {
   return oss.str();
 }
 
-// Special case for void pointers
 std::string stringify_void_pointer(const void* ptr) {
-  if (!ptr) return "nullptr";
+  if (!ptr) {
+    return "nullptr";
+  }
 
   std::ostringstream oss;
   oss << "void*[" << ptr << "]";
   return oss.str();
 }
 
-// Universal to_string that dispatches to the right function
 template<typename T>
 std::string to_string(const T& value) {
   return stringify_value(value);
 }
 
-// Overload for regular pointers
 template<typename T>
 std::string to_string(T* ptr) {
   return stringify_pointer(ptr);
 }
 
-// Overload for void pointers
 std::string to_string(void* ptr) {
   return stringify_void_pointer(ptr);
 }
 
-// Overload for const void pointers
 std::string to_string(const void* ptr) {
   return stringify_void_pointer(ptr);
 }
