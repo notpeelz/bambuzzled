@@ -134,7 +134,8 @@ int bambu_network_send_message_to_printer(void* agentp, std::string&& dev_id, st
   (void)json_str;
   (void)qos;
   // TODO
-  std::cerr << "send_message_to_printer: " << dev_id << std::endl;
+  std::cerr << "send_message_to_printer(" << dev_id << "): " << json_str << std::endl;
+
   return 0;
 }
 
