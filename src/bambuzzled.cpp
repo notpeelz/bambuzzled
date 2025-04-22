@@ -84,25 +84,24 @@ bool bambu_network_start_discovery(void* agentp, bool start, bool sending) {
   (void)agentp;
   (void)start;
   (void)sending;
-  std::cerr << "start_discovery" << std::endl;
-  return 1;
+  return false;
 }
 
 typedef std::string (*func_get_user_selected_machine)(void* agentp);
 std::string bambu_network_get_user_selected_machine(void* agentp) {
-  (void)agentp;
-  // TODO
-  std::cerr << "get_user_selected_machine" << std::endl;
-  return "";
+  auto agent = reinterpret_cast<network_agent*>(agentp);
+  return try_or_default([&]() {
+    return agent->get_user_selected_machine();
+  });
 }
 
 typedef int (*func_set_user_selected_machine)(void* agentp, std::string dev_id);
 int bambu_network_set_user_selected_machine(void* agentp, std::string&& dev_id) {
-  (void)agentp;
-  (void)dev_id;
-  // TODO
-  std::cerr << "set_user_selected_machine: " << dev_id << std::endl;
-  return 0;
+  auto agent = reinterpret_cast<network_agent*>(agentp);
+  return try_or(1, [&]() {
+    agent->set_user_selected_machine(dev_id);
+    return 0;
+  });
 }
 
 typedef int (*func_connect_printer)(
@@ -129,14 +128,10 @@ int bambu_network_connect_printer(
 
 typedef int (*func_send_message_to_printer)(void* agentp, std::string dev_id, std::string json_str, int qos);
 int bambu_network_send_message_to_printer(void* agentp, std::string&& dev_id, std::string&& json_str, int qos) {
-  (void)agentp;
-  (void)dev_id;
-  (void)json_str;
-  (void)qos;
-  // TODO
-  std::cerr << "send_message_to_printer(" << dev_id << "): " << json_str << std::endl;
-
-  return 0;
+  auto agent = reinterpret_cast<network_agent*>(agentp);
+  return try_or(1, [&]() {
+    return agent->send_message_to_printer(dev_id, json_str, qos);
+  });
 }
 
 typedef int (*func_disconnect_printer)(void* agentp);
