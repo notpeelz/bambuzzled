@@ -26,6 +26,8 @@ std::string demangle(const char* name) {
   )) {
     return undecorated_name;
   }
+
+  return name;
 }
 
 #else

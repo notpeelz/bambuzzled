@@ -159,7 +159,7 @@ int network_agent::send_message_to_printer(
     mosq,
     nullptr,
     topic.c_str(),
-    json_str.length(),
+    static_cast<int>(json_str.length()),
     json_str.data(),
     qos,
     false

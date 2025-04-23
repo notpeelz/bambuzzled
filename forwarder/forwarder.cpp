@@ -3,9 +3,10 @@
 #include <string>
 #include <sstream>
 
+#include <bambuzzled/bambuzzled.hpp>
+
 #include "dyn_lib_loader.hpp"
 #include "to_string.hpp"
-#include "forwarder.hpp"
 
 template<typename T>
 T get_fn(const std::string& name) {
@@ -78,7 +79,7 @@ std::string bambu_network_get_version(void) {
 }
 
 typedef void* (*func_create_agent)(std::string log_dir);
-void* bambu_network_create_agent(std::string&& log_dir) {
+void* bambu_network_create_agent(std::string log_dir) {
   return call_fn<func_create_agent>(
     "bambu_network_create_agent",
     nullptr,
@@ -105,7 +106,7 @@ int bambu_network_init_log(void* agent) {
 }
 
 typedef int (*func_set_config_dir)(void* agent, std::string config_dir);
-int bambu_network_set_config_dir(void* agent, std::string&& config_dir) {
+int bambu_network_set_config_dir(void* agent, std::string config_dir) {
   return call_fn<func_set_config_dir>(
     "bambu_network_set_config_dir",
     0,
@@ -115,7 +116,7 @@ int bambu_network_set_config_dir(void* agent, std::string&& config_dir) {
 }
 
 typedef int (*func_set_cert_file)(void* agent, std::string folder, std::string filename);
-int bambu_network_set_cert_file(void* agent, std::string&& folder, std::string&& filename) {
+int bambu_network_set_cert_file(void* agent, std::string folder, std::string filename) {
   return call_fn<func_set_cert_file>(
     "bambu_network_set_cert_file",
     0,
@@ -126,7 +127,7 @@ int bambu_network_set_cert_file(void* agent, std::string&& folder, std::string&&
 }
 
 typedef int (*func_set_country_code)(void* agent, std::string country_code);
-int bambu_network_set_country_code(void* agent, std::string&& country_code) {
+int bambu_network_set_country_code(void* agent, std::string country_code) {
   return call_fn<func_set_country_code>(
     "bambu_network_set_country_code",
     0,
@@ -145,7 +146,7 @@ int bambu_network_start(void* agent) {
 }
 
 typedef int (*func_set_on_ssdp_msg_fn)(void* agent, OnMsgArrivedFn fn);
-int bambu_network_set_on_ssdp_msg_fn(void* agent, OnMsgArrivedFn&& fn) {
+int bambu_network_set_on_ssdp_msg_fn(void* agent, OnMsgArrivedFn fn) {
   return call_fn<func_set_on_ssdp_msg_fn>(
     "bambu_network_set_on_ssdp_msg_fn",
     0,
@@ -155,7 +156,7 @@ int bambu_network_set_on_ssdp_msg_fn(void* agent, OnMsgArrivedFn&& fn) {
 }
 
 typedef int (*func_set_on_user_login_fn)(void* agent, OnUserLoginFn fn);
-int bambu_network_set_on_user_login_fn(void* agent, OnUserLoginFn&& fn) {
+int bambu_network_set_on_user_login_fn(void* agent, OnUserLoginFn fn) {
   return call_fn<func_set_on_user_login_fn>(
     "bambu_network_set_on_user_login_fn",
     0,
@@ -165,7 +166,7 @@ int bambu_network_set_on_user_login_fn(void* agent, OnUserLoginFn&& fn) {
 }
 
 typedef int (*func_set_on_printer_connected_fn)(void* agent, OnPrinterConnectedFn fn);
-int bambu_network_set_on_printer_connected_fn(void* agent, OnPrinterConnectedFn&& fn) {
+int bambu_network_set_on_printer_connected_fn(void* agent, OnPrinterConnectedFn fn) {
   return call_fn<func_set_on_printer_connected_fn>(
     "bambu_network_set_on_printer_connected_fn",
     0,
@@ -175,7 +176,7 @@ int bambu_network_set_on_printer_connected_fn(void* agent, OnPrinterConnectedFn&
 }
 
 typedef int (*func_set_on_server_connected_fn)(void* agent, OnServerConnectedFn fn);
-int bambu_network_set_on_server_connected_fn(void* agent, OnServerConnectedFn&& fn) {
+int bambu_network_set_on_server_connected_fn(void* agent, OnServerConnectedFn fn) {
   return call_fn<func_set_on_server_connected_fn>(
     "bambu_network_set_on_server_connected_fn",
     0,
@@ -185,7 +186,7 @@ int bambu_network_set_on_server_connected_fn(void* agent, OnServerConnectedFn&& 
 }
 
 typedef int (*func_set_on_http_error_fn)(void* agent, OnHttpErrorFn fn);
-int bambu_network_set_on_http_error_fn(void* agent, OnHttpErrorFn&& fn) {
+int bambu_network_set_on_http_error_fn(void* agent, OnHttpErrorFn fn) {
   return call_fn<func_set_on_http_error_fn>(
     "bambu_network_set_on_http_error_fn",
     0,
@@ -195,7 +196,7 @@ int bambu_network_set_on_http_error_fn(void* agent, OnHttpErrorFn&& fn) {
 }
 
 typedef int (*func_set_get_country_code_fn)(void* agent, GetCountryCodeFn fn);
-int bambu_network_set_get_country_code_fn(void* agent, GetCountryCodeFn&& fn) {
+int bambu_network_set_get_country_code_fn(void* agent, GetCountryCodeFn fn) {
   return call_fn<func_set_get_country_code_fn>(
     "bambu_network_set_get_country_code_fn",
     0,
@@ -205,7 +206,7 @@ int bambu_network_set_get_country_code_fn(void* agent, GetCountryCodeFn&& fn) {
 }
 
 typedef int (*func_set_on_subscribe_failure_fn)(void* agent, GetSubscribeFailureFn fn);
-int bambu_network_set_on_subscribe_failure_fn(void* agent, GetSubscribeFailureFn&& fn) {
+int bambu_network_set_on_subscribe_failure_fn(void* agent, GetSubscribeFailureFn fn) {
   return call_fn<func_set_on_subscribe_failure_fn>(
     "bambu_network_set_on_subscribe_failure_fn",
     0,
@@ -215,7 +216,7 @@ int bambu_network_set_on_subscribe_failure_fn(void* agent, GetSubscribeFailureFn
 }
 
 typedef int (*func_set_on_message_fn)(void* agent, OnMessageFn fn);
-int bambu_network_set_on_message_fn(void* agent, OnMessageFn&& fn) {
+int bambu_network_set_on_message_fn(void* agent, OnMessageFn fn) {
   return call_fn<func_set_on_message_fn>(
     "bambu_network_set_on_message_fn",
     0,
@@ -225,7 +226,7 @@ int bambu_network_set_on_message_fn(void* agent, OnMessageFn&& fn) {
 }
 
 typedef int (*func_set_on_user_message_fn)(void* agent, OnMessageFn fn);
-int bambu_network_set_on_user_message_fn(void* agent, OnMessageFn&& fn) {
+int bambu_network_set_on_user_message_fn(void* agent, OnMessageFn fn) {
   return call_fn<func_set_on_user_message_fn>(
     "bambu_network_set_on_user_message_fn",
     0,
@@ -235,7 +236,7 @@ int bambu_network_set_on_user_message_fn(void* agent, OnMessageFn&& fn) {
 }
 
 typedef int (*func_set_on_local_connect_fn)(void* agent, OnLocalConnectedFn fn);
-int bambu_network_set_on_local_connect_fn(void* agent, OnLocalConnectedFn&& fn) {
+int bambu_network_set_on_local_connect_fn(void* agent, OnLocalConnectedFn fn) {
   return call_fn<func_set_on_local_connect_fn>(
     "bambu_network_set_on_local_connect_fn",
     0,
@@ -245,7 +246,7 @@ int bambu_network_set_on_local_connect_fn(void* agent, OnLocalConnectedFn&& fn) 
 }
 
 typedef int (*func_set_on_local_message_fn)(void* agent, OnMessageFn fn);
-int bambu_network_set_on_local_message_fn(void* agent, OnMessageFn&& fn) {
+int bambu_network_set_on_local_message_fn(void* agent, OnMessageFn fn) {
   return call_fn<func_set_on_local_message_fn>(
     "bambu_network_set_on_local_message_fn",
     0,
@@ -255,7 +256,7 @@ int bambu_network_set_on_local_message_fn(void* agent, OnMessageFn&& fn) {
 }
 
 typedef int (*func_set_queue_on_main_fn)(void* agent, QueueOnMainFn fn);
-int bambu_network_set_queue_on_main_fn(void* agent, QueueOnMainFn&& fn) {
+int bambu_network_set_queue_on_main_fn(void* agent, QueueOnMainFn fn) {
   return call_fn<func_set_queue_on_main_fn>(
     "bambu_network_set_queue_on_main_fn",
     0,
@@ -292,7 +293,7 @@ int bambu_network_refresh_connection(void* agent) {
 }
 
 typedef int (*func_start_subscribe)(void* agent, std::string module);
-int bambu_network_start_subscribe(void* agent, std::string&& module) {
+int bambu_network_start_subscribe(void* agent, std::string module) {
   return call_fn<func_start_subscribe>(
     "bambu_network_start_subscribe",
     0,
@@ -302,7 +303,7 @@ int bambu_network_start_subscribe(void* agent, std::string&& module) {
 }
 
 typedef int (*func_stop_subscribe)(void* agent, std::string module);
-int bambu_network_stop_subscribe(void* agent, std::string&& module) {
+int bambu_network_stop_subscribe(void* agent, std::string module) {
   return call_fn<func_stop_subscribe>(
     "bambu_network_stop_subscribe",
     0,
@@ -312,7 +313,7 @@ int bambu_network_stop_subscribe(void* agent, std::string&& module) {
 }
 
 typedef int (*func_add_subscribe)(void* agent, std::vector<std::string> dev_list);
-int bambu_network_add_subscribe(void* agent, std::vector<std::string>&& dev_list) {
+int bambu_network_add_subscribe(void* agent, std::vector<std::string> dev_list) {
   return call_fn<func_add_subscribe>(
     "bambu_network_add_subscribe",
     0,
@@ -322,7 +323,7 @@ int bambu_network_add_subscribe(void* agent, std::vector<std::string>&& dev_list
 }
 
 typedef int (*func_del_subscribe)(void* agent, std::vector<std::string> dev_list);
-int bambu_network_del_subscribe(void* agent, std::vector<std::string>&& dev_list) {
+int bambu_network_del_subscribe(void* agent, std::vector<std::string> dev_list) {
   return call_fn<func_del_subscribe>(
     "bambu_network_del_subscribe",
     0,
@@ -359,7 +360,7 @@ int bambu_network_stop_device_subscribe(void* agent) {
 }
 
 typedef int (*func_send_message)(void* agent, std::string dev_id, std::string json_str, int qos);
-int bambu_network_send_message(void* agent, std::string&& dev_id, std::string&& json_str, int qos) {
+int bambu_network_send_message(void* agent, std::string dev_id, std::string json_str, int qos) {
   return call_fn<func_send_message>(
     "bambu_network_send_message",
     0,
@@ -371,7 +372,7 @@ int bambu_network_send_message(void* agent, std::string&& dev_id, std::string&& 
 }
 
 typedef int (*func_connect_printer)(void* agent, std::string dev_id, std::string dev_ip, std::string username, std::string password, bool use_ssl);
-int bambu_network_connect_printer(void* agent, std::string&& dev_id, std::string&& dev_ip, std::string&& username, std::string&& password, bool use_ssl) {
+int bambu_network_connect_printer(void* agent, std::string dev_id, std::string dev_ip, std::string username, std::string password, bool use_ssl) {
   return call_fn<func_connect_printer>(
     "bambu_network_connect_printer",
     0,
@@ -394,7 +395,7 @@ int bambu_network_disconnect_printer(void* agent) {
 }
 
 typedef int (*func_send_message_to_printer)(void* agent, std::string dev_id, std::string json_str, int qos);
-int bambu_network_send_message_to_printer(void* agent, std::string&& dev_id, std::string&& json_str, int qos) {
+int bambu_network_send_message_to_printer(void* agent, std::string dev_id, std::string json_str, int qos) {
   return call_fn<func_send_message_to_printer>(
     "bambu_network_send_message_to_printer",
     0,
@@ -417,7 +418,7 @@ bool bambu_network_start_discovery(void* agent, bool start, bool sending) {
 }
 
 typedef int (*func_change_user)(void* agent, std::string user_info);
-int bambu_network_change_user(void* agent, std::string&& user_info) {
+int bambu_network_change_user(void* agent, std::string user_info) {
   return call_fn<func_change_user>(
     "bambu_network_change_user",
     0,
@@ -509,7 +510,7 @@ std::string bambu_network_build_login_info(void* agent) {
 }
 
 typedef int (*func_get_model_id_from_desgin_id)(void* agent, std::string& desgin_id, std::string& model_id);
-int bambu_network_get_model_id_from_desgin_id(void* agent, std::string&& desgin_id, std::string&& model_id) {
+int bambu_network_get_model_id_from_desgin_id(void* agent, std::string& desgin_id, std::string& model_id) {
   return call_fn<func_get_model_id_from_desgin_id>(
     "bambu_network_get_model_id_from_desgin_id",
     0,
@@ -520,7 +521,7 @@ int bambu_network_get_model_id_from_desgin_id(void* agent, std::string&& desgin_
 }
 
 typedef int (*func_ping_bind)(void* agent, std::string ping_code);
-int bambu_network_ping_bind(void* agent, std::string&& ping_code) {
+int bambu_network_ping_bind(void* agent, std::string ping_code) {
   return call_fn<func_ping_bind>(
     "bambu_network_ping_bind",
     0,
@@ -530,7 +531,7 @@ int bambu_network_ping_bind(void* agent, std::string&& ping_code) {
 }
 
 typedef int (*func_bind_detect)(void* agent, std::string dev_ip, std::string sec_link, detectResult& detect);
-int bambu_network_bind_detect(void* agent, std::string&& dev_ip, std::string&& sec_link, detectResult&& detect) {
+int bambu_network_bind_detect(void* agent, std::string dev_ip, std::string sec_link, detectResult& detect) {
   return call_fn<func_bind_detect>(
     "bambu_network_bind_detect",
     0,
@@ -542,7 +543,7 @@ int bambu_network_bind_detect(void* agent, std::string&& dev_ip, std::string&& s
 }
 
 typedef int (*func_set_server_callback)(void* agent, OnServerErrFn fn);
-int bambu_network_set_server_callback(void* agent, OnServerErrFn&& fn) {
+int bambu_network_set_server_callback(void* agent, OnServerErrFn fn) {
   return call_fn<func_set_server_callback>(
     "bambu_network_set_server_callback",
     0,
@@ -552,7 +553,7 @@ int bambu_network_set_server_callback(void* agent, OnServerErrFn&& fn) {
 }
 
 typedef int (*func_bind)(void* agent, std::string dev_ip, std::string dev_id, std::string sec_link, std::string timezone, bool improved, OnUpdateStatusFn update_fn);
-int bambu_network_bind(void* agent, std::string&& dev_ip, std::string&& dev_id, std::string&& sec_link, std::string&& timezone, bool improved, OnUpdateStatusFn&& update_fn) {
+int bambu_network_bind(void* agent, std::string dev_ip, std::string dev_id, std::string sec_link, std::string timezone, bool improved, OnUpdateStatusFn update_fn) {
   return call_fn<func_bind>(
     "bambu_network_bind",
     0,
@@ -567,7 +568,7 @@ int bambu_network_bind(void* agent, std::string&& dev_ip, std::string&& dev_id, 
 }
 
 typedef int (*func_unbind)(void* agent, std::string dev_id);
-int bambu_network_unbind(void* agent, std::string&& dev_id) {
+int bambu_network_unbind(void* agent, std::string dev_id) {
   return call_fn<func_unbind>(
     "bambu_network_unbind",
     0,
@@ -595,7 +596,7 @@ std::string bambu_network_get_user_selected_machine(void* agent) {
 }
 
 typedef int (*func_set_user_selected_machine)(void* agent, std::string dev_id);
-int bambu_network_set_user_selected_machine(void* agent, std::string&& dev_id) {
+int bambu_network_set_user_selected_machine(void* agent, std::string dev_id) {
   return call_fn<func_set_user_selected_machine>(
     "bambu_network_set_user_selected_machine",
     0,
@@ -605,7 +606,7 @@ int bambu_network_set_user_selected_machine(void* agent, std::string&& dev_id) {
 }
 
 typedef int (*func_start_print)(void* agent, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn);
-int bambu_network_start_print(void* agent, PrintParams&& params, OnUpdateStatusFn&& update_fn, WasCancelledFn&& cancel_fn, OnWaitFn&& wait_fn) {
+int bambu_network_start_print(void* agent, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn) {
   return call_fn<func_start_print>(
     "bambu_network_start_print",
     0,
@@ -618,7 +619,7 @@ int bambu_network_start_print(void* agent, PrintParams&& params, OnUpdateStatusF
 }
 
 typedef int (*func_start_local_print_with_record)(void* agent, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn);
-int bambu_network_start_local_print_with_record(void* agent, PrintParams&& params, OnUpdateStatusFn&& update_fn, WasCancelledFn&& cancel_fn, OnWaitFn&& wait_fn) {
+int bambu_network_start_local_print_with_record(void* agent, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn) {
   return call_fn<func_start_local_print_with_record>(
     "bambu_network_start_local_print_with_record",
     0,
@@ -631,7 +632,7 @@ int bambu_network_start_local_print_with_record(void* agent, PrintParams&& param
 }
 
 typedef int (*func_start_send_gcode_to_sdcard)(void* agent, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn);
-int bambu_network_start_send_gcode_to_sdcard(void* agent, PrintParams&& params, OnUpdateStatusFn&& update_fn, WasCancelledFn&& cancel_fn, OnWaitFn&& wait_fn) {
+int bambu_network_start_send_gcode_to_sdcard(void* agent, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn) {
   return call_fn<func_start_send_gcode_to_sdcard>(
     "bambu_network_start_send_gcode_to_sdcard",
     0,
@@ -644,7 +645,7 @@ int bambu_network_start_send_gcode_to_sdcard(void* agent, PrintParams&& params, 
 }
 
 typedef int (*func_start_local_print)(void* agent, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn);
-int bambu_network_start_local_print(void* agent, PrintParams&& params, OnUpdateStatusFn&& update_fn, WasCancelledFn&& cancel_fn) {
+int bambu_network_start_local_print(void* agent, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn) {
   return call_fn<func_start_local_print>(
     "bambu_network_start_local_print",
     0,
@@ -656,7 +657,7 @@ int bambu_network_start_local_print(void* agent, PrintParams&& params, OnUpdateS
 }
 
 typedef int (*func_start_sdcard_print)(void* agent, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn);
-int bambu_network_start_sdcard_print(void* agent, PrintParams&& params, OnUpdateStatusFn&& update_fn, WasCancelledFn&& cancel_fn) {
+int bambu_network_start_sdcard_print(void* agent, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn) {
   return call_fn<func_start_sdcard_print>(
     "bambu_network_start_sdcard_print",
     0,
@@ -678,7 +679,7 @@ int bambu_network_get_user_presets(void* agent, std::map<std::string, std::map<s
 }
 
 typedef std::string (*func_request_setting_id)(void* agent, std::string name, std::map<std::string, std::string>* values_map, unsigned int* http_code);
-std::string bambu_network_request_setting_id(void* agent, std::string&& name, std::map<std::string, std::string>* values_map, unsigned int* http_code) {
+std::string bambu_network_request_setting_id(void* agent, std::string name, std::map<std::string, std::string>* values_map, unsigned int* http_code) {
   return call_fn<func_request_setting_id>(
     "bambu_network_request_setting_id",
     "",
@@ -690,7 +691,7 @@ std::string bambu_network_request_setting_id(void* agent, std::string&& name, st
 }
 
 typedef int (*func_put_setting)(void* agent, std::string setting_id, std::string name, std::map<std::string, std::string>* values_map, unsigned int* http_code);
-int bambu_network_put_setting(void* agent, std::string&& setting_id, std::string&& name, std::map<std::string, std::string>* values_map, unsigned int* http_code) {
+int bambu_network_put_setting(void* agent, std::string setting_id, std::string name, std::map<std::string, std::string>* values_map, unsigned int* http_code) {
   return call_fn<func_put_setting>(
     "bambu_network_put_setting",
     0,
@@ -703,7 +704,7 @@ int bambu_network_put_setting(void* agent, std::string&& setting_id, std::string
 }
 
 typedef int (*func_get_setting_list)(void* agent, std::string bundle_version, ProgressFn pro_fn, WasCancelledFn cancel_fn);
-int bambu_network_get_setting_list(void* agent, std::string&& bundle_version, ProgressFn&& pro_fn, WasCancelledFn&& cancel_fn) {
+int bambu_network_get_setting_list(void* agent, std::string bundle_version, ProgressFn pro_fn, WasCancelledFn cancel_fn) {
   return call_fn<func_get_setting_list>(
     "bambu_network_get_setting_list",
     0,
@@ -715,7 +716,7 @@ int bambu_network_get_setting_list(void* agent, std::string&& bundle_version, Pr
 }
 
 typedef int (*func_get_setting_list2)(void* agent, std::string bundle_version, CheckFn chk_fn, ProgressFn pro_fn, WasCancelledFn cancel_fn);
-int bambu_network_get_setting_list2(void* agent, std::string&& bundle_version, CheckFn&& chk_fn, ProgressFn&& pro_fn, WasCancelledFn&& cancel_fn) {
+int bambu_network_get_setting_list2(void* agent, std::string bundle_version, CheckFn chk_fn, ProgressFn pro_fn, WasCancelledFn cancel_fn) {
   return call_fn<func_get_setting_list2>(
     "bambu_network_get_setting_list2",
     0,
@@ -728,7 +729,7 @@ int bambu_network_get_setting_list2(void* agent, std::string&& bundle_version, C
 }
 
 typedef int (*func_delete_setting)(void* agent, std::string setting_id);
-int bambu_network_delete_setting(void* agent, std::string&& setting_id) {
+int bambu_network_delete_setting(void* agent, std::string setting_id) {
   return call_fn<func_delete_setting>(
     "bambu_network_delete_setting",
     0,
@@ -747,7 +748,7 @@ std::string bambu_network_get_studio_info_url(void* agent) {
 }
 
 typedef int (*func_set_extra_http_header)(void* agent, std::map<std::string, std::string> extra_headers);
-int bambu_network_set_extra_http_header(void* agent, std::map<std::string, std::string>&& extra_headers) {
+int bambu_network_set_extra_http_header(void* agent, std::map<std::string, std::string> extra_headers) {
   return call_fn<func_set_extra_http_header>(
     "bambu_network_set_extra_http_header",
     0,
@@ -793,7 +794,7 @@ int bambu_network_get_user_print_info(void* agent, unsigned int* http_code, std:
 }
 
 typedef int (*func_get_user_tasks)(void* agent, TaskQueryParams params, std::string* http_body);
-int bambu_network_get_user_tasks(void* agent, TaskQueryParams&& params, std::string* http_body) {
+int bambu_network_get_user_tasks(void* agent, TaskQueryParams params, std::string* http_body) {
   return call_fn<func_get_user_tasks>(
     "bambu_network_get_user_tasks",
     0,
@@ -804,7 +805,7 @@ int bambu_network_get_user_tasks(void* agent, TaskQueryParams&& params, std::str
 }
 
 typedef int (*func_get_printer_firmware)(void* agent, std::string dev_id, unsigned* http_code, std::string* http_body);
-int bambu_network_get_printer_firmware(void* agent, std::string&& dev_id, unsigned* http_code, std::string* http_body) {
+int bambu_network_get_printer_firmware(void* agent, std::string dev_id, unsigned* http_code, std::string* http_body) {
   return call_fn<func_get_printer_firmware>(
     "bambu_network_get_printer_firmware",
     0,
@@ -816,7 +817,7 @@ int bambu_network_get_printer_firmware(void* agent, std::string&& dev_id, unsign
 }
 
 typedef int (*func_get_task_plate_index)(void* agent, std::string task_id, int* plate_index);
-int bambu_network_get_task_plate_index(void* agent, std::string&& task_id, int* plate_index) {
+int bambu_network_get_task_plate_index(void* agent, std::string task_id, int* plate_index) {
   return call_fn<func_get_task_plate_index>(
     "bambu_network_get_task_plate_index",
     0,
@@ -847,7 +848,7 @@ int bambu_network_request_bind_ticket(void* agent, std::string* ticket) {
 }
 
 typedef int (*func_get_subtask_info)(void* agent, std::string subtask_id, std::string* task_json, unsigned int* http_code, std::string* http_body);
-int bambu_network_get_subtask_info(void* agent, std::string&& subtask_id, std::string* task_json, unsigned int* http_code, std::string* http_body) {
+int bambu_network_get_subtask_info(void* agent, std::string subtask_id, std::string* task_json, unsigned int* http_code, std::string* http_body) {
   return call_fn<func_get_subtask_info>(
     "bambu_network_get_subtask_info",
     0,
@@ -860,7 +861,7 @@ int bambu_network_get_subtask_info(void* agent, std::string&& subtask_id, std::s
 }
 
 typedef int (*func_get_slice_info)(void* agent, std::string project_id, std::string profile_id, int plate_index, std::string* slice_json);
-int bambu_network_get_slice_info(void* agent, std::string&& project_id, std::string&& profile_id, int plate_index, std::string* slice_json) {
+int bambu_network_get_slice_info(void* agent, std::string project_id, std::string profile_id, int plate_index, std::string* slice_json) {
   return call_fn<func_get_slice_info>(
     "bambu_network_get_slice_info",
     0,
@@ -873,7 +874,7 @@ int bambu_network_get_slice_info(void* agent, std::string&& project_id, std::str
 }
 
 typedef int (*func_query_bind_status)(void* agent, std::vector<std::string> query_list, unsigned int* http_code, std::string* http_body);
-int bambu_network_query_bind_status(void* agent, std::vector<std::string>&& query_list, unsigned int* http_code, std::string* http_body) {
+int bambu_network_query_bind_status(void* agent, std::vector<std::string> query_list, unsigned int* http_code, std::string* http_body) {
   return call_fn<func_query_bind_status>(
     "bambu_network_query_bind_status",
     0,
@@ -885,7 +886,7 @@ int bambu_network_query_bind_status(void* agent, std::vector<std::string>&& quer
 }
 
 typedef int (*func_modify_printer_name)(void* agent, std::string dev_id, std::string dev_name);
-int bambu_network_modify_printer_name(void* agent, std::string&& dev_id, std::string&& dev_name) {
+int bambu_network_modify_printer_name(void* agent, std::string dev_id, std::string dev_name) {
   return call_fn<func_modify_printer_name>(
     "bambu_network_modify_printer_name",
     0,
@@ -896,7 +897,7 @@ int bambu_network_modify_printer_name(void* agent, std::string&& dev_id, std::st
 }
 
 typedef int (*func_get_camera_url)(void* agent, std::string dev_id, std::function<void(std::string)> callback);
-int bambu_network_get_camera_url(void* agent, std::string&& dev_id, std::function<void(std::string)>&& callback) {
+int bambu_network_get_camera_url(void* agent, std::string dev_id, std::function<void(std::string)> callback) {
   return call_fn<func_get_camera_url>(
     "bambu_network_get_camera_url",
     0,
@@ -907,7 +908,7 @@ int bambu_network_get_camera_url(void* agent, std::string&& dev_id, std::functio
 }
 
 typedef int (*func_get_design_staffpick)(void* agent, int offset, int limit, std::function<void(std::string)> callback);
-int bambu_network_get_design_staffpick(void* agent, int offset, int limit, std::function<void(std::string)>&& callback) {
+int bambu_network_get_design_staffpick(void* agent, int offset, int limit, std::function<void(std::string)> callback) {
   return call_fn<func_get_design_staffpick>(
     "bambu_network_get_design_staffpick",
     0,
@@ -919,7 +920,7 @@ int bambu_network_get_design_staffpick(void* agent, int offset, int limit, std::
 }
 
 typedef int (*func_start_publish)(void* agent, PublishParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, std::string* out);
-int bambu_network_start_publish(void* agent, PublishParams&& params, OnUpdateStatusFn&& update_fn, WasCancelledFn&& cancel_fn, std::string* out) {
+int bambu_network_start_publish(void* agent, PublishParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, std::string* out) {
   return call_fn<func_start_publish>(
     "bambu_network_start_publish",
     0,
@@ -952,7 +953,7 @@ int bambu_network_get_model_publish_url(void* agent, std::string* url) {
 }
 
 typedef int (*func_get_subtask)(void* agent, BBLModelTask* task, OnGetSubTaskFn getsub_fn);
-int bambu_network_get_subtask(void* agent, BBLModelTask* task, OnGetSubTaskFn&& getsub_fn) {
+int bambu_network_get_subtask(void* agent, BBLModelTask* task, OnGetSubTaskFn getsub_fn) {
   return call_fn<func_get_subtask>(
     "bambu_network_get_subtask",
     0,
@@ -973,7 +974,7 @@ int bambu_network_get_model_mall_home_url(void* agent, std::string* url) {
 }
 
 typedef int (*func_get_model_mall_detail_url)(void* agent, std::string* url, std::string id);
-int bambu_network_get_model_mall_detail_url(void* agent, std::string* url, std::string&& id) {
+int bambu_network_get_model_mall_detail_url(void* agent, std::string* url, std::string id) {
   return call_fn<func_get_model_mall_detail_url>(
     "bambu_network_get_model_mall_detail_url",
     0,
@@ -984,7 +985,7 @@ int bambu_network_get_model_mall_detail_url(void* agent, std::string* url, std::
 }
 
 typedef int (*func_get_my_profile)(void* agent, std::string token, unsigned int* http_code, std::string* http_body);
-int bambu_network_get_my_profile(void* agent, std::string&& token, unsigned int* http_code, std::string* http_body) {
+int bambu_network_get_my_profile(void* agent, std::string token, unsigned int* http_code, std::string* http_body) {
   return call_fn<func_get_my_profile>(
     "bambu_network_get_my_profile",
     0,
@@ -1015,7 +1016,7 @@ int bambu_network_track_remove_files(void* agent) {
 }
 
 typedef int (*func_track_event)(void* agent, std::string evt_key, std::string content);
-int bambu_network_track_event(void* agent, std::string&& evt_key, std::string&& content) {
+int bambu_network_track_event(void* agent, std::string evt_key, std::string content) {
   return call_fn<func_track_event>(
     "bambu_network_track_event",
     0,
@@ -1026,7 +1027,7 @@ int bambu_network_track_event(void* agent, std::string&& evt_key, std::string&& 
 }
 
 typedef int (*func_track_header)(void* agent, std::string header);
-int bambu_network_track_header(void* agent, std::string&& header) {
+int bambu_network_track_header(void* agent, std::string header) {
   return call_fn<func_track_header>(
     "bambu_network_track_header",
     0,
@@ -1036,7 +1037,7 @@ int bambu_network_track_header(void* agent, std::string&& header) {
 }
 
 typedef int (*func_track_update_property)(void* agent, std::string name, std::string value, std::string type);
-int bambu_network_track_update_property(void* agent, std::string&& name, std::string&& value, std::string&&type) {
+int bambu_network_track_update_property(void* agent, std::string name, std::string value, std::string type) {
   return call_fn<func_track_update_property>(
     "bambu_network_track_update_property",
     0,
@@ -1048,7 +1049,7 @@ int bambu_network_track_update_property(void* agent, std::string&& name, std::st
 }
 
 typedef int (*func_track_get_property)(void* agent, std::string name, std::string& value, std::string type);
-int bambu_network_track_get_property(void* agent, std::string&& name, std::string& value, std::string&& type) {
+int bambu_network_track_get_property(void* agent, std::string name, std::string& value, std::string type) {
   return call_fn<func_track_get_property>(
     "bambu_network_track_get_property",
     0,
@@ -1060,7 +1061,7 @@ int bambu_network_track_get_property(void* agent, std::string&& name, std::strin
 }
 
 typedef int (*func_put_model_mall_rating_url)(void* agent, int rating_id, int score, std::string content, std::vector<std::string> images, unsigned int& http_code, std::string& http_error);
-int bambu_network_put_model_mall_rating(void* agent, int rating_id, int score, std::string&& content, std::vector<std::string>&& images, unsigned int& http_code, std::string& http_error) {
+int bambu_network_put_model_mall_rating(void* agent, int rating_id, int score, std::string content, std::vector<std::string> images, unsigned int& http_code, std::string& http_error) {
   return call_fn<func_put_model_mall_rating_url>(
     "bambu_network_put_model_mall_rating",
     0,
@@ -1075,7 +1076,7 @@ int bambu_network_put_model_mall_rating(void* agent, int rating_id, int score, s
 }
 
 typedef int (*func_get_oss_config)(void* agent, std::string& config, std::string country_code, unsigned int& http_code, std::string& http_error);
-int bambu_network_get_oss_config(void* agent, std::string& config, std::string&& country_code, unsigned int& http_code, std::string&& http_error) {
+int bambu_network_get_oss_config(void* agent, std::string& config, std::string country_code, unsigned int& http_code, std::string& http_error) {
   return call_fn<func_get_oss_config>(
     "bambu_network_get_oss_config",
     0,
@@ -1088,7 +1089,7 @@ int bambu_network_get_oss_config(void* agent, std::string& config, std::string&&
 }
 
 typedef int (*func_put_rating_picture_oss)(void* agent, std::string& config, std::string& pic_oss_path, std::string model_id, int profile_id, unsigned int& http_code, std::string& http_error);
-int bambu_network_put_rating_picture_oss(void* agent, std::string& config, std::string& pic_oss_path, std::string&& model_id, int profile_id, unsigned int& http_code, std::string& http_error) {
+int bambu_network_put_rating_picture_oss(void* agent, std::string& config, std::string& pic_oss_path, std::string model_id, int profile_id, unsigned int& http_code, std::string& http_error) {
   return call_fn<func_put_rating_picture_oss>(
     "bambu_network_put_rating_picture_oss",
     0,
@@ -1116,7 +1117,7 @@ int bambu_network_get_model_mall_rating(void* agent, int job_id, std::string& ra
 }
 
 typedef int (*func_get_mw_user_preference)(void* agent, std::function<void(std::string)> callback);
-int bambu_network_get_mw_user_preference(void* agent, std::function<void(std::string)>&& callback) {
+int bambu_network_get_mw_user_preference(void* agent, std::function<void(std::string)> callback) {
   return call_fn<func_get_mw_user_preference>(
     "bambu_network_get_mw_user_preference",
     0,
@@ -1126,7 +1127,7 @@ int bambu_network_get_mw_user_preference(void* agent, std::function<void(std::st
 }
 
 typedef int (*func_get_mw_user_4ulist)(void* agent, int seed, int limit, std::function<void(std::string)> callback);
-int bambu_network_get_mw_user_4ulist(void* agent, int seed, int limit, std::function<void(std::string)>&& callback) {
+int bambu_network_get_mw_user_4ulist(void* agent, int seed, int limit, std::function<void(std::string)> callback) {
   return call_fn<func_get_mw_user_4ulist>(
     "bambu_network_get_mw_user_4ulist",
     0,
