@@ -1,6 +1,6 @@
 find_package(
   Boost
-  1.88
+  1.87
   COMPONENTS filesystem
   REQUIRED
 )
