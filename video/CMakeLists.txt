@@ -6,6 +6,7 @@ add_library(
 set_target_properties(
   bambuzzled-video
   PROPERTIES
+  OUTPUT_NAME BambuSource
   CXX_VISIBILITY_PRESET hidden
   C_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN ON

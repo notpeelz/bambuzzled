@@ -7,6 +7,7 @@ add_library(
 set_target_properties(
   bambuzzled-forwarder
   PROPERTIES
+  OUTPUT_NAME bambu_networking
   CXX_VISIBILITY_PRESET hidden
   C_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN ON

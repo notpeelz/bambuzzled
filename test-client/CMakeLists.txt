@@ -3,6 +3,12 @@ add_executable(
   test.cpp
 )
 
+set_target_properties(
+  bambuzzled-test-client
+  PROPERTIES
+  OUTPUT_NAME test-client
+)
+
 target_link_libraries(
   bambuzzled-test-client
   PRIVATE
