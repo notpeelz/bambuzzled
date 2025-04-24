@@ -1,6 +1,7 @@
 #include <string>
 #include <memory>
 #include <mutex>
+#include <stdexcept>
 
 #include <openssl/err.h>
 
