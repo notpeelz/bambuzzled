@@ -6,7 +6,6 @@ add_library(
   network_agent.cpp
   mosquittopp.cpp
 )
-
 set_target_properties(
   bambuzzled
   PROPERTIES
@@ -14,7 +13,6 @@ set_target_properties(
   C_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN ON
 )
-
 target_link_libraries(
   bambuzzled
   PRIVATE

@@ -8,12 +8,21 @@
 #include "dyn_lib_loader.hpp"
 #include "to_string.hpp"
 
+static std::string get_forward_path() {
+  const char* s = std::getenv("BAMBUZZLED_FORWARD");
+  if (s == nullptr) {
+    return "";
+  }
+
+  return s;
+}
+
 template<typename T>
 T get_fn(const std::string& name) {
   static dyn_lib_loader* loader{};
   try {
     if (loader == nullptr) {
-      std::string forward_path(std::getenv("BAMBUZZLED_FORWARD") ?: "");
+      auto forward_path = get_forward_path();
       if (forward_path.empty()) {
         return nullptr;
       }

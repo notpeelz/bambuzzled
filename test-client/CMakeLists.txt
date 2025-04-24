@@ -6,6 +6,6 @@ add_executable(
 target_link_libraries(
   bambuzzled-test-client
   PRIVATE
-  libmosquitto
   OpenSSL::SSL
+  libmosquitto
 )

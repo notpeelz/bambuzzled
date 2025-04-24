@@ -17,9 +17,9 @@ ExternalProject_Add(
 file(MAKE_DIRECTORY ${NLOHMANN_JSON_INCLUDE_DIR})
 
 add_library(nlohmann-json INTERFACE IMPORTED GLOBAL)
-set_property(
-  TARGET nlohmann-json
-  PROPERTY
+set_target_properties(
+  nlohmann-json
+  PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES ${NLOHMANN_JSON_INCLUDE_DIR}
 )
 add_dependencies(nlohmann-json nlohmann-json-project)

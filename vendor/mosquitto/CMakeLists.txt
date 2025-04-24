@@ -11,6 +11,7 @@ ExternalProject_Add(
   CMAKE_ARGS
     -DWITH_STATIC_LIBRARIES=ON
     -DWITH_PIC=ON
+    -DWITH_THREADING=OFF
     -DCMAKE_INSTALL_PREFIX=${MOSQUITTO_INSTALL_DIR}
     -DOPENSSL_ROOT_DIR=${OPENSSL_INSTALL_DIR}
     -DOPENSSL_INCLUDE_DIR=${OPENSSL_INCLUDE_DIR}
@@ -22,21 +23,22 @@ add_dependencies(mosquitto-project OpenSSL)
 file(MAKE_DIRECTORY ${MOSQUITTO_INCLUDE_DIR})
 
 if(MSVC)
-  set(MOSQUITTO_LIBRARY_EXTENSION lib)
+  set(MOSQUITTO_LIBRARY_PATH ${MOSQUITTO_INSTALL_DIR}/lib/mosquitto_static.lib)
 else()
-  set(MOSQUITTO_LIBRARY_EXTENSION a)
+  set(MOSQUITTO_LIBRARY_PATH ${MOSQUITTO_INSTALL_DIR}/lib/libmosquitto_static.a)
 endif()
 
 add_library(libmosquitto STATIC IMPORTED GLOBAL)
-set_property(
-  TARGET libmosquitto
-  PROPERTY
-  IMPORTED_LOCATION ${MOSQUITTO_INSTALL_DIR}/lib/libmosquitto_static.${MOSQUITTO_LIBRARY_EXTENSION}
-)
-set_property(
-  TARGET libmosquitto
-  PROPERTY
+set_target_properties(
+  libmosquitto
+  PROPERTIES
+  IMPORTED_LOCATION ${MOSQUITTO_LIBRARY_PATH}
   INTERFACE_INCLUDE_DIRECTORIES ${MOSQUITTO_INCLUDE_DIR}
+  INTERFACE_COMPILE_DEFINITIONS LIBMOSQUITTO_STATIC
 )
+
+if(WIN32)
+  target_link_libraries(libmosquitto INTERFACE ws2_32)
+endif()
 
 add_dependencies(libmosquitto mosquitto-project)

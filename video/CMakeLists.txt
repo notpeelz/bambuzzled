@@ -3,7 +3,6 @@ add_library(
   SHARED
   video.cpp
 )
-
 set_target_properties(
   bambuzzled-video
   PROPERTIES
@@ -11,7 +10,6 @@ set_target_properties(
   C_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN ON
 )
-
 target_link_libraries(
   bambuzzled-video
   PRIVATE

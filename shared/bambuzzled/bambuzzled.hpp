@@ -17,6 +17,9 @@
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4190)
 #endif
 
 BBZL_EXPORT bool bambu_network_check_debug_consistent(bool is_debug);
@@ -123,4 +126,6 @@ BBZL_EXPORT int bambu_network_get_mw_user_4ulist(void* agent, int seed, int limi
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
 #endif
