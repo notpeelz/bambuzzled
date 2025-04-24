@@ -1,0 +1,43 @@
+include(ExternalProject)
+
+set(OPENSSL_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/install)
+set(OPENSSL_INSTALL_DIR ${OPENSSL_INSTALL_DIR} PARENT_SCOPE)
+set(OPENSSL_INCLUDE_DIR ${OPENSSL_INSTALL_DIR}/include)
+set(OPENSSL_INCLUDE_DIR ${OPENSSL_INCLUDE_DIR} PARENT_SCOPE)
+
+ExternalProject_Add(
+  openssl-project
+  BUILD_IN_SOURCE TRUE
+  URL ${CMAKE_CURRENT_SOURCE_DIR}/../libs/openssl
+  CONFIGURE_COMMAND
+    perl Configure
+    --prefix=${OPENSSL_INSTALL_DIR}
+    --libdir=lib
+    --openssldir=${OPENSSL_INSTALL_DIR}
+  BUILD_COMMAND make -j${CMAKE_BUILD_PARALLEL_LEVEL}
+  INSTALL_COMMAND make install
+  INSTALL_DIR ${OPENSSL_INSTALL_DIR}
+)
+
+file(MAKE_DIRECTORY ${OPENSSL_INCLUDE_DIR})
+
+if(MSVC)
+  set(OPENSSL_LIBRARY_EXTENSION lib)
+else()
+  set(OPENSSL_LIBRARY_EXTENSION a)
+endif()
+
+add_library(OpenSSL INTERFACE)
+add_dependencies(OpenSSL openssl-project)
+
+add_library(OpenSSL::SSL STATIC IMPORTED GLOBAL)
+set_property(TARGET OpenSSL::SSL PROPERTY IMPORTED_LOCATION ${OPENSSL_INSTALL_DIR}/lib/libssl.${OPENSSL_LIBRARY_EXTENSION})
+set_property(TARGET OpenSSL::SSL PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${OPENSSL_INCLUDE_DIR})
+
+add_library(OpenSSL::Crypto STATIC IMPORTED GLOBAL)
+set_property(TARGET OpenSSL::Crypto PROPERTY IMPORTED_LOCATION ${OPENSSL_INSTALL_DIR}/lib/libcrypto.${OPENSSL_LIBRARY_EXTENSION})
+set_property(TARGET OpenSSL::Crypto PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${OPENSSL_INCLUDE_DIR})
+
+add_dependencies(OpenSSL::Crypto openssl-project)
+add_dependencies(OpenSSL::SSL openssl-project OpenSSL::Crypto)
+target_link_libraries(OpenSSL::SSL INTERFACE OpenSSL::Crypto)

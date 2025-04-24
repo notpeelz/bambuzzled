@@ -1,0 +1,9 @@
+[submodule "vendor/libs/mosquitto"]
+	path = vendor/libs/mosquitto
+	url = https://github.com/eclipse-mosquitto/mosquitto.git
+[submodule "vendor/libs/openssl"]
+	path = vendor/libs/openssl
+	url = https://github.com/openssl/openssl.git
+[submodule "vendor/libs/nlohmann_json"]
+	path = vendor/libs/nlohmann-json
+	url = https://github.com/nlohmann/json.git
