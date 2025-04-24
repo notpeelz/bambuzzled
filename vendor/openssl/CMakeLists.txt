@@ -5,17 +5,33 @@ set(OPENSSL_INSTALL_DIR ${OPENSSL_INSTALL_DIR} PARENT_SCOPE)
 set(OPENSSL_INCLUDE_DIR ${OPENSSL_INSTALL_DIR}/include)
 set(OPENSSL_INCLUDE_DIR ${OPENSSL_INCLUDE_DIR} PARENT_SCOPE)
 
-ExternalProject_Add(
-  openssl-project
-  BUILD_IN_SOURCE TRUE
-  URL ${CMAKE_CURRENT_SOURCE_DIR}/../libs/openssl
-  CONFIGURE_COMMAND
+if(WIN32)
+  set(OPENSSL_CONFIGURE_COMMAND
+    perl Configure no-asm
+    --prefix=${OPENSSL_INSTALL_DIR}
+    --libdir=lib
+    --openssldir=${OPENSSL_INSTALL_DIR}
+  )
+  set(OPENSSL_BUILD_COMMAND set CL=/MP && nmake)
+  set(OPENSSL_INSTALL_COMMAND nmake install)
+else()
+  set(OPENSSL_CONFIGURE_COMMAND
     perl Configure
     --prefix=${OPENSSL_INSTALL_DIR}
     --libdir=lib
     --openssldir=${OPENSSL_INSTALL_DIR}
-  BUILD_COMMAND make -j${CMAKE_BUILD_PARALLEL_LEVEL}
-  INSTALL_COMMAND make install
+  )
+  set(OPENSSL_BUILD_COMMAND make -j${CMAKE_BUILD_PARALLEL_LEVEL})
+  set(OPENSSL_INSTALL_COMMAND make install)
+endif()
+
+ExternalProject_Add(
+  openssl-project
+  BUILD_IN_SOURCE TRUE
+  URL ${CMAKE_CURRENT_SOURCE_DIR}/../libs/openssl
+  CONFIGURE_COMMAND ${OPENSSL_CONFIGURE_COMMAND}
+  BUILD_COMMAND ${OPENSSL_BUILD_COMMAND}
+  INSTALL_COMMAND ${OPENSSL_INSTALL_COMMAND}
   INSTALL_DIR ${OPENSSL_INSTALL_DIR}
 )
 
@@ -38,6 +54,6 @@ add_library(OpenSSL::Crypto STATIC IMPORTED GLOBAL)
 set_property(TARGET OpenSSL::Crypto PROPERTY IMPORTED_LOCATION ${OPENSSL_INSTALL_DIR}/lib/libcrypto.${OPENSSL_LIBRARY_EXTENSION})
 set_property(TARGET OpenSSL::Crypto PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${OPENSSL_INCLUDE_DIR})
 
-add_dependencies(OpenSSL::Crypto openssl-project)
-add_dependencies(OpenSSL::SSL openssl-project OpenSSL::Crypto)
+add_dependencies(OpenSSL::Crypto OpenSSL)
+add_dependencies(OpenSSL::SSL OpenSSL OpenSSL::Crypto)
 target_link_libraries(OpenSSL::SSL INTERFACE OpenSSL::Crypto)
