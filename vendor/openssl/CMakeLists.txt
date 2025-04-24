@@ -12,7 +12,7 @@ if(WIN32)
     --libdir=lib
     --openssldir=${OPENSSL_INSTALL_DIR}
   )
-  set(OPENSSL_BUILD_COMMAND set CL=/MP && nmake)
+  set(OPENSSL_BUILD_COMMAND nmake)
   set(OPENSSL_INSTALL_COMMAND nmake install)
 else()
   set(OPENSSL_CONFIGURE_COMMAND
