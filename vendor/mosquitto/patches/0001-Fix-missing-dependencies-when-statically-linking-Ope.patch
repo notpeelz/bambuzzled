@@ -1,0 +1,80 @@
+From a5e45e4b8b92732861602e64eff0a803d87ea5f6 Mon Sep 17 00:00:00 2001
+From: peelz <peelz.dev@gmail.com>
+Date: Fri, 25 Apr 2025 12:46:53 -0400
+Subject: [PATCH] Fix missing dependencies when statically linking OpenSSL
+
+---
+ apps/mosquitto_ctrl/CMakeLists.txt      | 2 +-
+ apps/mosquitto_passwd/CMakeLists.txt    | 2 +-
+ lib/CMakeLists.txt                      | 2 +-
+ plugins/dynamic-security/CMakeLists.txt | 2 +-
+ src/CMakeLists.txt                      | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/apps/mosquitto_ctrl/CMakeLists.txt b/apps/mosquitto_ctrl/CMakeLists.txt
+index 26dbe8d6..734e6164 100644
+--- a/apps/mosquitto_ctrl/CMakeLists.txt
++++ b/apps/mosquitto_ctrl/CMakeLists.txt
+@@ -43,7 +43,7 @@ if (WITH_TLS AND CJSON_FOUND)
+ 		endif (APPLE)
+ 	endif (UNIX)
+ 
+-	target_link_libraries(mosquitto_ctrl ${OPENSSL_LIBRARIES} ${CJSON_LIBRARIES})
++	target_link_libraries(mosquitto_ctrl OpenSSL::SSL ${CJSON_LIBRARIES})
+ 
+ 	install(TARGETS mosquitto_ctrl RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+ endif (WITH_TLS AND CJSON_FOUND)
+diff --git a/apps/mosquitto_passwd/CMakeLists.txt b/apps/mosquitto_passwd/CMakeLists.txt
+index 13a7d826..7ed17439 100644
+--- a/apps/mosquitto_passwd/CMakeLists.txt
++++ b/apps/mosquitto_passwd/CMakeLists.txt
+@@ -13,6 +13,6 @@ if (WITH_TLS)
+ 		)
+ 
+ 
+-	target_link_libraries(mosquitto_passwd ${OPENSSL_LIBRARIES})
++	target_link_libraries(mosquitto_passwd OpenSSL::SSL)
+ 	install(TARGETS mosquitto_passwd RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+ endif (WITH_TLS)
+diff --git a/lib/CMakeLists.txt b/lib/CMakeLists.txt
+index 646d0ea9..271eae46 100644
+--- a/lib/CMakeLists.txt
++++ b/lib/CMakeLists.txt
+@@ -60,7 +60,7 @@ set(C_SRC
+ 	util_mosq.c util_topic.c util_mosq.h
+ 	will_mosq.c will_mosq.h)
+ 
+-set (LIBRARIES ${OPENSSL_LIBRARIES})
++set (LIBRARIES OpenSSL::SSL)
+ 
+ if (UNIX AND NOT APPLE AND NOT ANDROID)
+ 	find_library(LIBRT rt)
+diff --git a/plugins/dynamic-security/CMakeLists.txt b/plugins/dynamic-security/CMakeLists.txt
+index 643de1de..5f7ada4f 100644
+--- a/plugins/dynamic-security/CMakeLists.txt
++++ b/plugins/dynamic-security/CMakeLists.txt
+@@ -32,7 +32,7 @@ if (CJSON_FOUND AND WITH_TLS)
+ 	)
+ 	set_target_properties(mosquitto_dynamic_security PROPERTIES PREFIX "")
+ 
+-	target_link_libraries(mosquitto_dynamic_security ${CJSON_LIBRARIES} ${OPENSSL_LIBRARIES})
++	target_link_libraries(mosquitto_dynamic_security ${CJSON_LIBRARIES} OpenSSL::SSL)
+ 	if(WIN32)
+ 		target_link_libraries(mosquitto_dynamic_security mosquitto)
+ 		install(TARGETS mosquitto_dynamic_security
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index dce8313f..0b328e0e 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -157,7 +157,7 @@ if (WITH_DLT)
+     set (MOSQ_LIBS ${MOSQ_LIBS} ${DLT_LIBRARIES})
+ endif (WITH_DLT)
+ 
+-set (MOSQ_LIBS ${MOSQ_LIBS} ${OPENSSL_LIBRARIES})
++set (MOSQ_LIBS ${MOSQ_LIBS} OpenSSL::SSL)
+ # Check for getaddrinfo_a
+ include(CheckLibraryExists)
+ check_library_exists(anl getaddrinfo_a  "" HAVE_GETADDRINFO_A)
+-- 
+2.49.0.windows.1
+
