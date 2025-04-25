@@ -21,10 +21,11 @@ ExternalProject_Add(
   CONFIGURE_COMMAND perl Configure
     no-docs
     no-unit-test
-    -static
     --prefix=${OPENSSL_INSTALL_DIR}
     --libdir=lib
     --openssldir=${OPENSSL_INSTALL_DIR}
+    -static
+    -fPIC
   BUILD_COMMAND ${OPENSSL_BUILD_COMMAND}
   INSTALL_COMMAND ${OPENSSL_INSTALL_COMMAND}
   INSTALL_DIR ${OPENSSL_INSTALL_DIR}
