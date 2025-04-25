@@ -101,7 +101,6 @@ network_client* network_agent::get_or_create_conn(std::string& dev_id) {
   const auto& [pair, emplaced] = this->connections.try_emplace(dev_id, conn);
 
   if (emplaced) {
-    conn->mosq->start();
     return conn;
   }
 
@@ -122,22 +121,12 @@ int network_agent::connect_printer(
   auto conn = this->get_or_create_conn(dev_id);
   auto mosq = conn->mosq->get();
 
-  rc = mosquitto_username_pw_set(mosq, username.c_str(), password.c_str());
-  if (rc != MOSQ_ERR_SUCCESS) {
-    throw std::runtime_error("failed to set MQTT credentials");
-  }
-
+  // TODO: move these to mosquittopp
   mosquitto_connect_callback_set(mosq, on_connect);
   mosquitto_message_callback_set(mosq, on_message);
   mosquitto_disconnect_callback_set(mosq, on_disconnect);
 
-  rc = mosquitto_connect(mosq, dev_ip.c_str(), 8883, 60);
-  if (rc != MOSQ_ERR_SUCCESS) {
-    throw std::runtime_error(
-      "failed to connect to MQTT broker: "
-      + std::string(mosquitto_strerror(rc))
-    );
-  }
+  conn->mosq->connect(dev_ip, 8883, username, password, 60);
 
   return 0;
 }

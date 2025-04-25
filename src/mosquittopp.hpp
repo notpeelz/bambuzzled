@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <thread>
 
 #include <openssl/ssl.h>
 #include <mosquitto.h>
@@ -28,11 +29,19 @@ class mosquittopp {
 private:
   openssl_ctx_ptr openssl_ctx;
   mosquitto_ptr mosq;
-  bool started = false;
+  int keepalive = 0;
+  void thread_main(std::stop_token st);
+  std::jthread thread;
 public:
   mosquittopp(void* obj);
   ~mosquittopp();
   mosquitto* get();
-  void start();
-  void stop();
+  void connect(
+    std::string& addr,
+    uint16_t port,
+    std::string& username,
+    std::string& password,
+    int keepalive = 0
+  );
+  void disconnect();
 };
