@@ -11,7 +11,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 if(WIN32)
-	add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+  add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+  add_definitions("-D_CRT_SECURE_NO_DEPRECATE")
 endif()
 
 add_subdirectory(vendor)
