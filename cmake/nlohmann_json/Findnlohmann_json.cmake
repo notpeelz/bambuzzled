@@ -18,17 +18,16 @@ endif()
 
 file(MAKE_DIRECTORY ${NLOHMANN_JSON_INCLUDE_DIR})
 
-add_library(nlohmann-json INTERFACE IMPORTED GLOBAL)
-set_target_properties(
-  nlohmann-json
-  PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${NLOHMANN_JSON_INCLUDE_DIR}
+add_library(nlohmann_json::nlohmann_json INTERFACE IMPORTED GLOBAL)
+target_include_directories(
+  nlohmann_json::nlohmann_json
+  INTERFACE
+  ${NLOHMANN_JSON_INCLUDE_DIR}
 )
-add_dependencies(nlohmann-json vendored-nlohmann-json)
+add_dependencies(nlohmann_json::nlohmann_json vendored-nlohmann-json)
 
 find_package_handle_standard_args(
-  nlohmann-json
+  nlohmann_json
   REQUIRED_VARS
-    NLOHMANN_JSON_INSTALL_DIR
     NLOHMANN_JSON_INCLUDE_DIR
 )

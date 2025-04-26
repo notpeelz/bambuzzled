@@ -1,5 +1,5 @@
 find_package(OpenSSL REQUIRED)
-find_package(libmosquitto REQUIRED)
+find_package(mosquitto REQUIRED)
 
 add_executable(
   bambuzzled-test-client
@@ -14,5 +14,5 @@ target_link_libraries(
   bambuzzled-test-client
   PRIVATE
   OpenSSL::SSL
-  libmosquitto
+  mosquitto::libmosquitto
 )

@@ -1,6 +1,6 @@
 find_package(OpenSSL REQUIRED)
-find_package(libmosquitto REQUIRED)
-find_package(nlohmann-json REQUIRED)
+find_package(mosquitto REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 add_library(
   bambuzzled
@@ -23,6 +23,6 @@ target_link_libraries(
   PRIVATE
   bambuzzled-shared
   OpenSSL::SSL
-  libmosquitto
-  nlohmann-json
+  mosquitto::libmosquitto
+  nlohmann_json::nlohmann_json
 )

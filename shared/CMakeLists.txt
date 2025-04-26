@@ -6,10 +6,10 @@ find_package(
 )
 
 add_library(bambuzzled-shared INTERFACE)
-set_target_properties(
+target_include_directories(
   bambuzzled-shared
-  PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}
+  INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR}
 )
 target_link_libraries(
   bambuzzled-shared
