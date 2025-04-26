@@ -1,3 +1,7 @@
+find_package(OpenSSL REQUIRED)
+find_package(libmosquitto REQUIRED)
+find_package(nlohmann-json REQUIRED)
+
 add_library(
   bambuzzled
   SHARED

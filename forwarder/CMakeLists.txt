@@ -3,7 +3,6 @@ add_library(
   SHARED
   forwarder.cpp
 )
-
 set_target_properties(
   bambuzzled-forwarder
   PROPERTIES
