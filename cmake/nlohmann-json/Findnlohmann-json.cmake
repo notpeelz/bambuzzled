@@ -1,7 +1,7 @@
 include(FindPackageHandleStandardArgs)
 include(ExternalProject)
 
-set(NLOHMANN_JSON_INSTALL_DIR ${CMAKE_BINARY_DIR}/vendor/install/nlohmann-json)
+set(NLOHMANN_JSON_INSTALL_DIR ${CMAKE_BINARY_DIR}/libs/install/nlohmann-json)
 set(NLOHMANN_JSON_INCLUDE_DIR ${NLOHMANN_JSON_INSTALL_DIR}/include)
 
 if(NOT TARGET vendored-nlohmann-json)

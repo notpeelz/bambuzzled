@@ -2,7 +2,7 @@ include(FindPackageHandleStandardArgs)
 include(ExternalProject)
 include(CMakePrintHelpers)
 
-set(LIBMOSQUITTO_INSTALL_DIR ${CMAKE_BINARY_DIR}/vendor/install/libmosquitto)
+set(LIBMOSQUITTO_INSTALL_DIR ${CMAKE_BINARY_DIR}/libs/install/libmosquitto)
 set(LIBMOSQUITTO_INCLUDE_DIR ${LIBMOSQUITTO_INSTALL_DIR}/include)
 
 file(GLOB PATCH_FILES "${CMAKE_CURRENT_SOURCE_DIR}/patches/*.patch")
