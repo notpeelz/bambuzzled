@@ -6,7 +6,7 @@ project(
 )
 
 if(WIN32)
-  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
 set(BBZL_WITH_NLOHMANN_JSON "SYSTEM" CACHE STRING "Build with nlohmann-json")
