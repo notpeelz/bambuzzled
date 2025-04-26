@@ -3,8 +3,8 @@
 ## Standard build
 
 ```sh
-cmake -B build -S .
-cmake --build build --config Release -j
+cmake -B build -S . -DCMAKE_BUILD_TYPE=RelWithDebInfo
+cmake --build build -j
 ```
 
 ## Statically-linked build
@@ -72,12 +72,13 @@ In order to build the project, you'll need to install `cmake`, `ninja`, `patch` 
 ```pwsh
 cmake -B build -S . `
   -G Ninja `
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo `
   -DCMAKE_PREFIX_PATH="C:/path/to/boost/stage/lib/cmake" `
   -DOPENSSL_ROOT_DIR="${env:UserProfile}/scoop/apps/openssl/current" `
   -DBBZL_WITH_NLOHMANN_JSON=VENDOR `
   -DBBZL_WITH_MOSQUITTO=VENDOR `
   -DBBZL_STATIC_DEPS=ON
-cmake --build build --config Release -j
+cmake --build build -j
 
 Copy-Item -Path "./build/src/bambu_networking.dll" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
 Copy-Item -Path "./build/src/bambu_networking.pdb" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
