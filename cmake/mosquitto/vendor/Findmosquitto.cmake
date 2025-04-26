@@ -1,13 +1,6 @@
 include(FindPackageHandleStandardArgs)
 include(ExternalProject)
 
-if(
-  DEFINED MOSQUITTO_USE_STATIC_LIBS
-  AND NOT MOSQUITTO_USE_STATIC_LIBS
-)
-  message(FATAL_ERROR "Dynamic linking to vendored mosquitto is not supported")
-endif()
-
 set(MOSQUITTO_INSTALL_DIR ${CMAKE_BINARY_DIR}/libs/install/libmosquitto)
 set(MOSQUITTO_INCLUDE_DIR ${MOSQUITTO_INSTALL_DIR}/include)
 
@@ -20,6 +13,11 @@ else()
   set(MOSQUITTO_LIBRARY_STATIC_FILE libmosquitto_static.a)
   set(MOSQUITTO_LIBRARY_SHARED_FILE libmosquitto.so)
 endif()
+
+set(
+  MOSQUITTO_DEPENDENCIES
+  OpenSSL::SSL
+)
 
 if(NOT TARGET vendored-mosquitto)
   set(MOSQUITTO_CMAKE_ARGS "")
@@ -55,7 +53,7 @@ if(NOT TARGET vendored-mosquitto)
       ${MOSQUITTO_INSTALL_DIR}/lib/${MOSQUITTO_LIBRARY_STATIC_FILE}
       ${MOSQUITTO_INSTALL_DIR}/lib/${MOSQUITTO_LIBRARY_SHARED_FILE}
   )
-  add_dependencies(vendored-mosquitto OpenSSL::SSL)
+  add_dependencies(vendored-mosquitto ${MOSQUITTO_DEPENDENCIES})
 endif()
 
 # The include dir must exist at configure time
@@ -94,11 +92,22 @@ target_include_directories(
 target_link_libraries(
   mosquitto::libmosquitto
   INTERFACE
-  OpenSSL::SSL
+  ${MOSQUITTO_DEPENDENCIES}
+)
+
+set(
+  MOSQUITTO_LIBRARIES
+  ${MOSQUITTO_LIBRARY_PATH}
+  ${MOSQUITTO_DEPENDENCIES}
+)
+set(
+  MOSQUITTO_INCLUDE_DIRS
+  ${MOSQUITTO_INCLUDE_DIR}
 )
 
 find_package_handle_standard_args(
   mosquitto
   REQUIRED_VARS
-    MOSQUITTO_INCLUDE_DIR
+    MOSQUITTO_LIBRARIES
+    MOSQUITTO_INCLUDE_DIRS
 )
