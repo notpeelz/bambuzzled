@@ -6,7 +6,6 @@ project(
 )
 
 option(BBZL_VENDOR_NLOHMANN_JSON "Use vendored nlohmann-json" OFF)
-option(BBZL_VENDOR_OPENSSL "Use vendored OpenSSL" OFF)
 option(BBZL_VENDOR_MOSQUITTO "Use vendored Mosquitto" OFF)
 option(BBZL_STATIC "Statically link all dependencies" OFF)
 
@@ -14,15 +13,12 @@ if(BBZL_VENDOR_NLOHMANN_JSON)
   list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/nlohmann-json")
 endif()
 
-if(BBZL_VENDOR_OPENSSL)
-  list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/openssl")
-endif()
-
 if(BBZL_VENDOR_MOSQUITTO)
   list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/libmosquitto")
 endif()
 
 if(BBZL_STATIC)
+  set(LIBMOSQUITTO_USE_STATIC_LIBS ON)
   set(OPENSSL_USE_STATIC_LIBS ON)
   set(Boost_USE_STATIC_LIBS ON)
 endif()
