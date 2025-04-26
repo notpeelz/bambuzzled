@@ -1,3 +1,41 @@
+# Linux
+
+## Standard build
+
+```sh
+cmake -B build -S .
+cmake --build build --config Release -j
+```
+
+## Statically-linked build
+
+### Compiling OpenSSL
+
+```
+git clone --recursive https://github.com/openssl/openssl.git /path/to/openssl
+cd /path/to/openssl
+perl Configure \
+  no-docs \
+  no-unit-test \
+  --prefix="$PWD/install" \
+  --libdir=lib \
+  --openssldir="$PWD/install" \
+  -static \
+  -fPIC
+make install
+```
+
+### Configuring and building
+
+```
+cmake -B build -S . \
+  -DOPENSSL_ROOT_DIR="/path/to/openssl/install" \
+  -DBBZL_WITH_NLOHMANN_JSON=VENDOR \
+  -DBBZL_WITH_MOSQUITTO=VENDOR \
+  -DBBZL_STATIC_DEPS=ON
+cmake --build build --config Release -j
+```
+
 # Windows
 
 ## VS dev shell
@@ -7,15 +45,15 @@ For VSCode, you may add this to your `settings.json`:
 
 ```json
 "terminal.integrated.profiles.windows": {
-	"VS Developer PowerShell": {
-		"source": "PowerShell",
-		"icon": "terminal-powershell",
-		"args": [
-			"-NoExit",
-			"-Command",
-			"& { $originalLocation = Get-Location; $dllPath = \"${env:ProgramFiles}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\Microsoft.VisualStudio.DevShell.dll\"; $vsPath = \"${env:ProgramFiles}\\Microsoft Visual Studio\\2022\\Community\\\"; if (Test-Path $dllPath) { Import-Module $dllPath; Enter-VsDevShell -VsInstallPath $vsPath -DevCmdArguments '-no_logo -arch=x64 -host_arch=x64'; Set-Location $originalLocation; Write-Host \"VS Developer PowerShell environment loaded.\" -ForegroundColor Green } else { Write-Host \"Visual Studio DevShell DLL not found at: $dllPath\" -ForegroundColor Yellow } }"
-		]
-	}
+  "VS Developer PowerShell": {
+    "source": "PowerShell",
+    "icon": "terminal-powershell",
+    "args": [
+      "-NoExit",
+      "-Command",
+      "& { $originalLocation = Get-Location; $dllPath = \"${env:ProgramFiles}\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\Microsoft.VisualStudio.DevShell.dll\"; $vsPath = \"${env:ProgramFiles}\\Microsoft Visual Studio\\2022\\Community\\\"; if (Test-Path $dllPath) { Import-Module $dllPath; Enter-VsDevShell -VsInstallPath $vsPath -DevCmdArguments '-no_logo -arch=x64 -host_arch=x64'; Set-Location $originalLocation; Write-Host \"VS Developer PowerShell environment loaded.\" -ForegroundColor Green } else { Write-Host \"Visual Studio DevShell DLL not found at: $dllPath\" -ForegroundColor Yellow } }"
+    ]
+  }
 }
 ```
 
@@ -36,9 +74,9 @@ cmake -B build -S . `
   -G Ninja `
   -DCMAKE_PREFIX_PATH="C:/path/to/boost/stage/lib/cmake" `
   -DOPENSSL_ROOT_DIR="${env:UserProfile}/scoop/apps/openssl/current" `
-  -DBBZL_VENDOR_NLOHMANN_JSON=ON `
-  -DBBZL_VENDOR_MOSQUITTO=ON `
-  -DBBZL_STATIC=ON
+  -DBBZL_WITH_NLOHMANN_JSON=VENDOR `
+  -DBBZL_WITH_MOSQUITTO=VENDOR `
+  -DBBZL_STATIC_DEPS=ON
 cmake --build build --config Release -j
 
 Copy-Item -Path "./build/src/bambu_networking.dll" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
