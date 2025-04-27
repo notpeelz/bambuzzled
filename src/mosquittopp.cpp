@@ -280,12 +280,18 @@ void mosquittopp::publish(
   int qos,
   bool retain
 ) {
+  auto payload_ptr = payload.data();
+  auto payload_size = payload.size_bytes();
+  if (payload_size > INT_MAX) {
+    throw std::runtime_error("payload is too large");
+  }
+
   int rc = mosquitto_publish(
     this->mosq.get(),
     nullptr,
     topic.c_str(),
-    static_cast<int>(payload.size_bytes()),
-    payload.data(),
+    static_cast<int>(payload_size),
+    payload_ptr,
     qos,
     retain
   );
