@@ -9,6 +9,8 @@
 
 #include "network_agent.hpp"
 
+using network_agent = bambuzzled::network_agent;
+
 template<typename F>
 static void try_(F fn) requires std::invocable<F> {
   try {

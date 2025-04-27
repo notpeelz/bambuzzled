@@ -7,20 +7,29 @@
 
 #include "mosquittopp.hpp"
 
+namespace bambuzzled {
+
 class network_agent;
 
-struct network_client {
+class network_client {
+  friend network_agent;
+private:
+  void on_connect(int reason_code);
+  void on_disconnect(int reason_code);
+  void on_message(const mosquitto_message* msg);
+public:
   network_agent* agent;
   std::string dev_id;
-  mosquittopp* mosq;
+  mqtt::mosquittopp* mosqpp;
   ~network_client() {
-    if (this->mosq != nullptr) {
-      delete this->mosq;
+    if (this->mosqpp != nullptr) {
+      delete this->mosqpp;
     }
   }
 };
 
 class network_agent {
+  friend network_client;
 private:
   std::string config_dir;
   std::map<std::string, network_client*> connections;
@@ -28,22 +37,6 @@ private:
   OnServerConnectedFn on_server_connected_fn;
   OnLocalConnectedFn on_local_connected_fn;
   OnMessageFn on_local_message_fn;
-
-  friend void on_connect(
-    mosquitto* mosq,
-    void* obj,
-    int reason_code
-  );
-  friend void on_disconnect(
-    mosquitto* mosq,
-    void* obj,
-    int reason_code
-  );
-  friend void on_message(
-    mosquitto* mosq,
-    void* obj,
-    const mosquitto_message* message
-  );
   network_client* get_or_create_conn(std::string& dev_id);
 public:
   network_agent();
@@ -68,3 +61,5 @@ public:
     int qos
   );
 };
+
+}

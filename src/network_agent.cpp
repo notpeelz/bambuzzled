@@ -1,9 +1,12 @@
 #include <iostream>
 #include <mutex>
 #include <stdexcept>
+#include <cassert>
 
 #include "mosquittopp.hpp"
 #include "network_agent.hpp"
+
+namespace bambuzzled {
 
 network_agent::network_agent() {}
 
@@ -40,26 +43,12 @@ int network_agent::start() {
   return 0;
 }
 
-void on_connect(
-  mosquitto*,
-  void* obj,
-  int reason_code
-) {
-  auto conn = reinterpret_cast<network_client*>(obj);
-  auto mosq = conn->mosq->get();
-
-  std::string topic = "device/" + conn->dev_id + "/report";
-  int qos = 1; // QoS level 1 (at least once)
-
-  int rc = mosquitto_subscribe(mosq, nullptr, topic.c_str(), qos);
-  if (rc != MOSQ_ERR_SUCCESS) {
-    std::cerr << "Error subscribing to topic: " << mosquitto_strerror(rc) << std::endl;
-  } else {
-    std::cout << "Subscribed to topic: " << topic << std::endl;
-  }
+void network_client::on_connect(int reason_code) {
+  std::cerr << "on_connect" << std::endl;
+  this->mosqpp->subscribe("device/" + this->dev_id + "/report", 1);
 
   // return_code = 5: "login information expired"
-  conn->agent->on_server_connected_fn(0, reason_code);
+  this->agent->on_server_connected_fn(0, reason_code);
 
   // if (reason_code != 0) {
   //   std::cerr << "Failed connecting to broker: " << mosquitto_connack_string(reason_code) << std::endl;
@@ -68,43 +57,48 @@ void on_connect(
   // }
 }
 
-void on_disconnect(
-  mosquitto*,
-  void* obj,
+void network_client::on_disconnect(
   int reason_code
 ) {
-  (void)obj;
   std::cout << "Disconnected from broker" << std::endl;
   if (reason_code != 0) {
     std::cerr << "Unexpected disconnect: " << mosquitto_strerror(reason_code) << std::endl;
   }
 }
 
-void on_message(
-  mosquitto*,
-  void* obj,
+void network_client::on_message(
   const mosquitto_message* msg
 ) {
-  auto conn = reinterpret_cast<network_client*>(obj);
   auto msg_str = std::string((char*)msg->payload, msg->payloadlen);
   std::cout << "Received message (" << msg->topic << "): " << msg_str << std::endl;
-  conn->agent->on_local_message_fn(conn->dev_id, msg_str);
+  this->agent->on_local_message_fn(this->dev_id, msg_str);
 }
 
 network_client* network_agent::get_or_create_conn(std::string& dev_id) {
+  auto pos = this->connections.find(dev_id);
+  if (pos != this->connections.end()) {
+    return pos->second;
+  }
+
   auto conn = new network_client{
     .agent = this,
     .dev_id = dev_id,
-    .mosq = nullptr,
+    .mosqpp = new mqtt::mosquittopp(),
   };
-  conn->mosq = new mosquittopp(conn);
-  const auto& [pair, emplaced] = this->connections.try_emplace(dev_id, conn);
 
-  if (emplaced) {
-    return conn;
-  }
+  conn->mosqpp->set_on_connect_cb([conn](mqtt::mosquittopp&, int reason_code) {
+    conn->on_connect(reason_code);
+  });
+  conn->mosqpp->set_on_disconnect_cb([conn](mqtt::mosquittopp&, int reason_code) {
+    conn->on_disconnect(reason_code);
+  });
+  conn->mosqpp->set_on_message_cb([conn](mqtt::mosquittopp&, const mosquitto_message* msg) {
+    conn->on_message(msg);
+  });
 
-  return pair->second;
+  const auto& [_, emplaced] = this->connections.emplace(dev_id, conn);
+  assert(emplaced);
+  return conn;
 }
 
 int network_agent::connect_printer(
@@ -115,19 +109,9 @@ int network_agent::connect_printer(
   bool use_ssl
 ) {
   (void)use_ssl; // TODO?
-  int rc;
-
-  std::cout << "connect_printer" << std::endl;
+  std::cerr << "connect_printer" << std::endl;
   auto conn = this->get_or_create_conn(dev_id);
-  auto mosq = conn->mosq->get();
-
-  // TODO: move these to mosquittopp
-  mosquitto_connect_callback_set(mosq, on_connect);
-  mosquitto_message_callback_set(mosq, on_message);
-  mosquitto_disconnect_callback_set(mosq, on_disconnect);
-
-  conn->mosq->connect(dev_ip, 8883, username, password, 60);
-
+  conn->mosqpp->connect(dev_ip, 8883, username, password, 60);
   return 0;
 }
 
@@ -136,29 +120,10 @@ int network_agent::send_message_to_printer(
   std::string& json_str,
   int qos
 ) {
-  int rc;
-
-  auto conn = this->get_or_create_conn(dev_id);
-  auto mosq = conn->mosq->get();
-  std::string topic = "device/" + dev_id + "/request";
-
   std::cerr << "send_message_to_printer(" << dev_id << "): " << json_str << std::endl;
-
-  rc = mosquitto_publish(
-    mosq,
-    nullptr,
-    topic.c_str(),
-    static_cast<int>(json_str.length()),
-    json_str.data(),
-    qos,
-    false
-  );
-  if (rc != MOSQ_ERR_SUCCESS) {
-    throw std::runtime_error(
-      "failed to publish message: "
-      + std::string(mosquitto_strerror(rc))
-    );
-  }
-
+  auto conn = this->get_or_create_conn(dev_id);
+  conn->mosqpp->publish("device/" + dev_id + "/request", json_str, qos);
   return 0;
+}
+
 }
