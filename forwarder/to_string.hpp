@@ -7,6 +7,8 @@
 #include <typeinfo>
 #include <memory>
 
+namespace forwarder::utils {
+
 #if defined (_WIN32) && defined(_MSC_VER)
 
 #include <DbgHelp.h>
@@ -127,4 +129,6 @@ std::string to_string(void* ptr) {
 
 std::string to_string(const void* ptr) {
   return stringify_void_pointer(ptr);
+}
+
 }

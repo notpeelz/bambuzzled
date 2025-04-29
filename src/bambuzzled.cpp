@@ -7,16 +7,20 @@
 #include <nlohmann/json.hpp>
 #include <bambuzzled/bambuzzled.hpp>
 
+#include "log.hpp"
 #include "network_agent.hpp"
 
-using network_agent = bambuzzled::network_agent;
+namespace {
+
+using network_agent = ::bambuzzled::network_agent;
+namespace log = ::bambuzzled::log;
 
 template<typename F>
 static void try_(F fn) requires std::invocable<F> {
   try {
     fn();
   } catch (std::exception& ex) {
-    std::cerr << "ERROR: " << ex.what() << std::endl;
+    log::error("{}", ex.what());
   }
 }
 
@@ -27,7 +31,7 @@ static auto try_or_default(
   try {
     return fn();
   } catch (std::exception& ex) {
-    std::cerr << "ERROR: " << ex.what() << std::endl;
+    log::error("{}", ex.what());
     return typename std::invoke_result_t<F>{};
   }
 }
@@ -40,9 +44,11 @@ static auto try_or(
   try {
     return fn();
   } catch (std::exception& ex) {
-    std::cerr << "ERROR: " << ex.what() << std::endl;
+    log::error("{}", ex.what());
     return fallback;
   }
+}
+
 }
 
 typedef bool (*func_check_debug_consistent)(bool is_debug);

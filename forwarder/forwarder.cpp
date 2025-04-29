@@ -8,6 +8,11 @@
 #include "dyn_lib_loader.hpp"
 #include "to_string.hpp"
 
+namespace {
+
+namespace utils = ::forwarder::utils;
+using ::forwarder::dyn_lib_loader;
+
 static std::string get_forward_path() {
   const char* s = std::getenv("BAMBUZZLED_FORWARD");
   if (s == nullptr) {
@@ -57,13 +62,13 @@ inline auto call_fn(
     if (!oss.str().empty()) {
       oss << ", ";
     }
-    oss << to_string(arg);
+    oss << utils::to_string(arg);
   })(args), ...);
 
   auto fn = reinterpret_cast<F>(get_fn<F>(name));
   if (fn) {
     auto ret = fn(std::forward<Args>(args)...);
-    std::cerr << "call_fn: " << name << "(" << oss.str() << ") -> " << to_string(ret) << std::endl;
+    std::cerr << "call_fn: " << name << "(" << oss.str() << ") -> " << utils::to_string(ret) << std::endl;
     return ret;
   }
 
@@ -1145,4 +1150,6 @@ int bambu_network_get_mw_user_4ulist(void* agent, int seed, int limit, std::func
     limit,
     callback
   );
+}
+
 }

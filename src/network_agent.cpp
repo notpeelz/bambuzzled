@@ -3,15 +3,18 @@
 #include <stdexcept>
 #include <cassert>
 
+#include "log.hpp"
 #include "mosquittopp.hpp"
 #include "network_agent.hpp"
 
 namespace bambuzzled {
 
+namespace log = ::bambuzzled::log;
+
 network_agent::network_agent() {}
 
 void network_agent::set_config_dir(std::string&& dir) {
-  std::cerr << "set_config_dir: " << dir << std::endl;
+  log::trace("network_agent::set_config_dir: {}", dir.c_str());
 }
 
 void network_agent::set_on_printer_connected_fn(OnPrinterConnectedFn&& fn) {
@@ -39,30 +42,33 @@ void network_agent::set_user_selected_machine(std::string dev_id) {
 }
 
 int network_agent::start() {
-  std::cerr << "start" << std::endl;
+  log::trace("network_agent::start");
   return 0;
 }
 
 void network_client::on_connect(int reason_code) {
-  std::cerr << "on_connect" << std::endl;
+  log::trace("network_client::on_connect");
   this->mosqpp->subscribe("device/" + this->dev_id + "/report", 1);
 
-  // return_code = 5: "login information expired"
+  // TODO(?): return_code = 5: "login information expired"
   this->agent->on_server_connected_fn(0, reason_code);
 
-  // if (reason_code != 0) {
-  //   std::cerr << "Failed connecting to broker: " << mosquitto_connack_string(reason_code) << std::endl;
-  // } else {
-  //   std::cout << "Connected to MQTT broker successfully" << std::endl;
-  // }
+  if (reason_code != 0) {
+    log::error(
+      "failed connecting to MQTT broker: {}",
+      mosquitto_connack_string(reason_code)
+    );
+  } else {
+    log::info("connected to MQTT broker");
+  }
 }
 
 void network_client::on_disconnect(
   int reason_code
 ) {
-  std::cout << "Disconnected from broker" << std::endl;
+  log::info("disconnected from MQTT broker");
   if (reason_code != 0) {
-    std::cerr << "Unexpected disconnect: " << mosquitto_strerror(reason_code) << std::endl;
+    log::error("unexpected disconnect: {}", mosquitto_strerror(reason_code));
   }
 }
 
@@ -70,7 +76,7 @@ void network_client::on_message(
   const mosquitto_message* msg
 ) {
   auto msg_str = std::string((char*)msg->payload, msg->payloadlen);
-  std::cout << "Received message (" << msg->topic << "): " << msg_str << std::endl;
+  log::debug("received message ({}): {}", msg->topic, msg_str);
   this->agent->on_local_message_fn(this->dev_id, msg_str);
 }
 
@@ -109,7 +115,7 @@ int network_agent::connect_printer(
   bool use_ssl
 ) {
   (void)use_ssl; // TODO?
-  std::cerr << "connect_printer" << std::endl;
+  log::trace("network_agent::connect_printer");
   auto conn = this->get_or_create_conn(dev_id);
   conn->mosqpp->connect(dev_ip, 8883, username, password, 60);
   return 0;
@@ -120,7 +126,7 @@ int network_agent::send_message_to_printer(
   std::string& json_str,
   int qos
 ) {
-  std::cerr << "send_message_to_printer(" << dev_id << "): " << json_str << std::endl;
+  log::trace("network_agent::send_message_to_printer({}): {}", dev_id, json_str);
   auto conn = this->get_or_create_conn(dev_id);
   conn->mosqpp->publish("device/" + dev_id + "/request", json_str, qos);
   return 0;

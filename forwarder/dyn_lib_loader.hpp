@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <mutex>
 
+namespace forwarder {
+
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 #elif defined(__APPLE__) || defined(__linux__)
@@ -111,3 +113,5 @@ public:
     return reinterpret_cast<T>(addr);
   }
 };
+
+}
