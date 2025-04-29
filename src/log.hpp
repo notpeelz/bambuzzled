@@ -3,7 +3,7 @@
 #include <string>
 #include <format>
 
-namespace bambuzzled::log {
+namespace bbzl::log {
 
   enum class log_level {
     TRACE,

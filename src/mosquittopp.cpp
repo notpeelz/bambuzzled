@@ -7,7 +7,7 @@
 
 #include "mosquittopp.hpp"
 
-namespace bambuzzled::mqtt {
+namespace bbzl::mqtt {
 
 std::string get_openssl_err() {
   BIO* bio = BIO_new(BIO_s_mem());

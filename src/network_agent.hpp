@@ -7,7 +7,7 @@
 
 #include "mosquittopp.hpp"
 
-namespace bambuzzled {
+namespace bbzl {
 
 class network_agent;
 

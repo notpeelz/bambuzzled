@@ -9,7 +9,7 @@
 #include <openssl/ssl.h>
 #include <mosquitto.h>
 
-namespace bambuzzled::mqtt {
+namespace bbzl::mqtt {
 
 struct openssl_ctx_deleter {
   void operator()(SSL_CTX* ctx) const {

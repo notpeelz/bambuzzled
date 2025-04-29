@@ -7,9 +7,7 @@
 #include "mosquittopp.hpp"
 #include "network_agent.hpp"
 
-namespace bambuzzled {
-
-namespace log = ::bambuzzled::log;
+namespace bbzl {
 
 network_agent::network_agent() {}
 

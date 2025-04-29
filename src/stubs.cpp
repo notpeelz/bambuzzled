@@ -4,7 +4,7 @@
 #include <sstream>
 #include <functional>
 
-#include <bambuzzled/bambuzzled.hpp>
+#include <bambuzzled/plugin_exports.hpp>
 
 typedef int (*func_init_log)(void* agentp);
 int bambu_network_init_log(void* agentp) {
@@ -266,54 +266,6 @@ typedef std::string (*func_get_bambulab_host)(void* agentp);
 std::string bambu_network_get_bambulab_host(void* agentp) {
   (void)agentp;
   return "";
-}
-
-typedef int (*func_start_print)(void* agentp, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn);
-int bambu_network_start_print(void* agentp, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn) {
-  (void)agentp;
-  (void)params;
-  (void)update_fn;
-  (void)cancel_fn;
-  (void)wait_fn;
-  return 0;
-}
-
-typedef int (*func_start_local_print_with_record)(void* agentp, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn);
-int bambu_network_start_local_print_with_record(void* agentp, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn) {
-  (void)agentp;
-  (void)params;
-  (void)update_fn;
-  (void)cancel_fn;
-  (void)wait_fn;
-  return 0;
-}
-
-typedef int (*func_start_send_gcode_to_sdcard)(void* agentp, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn);
-int bambu_network_start_send_gcode_to_sdcard(void* agentp, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, OnWaitFn wait_fn) {
-  (void)agentp;
-  (void)params;
-  (void)update_fn;
-  (void)cancel_fn;
-  (void)wait_fn;
-  return 0;
-}
-
-typedef int (*func_start_local_print)(void* agentp, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn);
-int bambu_network_start_local_print(void* agentp, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn) {
-  (void)agentp;
-  (void)params;
-  (void)update_fn;
-  (void)cancel_fn;
-  return 0;
-}
-
-typedef int (*func_start_sdcard_print)(void* agentp, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn);
-int bambu_network_start_sdcard_print(void* agentp, PrintParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn) {
-  (void)agentp;
-  (void)params;
-  (void)update_fn;
-  (void)cancel_fn;
-  return 0;
 }
 
 typedef int (*func_get_user_presets)(void* agentp, std::map<std::string, std::map<std::string, std::string>>* user_presets);

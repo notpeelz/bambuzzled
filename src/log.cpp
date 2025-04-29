@@ -8,8 +8,9 @@
 
 #include "log.hpp"
 
-namespace bambuzzled::log {
-  using namespace std::string_view_literals;
+using namespace std::string_view_literals;
+
+namespace bbzl::log {
 
   static std::string_view level_to_str(log_level level) {
     switch (level) {

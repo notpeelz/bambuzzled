@@ -6,8 +6,6 @@
 #include <stdexcept>
 #include <mutex>
 
-namespace forwarder {
-
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 #elif defined(__APPLE__) || defined(__linux__)
@@ -15,6 +13,8 @@ namespace forwarder {
 #else
 #error "Unsupported platform"
 #endif
+
+namespace forwarder {
 
 class dyn_lib_loader {
 private:

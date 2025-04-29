@@ -3,18 +3,18 @@
 #include <string>
 #include <sstream>
 
-#include <bambuzzled/bambuzzled.hpp>
+#include <bambuzzled/plugin_exports.hpp>
+#include <bambuzzled/utils/to_string.hpp>
 
 #include "dyn_lib_loader.hpp"
-#include "to_string.hpp"
+
+namespace utils = ::bbzl::utils;
+using ::forwarder::dyn_lib_loader;
 
 namespace {
 
-namespace utils = ::forwarder::utils;
-using ::forwarder::dyn_lib_loader;
-
 static std::string get_forward_path() {
-  const char* s = std::getenv("BAMBUZZLED_FORWARD");
+  const char* s = std::getenv("BBZL_FORWARD");
   if (s == nullptr) {
     return "";
   }
@@ -73,6 +73,8 @@ inline auto call_fn(
   }
 
   return fallback;
+}
+
 }
 
 typedef bool (*func_check_debug_consistent)(bool is_debug);
@@ -1150,6 +1152,4 @@ int bambu_network_get_mw_user_4ulist(void* agent, int seed, int limit, std::func
     limit,
     callback
   );
-}
-
 }
