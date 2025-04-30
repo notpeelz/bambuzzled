@@ -33,7 +33,7 @@ template<typename F>
 static inline void try_(
   F fn,
   const std::source_location&& location = std::source_location::current()
-) requires std::invocable<F> {
+) noexcept requires std::invocable<F> {
   try {
     fn();
   } catch (std::exception& ex) {
@@ -45,7 +45,8 @@ template<typename F>
 static inline auto try_or_default(
   F fn,
   const std::source_location&& location = std::source_location::current()
-) -> typename std::invoke_result_t<F> requires std::invocable<F> {
+) noexcept -> typename std::invoke_result_t<F>
+requires std::invocable<F> {
   try {
     return fn();
   } catch (std::exception& ex) {
@@ -59,7 +60,8 @@ static inline auto try_or(
   typename std::invoke_result_t<F> fallback,
   F fn,
   const std::source_location&& location = std::source_location::current()
-) -> typename std::invoke_result_t<F> requires std::invocable<F> {
+) noexcept -> typename std::invoke_result_t<F>
+requires std::invocable<F> {
   try {
     return fn();
   } catch (std::exception& ex) {
@@ -72,7 +74,7 @@ template<typename F>
 static auto wrap_try(
   F fn,
   const std::source_location&& location = std::source_location::current()
-) {
+) noexcept {
   return [
     fn = std::move(fn),
     location = std::move(location)
