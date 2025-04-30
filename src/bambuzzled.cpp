@@ -53,11 +53,12 @@ static auto try_or(
 }
 
 bool bambu_network_check_debug_consistent(bool is_debug) {
-  (void)is_debug;
+  auto scope = BBZL_TRACE_SCOPE(is_debug);
   return true;
 }
 
 std::string bambu_network_get_version(void) {
+  auto scope = BBZL_TRACE_SCOPE();
   return BAMBU_NETWORK_AGENT_VERSION;
 }
 

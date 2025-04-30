@@ -129,7 +129,7 @@ namespace bbzl::log {
       msg
     );
 
-    std::cout << log_line;
+    std::cout << log_line << std::flush;
 
     if (log_file.is_open()) {
       log_file << log_line;
