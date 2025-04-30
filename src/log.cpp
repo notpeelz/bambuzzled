@@ -94,7 +94,7 @@ namespace bbzl::log {
 
     char* log_file_str = std::getenv("BBZL_LOG_FILE");
     if (log_file_str != nullptr) {
-      log_file.open(log_file_str, std::ios::out | std::ios::app);
+      log_file.open(log_file_str, std::ios::out);
     }
   }
 
