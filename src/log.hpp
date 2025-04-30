@@ -87,11 +87,7 @@ static inline trace_scope_guard trace_scope(
 
   size_t i = 0;
   (([&](const auto& arg) {
-    if (i == 0) {
-      oss << "\nargs:";
-    }
     oss << "\n  " << i << ": " << ::bbzl::utils::to_string(arg);
-
     i++;
   })(args), ...);
 
