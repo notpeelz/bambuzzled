@@ -9,10 +9,12 @@
 
 namespace bbzl {
 
+using namespace std::string_view_literals;
+
 network_agent::network_agent() {}
 
 void network_agent::set_config_dir(std::string&& dir) {
-  log::trace("network_agent::set_config_dir: {}", dir.c_str());
+  log::trace_fmt("set_config_dir: {}", dir);
 }
 
 void network_agent::set_on_printer_connected_fn(OnPrinterConnectedFn&& fn) {
@@ -40,19 +42,19 @@ void network_agent::set_user_selected_machine(std::string dev_id) {
 }
 
 int network_agent::start() {
-  log::trace("network_agent::start");
+  auto scope = BBZL_TRACE_SCOPE();
   return 0;
 }
 
 void network_client::on_connect(int reason_code) {
-  log::trace("network_client::on_connect");
+  auto scope = BBZL_TRACE_SCOPE(reason_code);
   this->mosqpp->subscribe("device/" + this->dev_id + "/report", 1);
 
   // TODO(?): return_code = 5: "login information expired"
   this->agent->on_server_connected_fn(0, reason_code);
 
   if (reason_code != 0) {
-    log::error(
+    log::error_fmt(
       "failed connecting to MQTT broker: {}",
       mosquitto_connack_string(reason_code)
     );
@@ -66,7 +68,7 @@ void network_client::on_disconnect(
 ) {
   log::info("disconnected from MQTT broker");
   if (reason_code != 0) {
-    log::error("unexpected disconnect: {}", mosquitto_strerror(reason_code));
+    log::error_fmt("unexpected disconnect: {}", mosquitto_strerror(reason_code));
   }
 }
 
@@ -74,7 +76,7 @@ void network_client::on_message(
   const mosquitto_message* msg
 ) {
   auto msg_str = std::string((char*)msg->payload, msg->payloadlen);
-  log::debug("received message ({}): {}", msg->topic, msg_str);
+  log::trace_fmt("received message ({}): {}", msg->topic, msg_str);
   this->agent->on_local_message_fn(this->dev_id, msg_str);
 }
 
@@ -113,7 +115,7 @@ int network_agent::connect_printer(
   bool use_ssl
 ) {
   (void)use_ssl; // TODO?
-  log::trace("network_agent::connect_printer");
+  auto scope = BBZL_TRACE_SCOPE(dev_id, dev_ip, username, "*PASSWORD*"sv);
   auto conn = this->get_or_create_conn(dev_id);
   conn->mosqpp->connect(dev_ip, 8883, username, password, 60);
   return 0;
@@ -124,7 +126,7 @@ int network_agent::send_message_to_printer(
   std::string& json_str,
   int qos
 ) {
-  log::trace("network_agent::send_message_to_printer({}): {}", dev_id, json_str);
+  auto scope = BBZL_TRACE_SCOPE(dev_id, json_str, qos);
   auto conn = this->get_or_create_conn(dev_id);
   conn->mosqpp->publish("device/" + dev_id + "/request", json_str, qos);
   return 0;

@@ -13,6 +13,10 @@ static void replace_all_mut(std::string& str, const std::string& from, const std
   }
 }
 
+std::string quote_string(std::string_view s) {
+  return quote_string(std::string(s));
+}
+
 std::string quote_string(std::string s) {
   std::ostringstream oss;
   replace_all_mut(s, "\"", "\\\"");

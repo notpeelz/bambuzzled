@@ -21,7 +21,7 @@ static void try_(F fn) requires std::invocable<F> {
   try {
     fn();
   } catch (std::exception& ex) {
-    log::error("{}", ex.what());
+    log::error_fmt("CAUGHT EXCEPTION: {}", ex.what());
   }
 }
 
@@ -32,7 +32,7 @@ static auto try_or_default(
   try {
     return fn();
   } catch (std::exception& ex) {
-    log::error("{}", ex.what());
+    log::error_fmt("CAUGHT EXCEPTION: {}", ex.what());
     return typename std::invoke_result_t<F>{};
   }
 }
@@ -45,7 +45,7 @@ static auto try_or(
   try {
     return fn();
   } catch (std::exception& ex) {
-    log::error("{}", ex.what());
+    log::error_fmt("CAUGHT EXCEPTION: {}", ex.what());
     return fallback;
   }
 }
@@ -194,6 +194,7 @@ int bambu_network_start_print(
   (void)update_fn;
   (void)cancel_fn;
   (void)wait_fn;
+  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn, wait_fn);
   return 0;
 }
 
@@ -209,6 +210,7 @@ int bambu_network_start_local_print_with_record(
   (void)update_fn;
   (void)cancel_fn;
   (void)wait_fn;
+  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn, wait_fn);
   return 0;
 }
 
@@ -224,6 +226,7 @@ int bambu_network_start_send_gcode_to_sdcard(
   (void)update_fn;
   (void)cancel_fn;
   (void)wait_fn;
+  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn, wait_fn);
   return 0;
 }
 
@@ -237,6 +240,7 @@ int bambu_network_start_local_print(
   (void)params;
   (void)update_fn;
   (void)cancel_fn;
+  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn);
   return 0;
 }
 
@@ -250,5 +254,6 @@ int bambu_network_start_sdcard_print(
   (void)params;
   (void)update_fn;
   (void)cancel_fn;
+  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn);
   return 0;
 }

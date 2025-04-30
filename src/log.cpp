@@ -119,9 +119,9 @@ namespace bbzl::log {
       return;
     }
 
+    std::lock_guard<std::mutex> lock(mutex);
     ensure_initialized();
 
-    std::lock_guard<std::mutex> lock(mutex);
     auto log_line = std::format(
       "[{}] [{}] {}\n"sv,
       current_time_str(),
