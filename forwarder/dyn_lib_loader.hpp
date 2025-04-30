@@ -14,7 +14,7 @@
 #error "Unsupported platform"
 #endif
 
-namespace forwarder {
+namespace bbzl::forwarder {
 
 class dyn_lib_loader {
 private:

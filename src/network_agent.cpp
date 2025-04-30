@@ -3,13 +3,16 @@
 #include <stdexcept>
 #include <cassert>
 
-#include "log.hpp"
+#include <bambuzzled/utils/log.hpp>
+#include <bambuzzled/utils/try_wrapper.hpp>
+
 #include "mosquittopp.hpp"
 #include "network_agent.hpp"
 
 namespace bbzl {
 
 using namespace std::string_view_literals;
+using namespace bbzl::utils::try_wrapper;
 
 network_agent::network_agent() {}
 
@@ -48,7 +51,8 @@ int network_agent::start() {
 
 void network_client::on_connect(int reason_code) {
   auto scope = BBZL_TRACE_SCOPE(reason_code);
-  this->mosqpp->subscribe("device/" + this->dev_id + "/report", 1);
+
+  this->report_sub_mid = this->mosqpp->subscribe("device/" + this->dev_id + "/report", 1);
 
   // TODO(?): return_code = 5: "login information expired"
   this->agent->on_server_connected_fn(0, reason_code);
@@ -80,6 +84,20 @@ void network_client::on_message(
   this->agent->on_local_message_fn(this->dev_id, msg_str);
 }
 
+void network_client::on_suback(mqtt::message_id mid) {
+  log::trace_fmt("received suback for mid {}", mid);
+
+  if (mid == this->report_sub_mid) {
+    this->report_sub_mid = 0;
+    auto topic = "device/" + this->dev_id + "/request";
+    log::trace_fmt("subscribed to topic: {}", topic);
+    this->agent->on_printer_connected_fn(topic);
+    return;
+  }
+
+  log::error_fmt("received unexpected suback for mid {}", mid);
+}
+
 network_client* network_agent::get_or_create_conn(std::string& dev_id) {
   auto pos = this->connections.find(dev_id);
   if (pos != this->connections.end()) {
@@ -92,15 +110,34 @@ network_client* network_agent::get_or_create_conn(std::string& dev_id) {
     .mosqpp = new mqtt::mosquittopp(),
   };
 
-  conn->mosqpp->set_on_connect_cb([conn](mqtt::mosquittopp&, int reason_code) {
-    conn->on_connect(reason_code);
-  });
-  conn->mosqpp->set_on_disconnect_cb([conn](mqtt::mosquittopp&, int reason_code) {
-    conn->on_disconnect(reason_code);
-  });
-  conn->mosqpp->set_on_message_cb([conn](mqtt::mosquittopp&, const mosquitto_message* msg) {
-    conn->on_message(msg);
-  });
+  conn->mosqpp->set_on_connect_cb(
+    wrap_try([conn](mqtt::mosquittopp&, int reason_code) {
+      conn->on_connect(reason_code);
+    })
+  );
+  conn->mosqpp->set_on_disconnect_cb(
+    wrap_try([conn](mqtt::mosquittopp&, int reason_code) {
+      conn->on_disconnect(reason_code);
+    })
+  );
+  conn->mosqpp->set_on_suback_cb(
+    wrap_try([conn](
+      mqtt::mosquittopp&,
+      mqtt::message_id mid,
+      const std::span<const int>& qos_arr
+    ) {
+      (void)qos_arr;
+      conn->on_suback(mid);
+    })
+  );
+  conn->mosqpp->set_on_message_cb(
+    wrap_try([conn](
+      mqtt::mosquittopp&,
+      const mosquitto_message* msg
+    ) {
+      conn->on_message(msg);
+    })
+  );
 
   const auto& [_, emplaced] = this->connections.emplace(dev_id, conn);
   assert(emplaced);

@@ -17,9 +17,11 @@ private:
   void on_connect(int reason_code);
   void on_disconnect(int reason_code);
   void on_message(const mosquitto_message* msg);
+  void on_suback(mqtt::message_id mid);
 public:
   network_agent* agent;
   std::string dev_id;
+  mqtt::message_id report_sub_mid;
   mqtt::mosquittopp* mosqpp;
   ~network_client() {
     if (this->mosqpp != nullptr) {

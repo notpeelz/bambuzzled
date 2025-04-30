@@ -6,51 +6,13 @@
 
 #include <nlohmann/json.hpp>
 #include <bambuzzled/plugin_exports.hpp>
+#include <bambuzzled/utils/log.hpp>
+#include <bambuzzled/utils/try_wrapper.hpp>
 
-#include "log.hpp"
 #include "network_agent.hpp"
 
-using network_agent = ::bbzl::network_agent;
-
-namespace {
-
-namespace log = ::bbzl::log;
-
-template<typename F>
-static void try_(F fn) requires std::invocable<F> {
-  try {
-    fn();
-  } catch (std::exception& ex) {
-    log::error_fmt("CAUGHT EXCEPTION: {}", ex.what());
-  }
-}
-
-template<typename F>
-static auto try_or_default(
-  F fn
-) -> typename std::invoke_result_t<F> requires std::invocable<F> {
-  try {
-    return fn();
-  } catch (std::exception& ex) {
-    log::error_fmt("CAUGHT EXCEPTION: {}", ex.what());
-    return typename std::invoke_result_t<F>{};
-  }
-}
-
-template<typename F>
-static auto try_or(
-  typename std::invoke_result_t<F> fallback,
-  F fn
-) -> typename std::invoke_result_t<F> requires std::invocable<F> {
-  try {
-    return fn();
-  } catch (std::exception& ex) {
-    log::error_fmt("CAUGHT EXCEPTION: {}", ex.what());
-    return fallback;
-  }
-}
-
-}
+using network_agent = bbzl::network_agent;
+using namespace bbzl::utils::try_wrapper;
 
 bool bambu_network_check_debug_consistent(bool is_debug) {
   auto scope = BBZL_TRACE_SCOPE(is_debug);
@@ -85,13 +47,12 @@ int bambu_network_start(void* agentp) {
 }
 
 bool bambu_network_start_discovery(void* agentp, bool start, bool sending) {
-  (void)agentp;
-  (void)start;
-  (void)sending;
-  return false;
+  auto scope = BBZL_TRACE_SCOPE(agentp, start, sending);
+  return true;
 }
 
 std::string bambu_network_get_user_selected_machine(void* agentp) {
+  auto scope = BBZL_TRACE_SCOPE(agentp);
   auto agent = reinterpret_cast<network_agent*>(agentp);
   return try_or_default([&]() {
     return agent->get_user_selected_machine();
@@ -99,6 +60,7 @@ std::string bambu_network_get_user_selected_machine(void* agentp) {
 }
 
 int bambu_network_set_user_selected_machine(void* agentp, std::string dev_id) {
+  auto scope = BBZL_TRACE_SCOPE(agentp, dev_id);
   auto agent = reinterpret_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     agent->set_user_selected_machine(dev_id);
@@ -227,6 +189,7 @@ int bambu_network_start_send_gcode_to_sdcard(
   (void)update_fn;
   (void)cancel_fn;
   (void)wait_fn;
+  // NOTE: after sending gcode to sdcard, the slicer calls bambu_network_start_local_print
   auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn, wait_fn);
   return 0;
 }

@@ -8,8 +8,8 @@
 
 #include "dyn_lib_loader.hpp"
 
-namespace utils = ::bbzl::utils;
-using ::forwarder::dyn_lib_loader;
+namespace utils = bbzl::utils;
+using bbzl::forwarder::dyn_lib_loader;
 
 namespace {
 

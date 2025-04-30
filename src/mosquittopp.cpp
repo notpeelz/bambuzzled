@@ -42,21 +42,50 @@ openssl_ctx_ptr create_openssl_context() {
   return ctx;
 }
 
-void on_connect(mosquitto*, void* obj, int reason_code) {
+void on_connect(
+  mosquitto*,
+  void* obj,
+  int reason_code
+) noexcept {
   auto& mosqpp = *reinterpret_cast<mosquittopp*>(obj);
   if (mosqpp.on_connect_cb != nullptr) {
     mosqpp.on_connect_cb(mosqpp, reason_code);
   }
 }
 
-void on_disconnect(mosquitto*, void* obj, int reason_code) {
+void on_disconnect(
+  mosquitto*,
+  void* obj,
+  int reason_code
+) noexcept {
   auto& mosqpp = *reinterpret_cast<mosquittopp*>(obj);
   if (mosqpp.on_disconnect_cb != nullptr) {
     mosqpp.on_disconnect_cb(mosqpp, reason_code);
   }
 }
 
-void on_message(mosquitto*, void* obj, const mosquitto_message* msg) {
+void on_suback(
+  mosquitto*,
+  void* obj,
+  int mid,
+  int qos_count,
+  const int* granted_qos
+) noexcept {
+  auto& mosqpp = *reinterpret_cast<mosquittopp*>(obj);
+  if (mosqpp.on_suback_cb != nullptr) {
+    auto qos_arr = std::span(
+      granted_qos,
+      qos_count
+    );
+    mosqpp.on_suback_cb(mosqpp, mid, qos_arr);
+  }
+}
+
+void on_message(
+  mosquitto*,
+  void* obj,
+  const mosquitto_message* msg
+) noexcept {
   auto& mosqpp = *reinterpret_cast<mosquittopp*>(obj);
   if (mosqpp.on_message_cb != nullptr) {
     mosqpp.on_message_cb(mosqpp, msg);
@@ -115,6 +144,7 @@ mosquittopp::mosquittopp() {
 
   mosquitto_connect_callback_set(mosq, on_connect);
   mosquitto_disconnect_callback_set(mosq, on_disconnect);
+  mosquitto_subscribe_callback_set(mosq, on_suback);
   mosquitto_message_callback_set(mosq, on_message);
 }
 
@@ -201,16 +231,20 @@ void mosquittopp::thread_main(std::stop_token st) {
   }
 }
 
-void mosquittopp::set_on_connect_cb(on_connect_cb_fn&& cb) {
-  this->on_connect_cb = std::move(cb);
+void mosquittopp::set_on_connect_cb(on_connect_cb_fn&& fn) {
+  this->on_connect_cb = std::move(fn);
 }
 
-void mosquittopp::set_on_disconnect_cb(on_disconnect_cb_fn&& cb) {
-  this->on_disconnect_cb = std::move(cb);
+void mosquittopp::set_on_disconnect_cb(on_disconnect_cb_fn&& fn) {
+  this->on_disconnect_cb = std::move(fn);
 }
 
-void mosquittopp::set_on_message_cb(on_message_cb_fn&& cb) {
-  this->on_message_cb = std::move(cb);
+void mosquittopp::set_on_suback_cb(on_suback_cb_fn&& fn) {
+  this->on_suback_cb = std::move(fn);
+}
+
+void mosquittopp::set_on_message_cb(on_message_cb_fn&& fn) {
+  this->on_message_cb = std::move(fn);
 }
 
 void mosquittopp::connect(
@@ -264,17 +298,20 @@ void mosquittopp::disconnect() {
   (void)this->thread.get_stop_source().request_stop();
 }
 
-void mosquittopp::subscribe(const std::string& topic, int qos) {
-  int rc = mosquitto_subscribe(this->mosq.get(), nullptr, topic.c_str(), qos);
+message_id mosquittopp::subscribe(const std::string& topic, int qos) {
+  message_id mid;
+  int rc = mosquitto_subscribe(this->mosq.get(), &mid, topic.c_str(), qos);
   if (rc != MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(
       "failed subscribing to topic: "
       + std::string(mosquitto_strerror(rc))
     );
   }
+
+  return mid;
 }
 
-void mosquittopp::publish(
+message_id mosquittopp::publish(
   const std::string& topic,
   const std::span<const std::byte>& payload,
   int qos,
@@ -286,9 +323,10 @@ void mosquittopp::publish(
     throw std::runtime_error("payload is too large");
   }
 
+  message_id mid;
   int rc = mosquitto_publish(
     this->mosq.get(),
-    nullptr,
+    &mid,
     topic.c_str(),
     static_cast<int>(payload_size),
     payload_ptr,
@@ -301,9 +339,11 @@ void mosquittopp::publish(
       + std::string(mosquitto_strerror(rc))
     );
   }
+
+  return mid;
 }
 
-void mosquittopp::publish(
+message_id mosquittopp::publish(
   const std::string& topic,
   const std::string& payload,
   int qos,
@@ -313,7 +353,7 @@ void mosquittopp::publish(
     reinterpret_cast<const std::byte*>(payload.data()),
     payload.length()
   );
-  this->publish(topic, span, qos, retain);
+  return this->publish(topic, span, qos, retain);
 }
 
 }

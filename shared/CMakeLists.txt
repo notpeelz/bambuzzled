@@ -8,8 +8,14 @@ find_package(
 add_library(
   bambuzzled-shared
   STATIC
+  bambuzzled/utils/log.cpp
   bambuzzled/utils/quote.cpp
   bambuzzled/utils/demangle.cpp
+)
+set_target_properties(
+  bambuzzled-shared
+  PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
 )
 target_include_directories(
   bambuzzled-shared

@@ -5,7 +5,7 @@
 #include <format>
 #include <source_location>
 
-#include <bambuzzled/utils/to_string.hpp>
+#include "to_string.hpp"
 
 namespace bbzl::log {
 
@@ -87,7 +87,7 @@ static inline trace_scope_guard trace_scope(
 
   size_t i = 0;
   (([&](const auto& arg) {
-    oss << "\n  " << i << ": " << ::bbzl::utils::to_string(arg);
+    oss << "\n  " << i << ": " << bbzl::utils::to_string(arg);
     i++;
   })(args), ...);
 

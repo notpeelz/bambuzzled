@@ -7,7 +7,6 @@ add_library(
   SHARED
   bambuzzled.cpp
   stubs.cpp
-  log.cpp
   network_agent.cpp
   mosquittopp.cpp
 )
