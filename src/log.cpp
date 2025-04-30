@@ -12,7 +12,7 @@ using namespace std::string_view_literals;
 
 namespace bbzl::log {
 
-  static std::string_view level_to_str(log_level level) {
+  static std::string_view level_to_str(log_level level) noexcept {
     switch (level) {
       case log_level::TRACE: {
         return "TRACE";
@@ -35,7 +35,7 @@ namespace bbzl::log {
     }
   }
 
-  static std::optional<log_level> str_to_level(const char* level) {
+  static std::optional<log_level> str_to_level(const char* level) noexcept {
     if (level == nullptr) {
       return std::nullopt;
     }
@@ -78,7 +78,7 @@ namespace bbzl::log {
   static std::mutex mutex;
   static std::ofstream log_file;
 
-  static void ensure_initialized() {
+  static void ensure_initialized() noexcept {
     if (initialized) {
       return;
     }
@@ -94,11 +94,13 @@ namespace bbzl::log {
 
     char* log_file_str = std::getenv("BBZL_LOG_FILE");
     if (log_file_str != nullptr) {
-      log_file.open(log_file_str, std::ios::out);
+      try {
+        log_file.open(log_file_str, std::ios::out);
+      } catch (...) {}
     }
   }
 
-  static std::string current_time_str() {
+  static std::string current_time_str() noexcept {
     auto now = std::chrono::system_clock::now();
     auto time = std::chrono::system_clock::to_time_t(now);
     std::tm tm;
