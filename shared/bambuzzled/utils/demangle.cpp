@@ -6,6 +6,7 @@ namespace bbzl::utils {
 
 #if defined (_WIN32) && defined(_MSC_VER)
 
+#include <windows.h>
 #include <DbgHelp.h>
 #pragma comment(lib, "DbgHelp.lib")
 

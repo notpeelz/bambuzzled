@@ -10,10 +10,11 @@
 #include "dyn_lib_loader.hpp"
 
 namespace utils = bbzl::utils;
-namespace log = bbzl::log;
 using bbzl::forwarder::dyn_lib_loader;
 
 #if defined(_WIN32) || defined(__CYGWIN__)
+
+#include <windows.h>
 
 BOOL WINAPI DllMain(
   HINSTANCE instance,
@@ -22,7 +23,7 @@ BOOL WINAPI DllMain(
 ) {
   (void)reserved;
   if (reason == DLL_PROCESS_ATTACH) {
-    log::set_level_filter(log::log_level::TRACE);
+    bbzl::log::set_level_filter(bbzl::log::log_level::TRACE);
   }
   return true;
 }
@@ -31,7 +32,7 @@ BOOL WINAPI DllMain(
 
 __attribute__((constructor))
 static void init() {
-  log::set_level_filter(log::log_level::TRACE);
+  bbzl::log::set_level_filter(bbzl::log::log_level::TRACE);
 }
 
 #endif
@@ -62,7 +63,7 @@ T get_fn(const std::string& name) {
 
     return loader->get_symbol<T>(name);
   } catch (std::exception& e) {
-    log::error_fmt("failed to get fn ptr for {}: {}", name, e.what());
+    bbzl::log::error_fmt("failed to get fn ptr for {}: {}", name, e.what());
     return nullptr;
   }
 }
@@ -93,7 +94,7 @@ inline auto call_fn(
   auto fn = reinterpret_cast<F>(get_fn<F>(name));
   if (fn) {
     auto ret = fn(std::forward<Args>(args)...);
-    log::trace_fmt("{}({}) -> {}", name, oss.str(), utils::to_string(ret));
+    bbzl::log::trace_fmt("{}({}) -> {}", name, oss.str(), utils::to_string(ret));
     return ret;
   }
 

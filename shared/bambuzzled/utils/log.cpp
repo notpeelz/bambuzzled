@@ -5,6 +5,7 @@
 #include <mutex>
 #include <string_view>
 #include <format>
+#include <chrono>
 
 #include "log.hpp"
 

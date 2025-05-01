@@ -5,8 +5,15 @@ project(
   LANGUAGES CXX
 )
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(WIN32)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+  add_definitions("-D_CRT_SECURE_NO_WARNINGS")
+  add_definitions("-D_CRT_SECURE_NO_DEPRECATE")
+  add_compile_options("/Zc:preprocessor")
 endif()
 
 set(BBZL_WITH_NLOHMANN_JSON "SYSTEM" CACHE STRING "Build with nlohmann-json")
@@ -55,15 +62,6 @@ elseif(
 elseif(BBZL_STATIC_DEPS STREQUAL "AUTO")
 else()
   message(FATAL_ERROR "Invalid value for BBZL_STATIC_DEPS")
-endif()
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-if(WIN32)
-  add_definitions("-D_CRT_SECURE_NO_WARNINGS")
-  add_definitions("-D_CRT_SECURE_NO_DEPRECATE")
 endif()
 
 add_subdirectory(shared)
