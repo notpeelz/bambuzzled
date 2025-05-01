@@ -89,9 +89,8 @@ void network_client::on_suback(mqtt::message_id mid) {
 
   if (mid == this->report_sub_mid) {
     this->report_sub_mid = 0;
-    auto topic = "device/" + this->dev_id + "/request";
-    log::trace_fmt("subscribed to topic: {}", topic);
-    this->agent->on_printer_connected_fn(topic);
+    log::trace_fmt("subscribed to topic: device/{}/request", this->dev_id);
+    this->agent->on_local_connected_fn(0, this->dev_id, "ssl:");
     return;
   }
 
