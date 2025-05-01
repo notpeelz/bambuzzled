@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-#include <bambuzzled/api/bambu_networking.hpp>
+#include <bambuzzled/networking/api/bambu_networking.hpp>
 
 #include "mosquittopp.hpp"
 

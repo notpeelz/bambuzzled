@@ -5,9 +5,9 @@
 #include <functional>
 
 #include <nlohmann/json.hpp>
-#include <bambuzzled/plugin_exports.hpp>
 #include <bambuzzled/utils/log.hpp>
 #include <bambuzzled/utils/try_wrapper.hpp>
+#include <bambuzzled/networking/plugin.hpp>
 
 #include "network_agent.hpp"
 

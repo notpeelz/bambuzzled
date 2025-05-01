@@ -3,6 +3,12 @@ add_library(
   SHARED
   forwarder.cpp
 )
+add_library(bbzl::forwarder ALIAS bambuzzled-forwarder)
+target_compile_definitions(
+  bambuzzled-forwarder
+  PRIVATE
+  BBZL_NETWORK_PLUGIN_EXPORT
+)
 set_target_properties(
   bambuzzled-forwarder
   PROPERTIES
@@ -11,4 +17,8 @@ set_target_properties(
   C_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN ON
 )
-target_link_libraries(bambuzzled-forwarder PRIVATE bambuzzled-shared)
+target_link_libraries(
+  bambuzzled-forwarder
+  PRIVATE
+  bbzl::shared
+)

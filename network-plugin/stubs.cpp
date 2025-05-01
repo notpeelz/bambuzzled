@@ -4,7 +4,7 @@
 #include <sstream>
 #include <functional>
 
-#include <bambuzzled/plugin_exports.hpp>
+#include <bambuzzled/networking/plugin.hpp>
 
 typedef int (*func_init_log)(void* agentp);
 int bambu_network_init_log(void* agentp) {

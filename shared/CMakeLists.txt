@@ -12,6 +12,7 @@ add_library(
   bambuzzled/utils/quote.cpp
   bambuzzled/utils/demangle.cpp
 )
+add_library(bbzl::shared ALIAS bambuzzled-shared)
 set_target_properties(
   bambuzzled-shared
   PROPERTIES

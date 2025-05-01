@@ -3,9 +3,9 @@
 #include <string>
 #include <sstream>
 
-#include <bambuzzled/plugin_exports.hpp>
 #include <bambuzzled/utils/to_string.hpp>
 #include <bambuzzled/utils/log.hpp>
+#include <bambuzzled/networking/plugin.hpp>
 
 #include "dyn_lib_loader.hpp"
 

@@ -1,10 +1,11 @@
 add_library(
-  bambuzzled-video
+  bambuzzled-video-plugin
   SHARED
   video.cpp
 )
+add_library(bbzl::video ALIAS bambuzzled-video-plugin)
 set_target_properties(
-  bambuzzled-video
+  bambuzzled-video-plugin
   PROPERTIES
   OUTPUT_NAME BambuSource
   CXX_VISIBILITY_PRESET hidden
@@ -12,7 +13,7 @@ set_target_properties(
   VISIBILITY_INLINES_HIDDEN ON
 )
 target_link_libraries(
-  bambuzzled-video
+  bambuzzled-video-plugin
   PRIVATE
-  bambuzzled-shared
+  bbzl::shared
 )
