@@ -5,11 +5,36 @@
 
 #include <bambuzzled/plugin_exports.hpp>
 #include <bambuzzled/utils/to_string.hpp>
+#include <bambuzzled/utils/log.hpp>
 
 #include "dyn_lib_loader.hpp"
 
 namespace utils = bbzl::utils;
+namespace log = bbzl::log;
 using bbzl::forwarder::dyn_lib_loader;
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+
+BOOL WINAPI DllMain(
+  HINSTANCE instance,
+  DWORD reason,
+  LPVOID reserved
+) {
+  (void)reserved;
+  if (reason == DLL_PROCESS_ATTACH) {
+    log::set_level_filter(log::log_level::TRACE);
+  }
+  return true;
+}
+
+#else
+
+__attribute__((constructor))
+static void init() {
+  log::set_level_filter(log::log_level::TRACE);
+}
+
+#endif
 
 namespace {
 
@@ -37,7 +62,7 @@ T get_fn(const std::string& name) {
 
     return loader->get_symbol<T>(name);
   } catch (std::exception& e) {
-    std::cerr << "Failed to get fn ptr for '" << name << "': " << e.what() << std::endl;
+    log::error_fmt("failed to get fn ptr for {}: {}", name, e.what());
     return nullptr;
   }
 }
@@ -68,7 +93,7 @@ inline auto call_fn(
   auto fn = reinterpret_cast<F>(get_fn<F>(name));
   if (fn) {
     auto ret = fn(std::forward<Args>(args)...);
-    std::cerr << "call_fn: " << name << "(" << oss.str() << ") -> " << utils::to_string(ret) << std::endl;
+    log::trace_fmt("{}({}) -> {}", name, oss.str(), utils::to_string(ret));
     return ret;
   }
 
@@ -86,8 +111,8 @@ bool bambu_network_check_debug_consistent(bool is_debug) {
   );
 }
 
-typedef std::string (*func_get_version)(void);
-std::string bambu_network_get_version(void) {
+typedef std::string (*func_get_version)();
+std::string bambu_network_get_version() {
   return call_fn<func_get_version>(
     "bambu_network_get_version",
     BAMBU_NETWORK_AGENT_VERSION
@@ -167,7 +192,10 @@ int bambu_network_set_on_ssdp_msg_fn(void* agent, OnMsgArrivedFn fn) {
     "bambu_network_set_on_ssdp_msg_fn",
     0,
     agent,
-    fn
+    [fn](std::string dev_info_json_str) {
+      auto scope = BBZL_TRACE_SCOPE(dev_info_json_str);
+      return fn(dev_info_json_str);
+    }
   );
 }
 
@@ -177,7 +205,10 @@ int bambu_network_set_on_user_login_fn(void* agent, OnUserLoginFn fn) {
     "bambu_network_set_on_user_login_fn",
     0,
     agent,
-    fn
+    [fn](int online_login, bool login) {
+      auto scope = BBZL_TRACE_SCOPE(online_login, login);
+      return fn(online_login, login);
+    }
   );
 }
 
@@ -187,7 +218,10 @@ int bambu_network_set_on_printer_connected_fn(void* agent, OnPrinterConnectedFn 
     "bambu_network_set_on_printer_connected_fn",
     0,
     agent,
-    fn
+    [fn](std::string topic_str) {
+      auto scope = BBZL_TRACE_SCOPE(topic_str);
+      return fn(topic_str);
+    }
   );
 }
 
@@ -197,7 +231,10 @@ int bambu_network_set_on_server_connected_fn(void* agent, OnServerConnectedFn fn
     "bambu_network_set_on_server_connected_fn",
     0,
     agent,
-    fn
+    [fn](int return_code, int reason_code) {
+      auto scope = BBZL_TRACE_SCOPE(return_code, reason_code);
+      return fn(return_code, reason_code);
+    }
   );
 }
 
@@ -207,7 +244,10 @@ int bambu_network_set_on_http_error_fn(void* agent, OnHttpErrorFn fn) {
     "bambu_network_set_on_http_error_fn",
     0,
     agent,
-    fn
+    [fn](unsigned int http_code, std::string http_body) {
+      auto scope = BBZL_TRACE_SCOPE(http_code, http_body);
+      return fn(http_code, http_body);
+    }
   );
 }
 
@@ -217,7 +257,10 @@ int bambu_network_set_get_country_code_fn(void* agent, GetCountryCodeFn fn) {
     "bambu_network_set_get_country_code_fn",
     0,
     agent,
-    fn
+    [fn]() {
+      auto scope = BBZL_TRACE_SCOPE();
+      return fn();
+    }
   );
 }
 
@@ -227,7 +270,10 @@ int bambu_network_set_on_subscribe_failure_fn(void* agent, GetSubscribeFailureFn
     "bambu_network_set_on_subscribe_failure_fn",
     0,
     agent,
-    fn
+    [fn](std::string topic_str) {
+      auto scope = BBZL_TRACE_SCOPE(topic_str);
+      return fn(topic_str);
+    }
   );
 }
 
@@ -237,7 +283,10 @@ int bambu_network_set_on_message_fn(void* agent, OnMessageFn fn) {
     "bambu_network_set_on_message_fn",
     0,
     agent,
-    fn
+    [fn](std::string dev_id, std::string msg) {
+      auto scope = BBZL_TRACE_SCOPE(dev_id, msg);
+      return fn(dev_id, msg);
+    }
   );
 }
 
@@ -247,7 +296,10 @@ int bambu_network_set_on_user_message_fn(void* agent, OnMessageFn fn) {
     "bambu_network_set_on_user_message_fn",
     0,
     agent,
-    fn
+    [fn](std::string dev_id, std::string msg) {
+      auto scope = BBZL_TRACE_SCOPE(dev_id, msg);
+      return fn(dev_id, msg);
+    }
   );
 }
 
@@ -257,7 +309,10 @@ int bambu_network_set_on_local_connect_fn(void* agent, OnLocalConnectedFn fn) {
     "bambu_network_set_on_local_connect_fn",
     0,
     agent,
-    fn
+    [fn](int status, std::string dev_id, std::string msg) {
+      auto scope = BBZL_TRACE_SCOPE(status, dev_id, msg);
+      return fn(status, dev_id, msg);
+    }
   );
 }
 
@@ -267,7 +322,10 @@ int bambu_network_set_on_local_message_fn(void* agent, OnMessageFn fn) {
     "bambu_network_set_on_local_message_fn",
     0,
     agent,
-    fn
+    [fn](std::string dev_id, std::string msg) {
+      auto scope = BBZL_TRACE_SCOPE(dev_id, msg);
+      return fn(dev_id, msg);
+    }
   );
 }
 
@@ -277,7 +335,10 @@ int bambu_network_set_queue_on_main_fn(void* agent, QueueOnMainFn fn) {
     "bambu_network_set_queue_on_main_fn",
     0,
     agent,
-    fn
+    [fn](std::function<void()> f) {
+      auto scope = BBZL_TRACE_SCOPE(f);
+      return fn(f);
+    }
   );
 }
 
@@ -564,7 +625,10 @@ int bambu_network_set_server_callback(void* agent, OnServerErrFn fn) {
     "bambu_network_set_server_callback",
     0,
     agent,
-    fn
+    [fn](std::string url, int status) {
+      auto scope = BBZL_TRACE_SCOPE(url, status);
+      return fn(url, status);
+    }
   );
 }
 
@@ -919,7 +983,10 @@ int bambu_network_get_camera_url(void* agent, std::string dev_id, std::function<
     0,
     agent,
     dev_id,
-    callback
+    [callback](std::string url) {
+      auto scope = BBZL_TRACE_SCOPE(url);
+      return callback(url);
+    }
   );
 }
 

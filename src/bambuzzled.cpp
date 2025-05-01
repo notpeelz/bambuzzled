@@ -19,7 +19,7 @@ bool bambu_network_check_debug_consistent(bool is_debug) {
   return true;
 }
 
-std::string bambu_network_get_version(void) {
+std::string bambu_network_get_version() {
   auto scope = BBZL_TRACE_SCOPE();
   return BAMBU_NETWORK_AGENT_VERSION;
 }

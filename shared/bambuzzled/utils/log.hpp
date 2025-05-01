@@ -17,6 +17,8 @@ enum class log_level {
   ERROR,
 };
 
+void set_level_filter(log_level level) noexcept;
+
 void log_internal(log_level level, const std::string& msg) noexcept;
 
 template<typename... Args>

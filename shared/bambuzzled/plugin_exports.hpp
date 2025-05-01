@@ -23,7 +23,7 @@
 #endif
 
 BBZL_EXPORT bool bambu_network_check_debug_consistent(bool is_debug);
-BBZL_EXPORT std::string bambu_network_get_version(void);
+BBZL_EXPORT std::string bambu_network_get_version();
 BBZL_EXPORT void* bambu_network_create_agent(std::string log_dir);
 BBZL_EXPORT int bambu_network_destroy_agent(void* agent);
 BBZL_EXPORT int bambu_network_init_log(void* agent);

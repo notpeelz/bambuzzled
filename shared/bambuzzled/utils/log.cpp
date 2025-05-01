@@ -74,9 +74,15 @@ namespace bbzl::log {
   }
 
   static bool initialized = false;
+  static bool level_initialized = false;
   static log_level current_level;
   static std::mutex mutex;
   static std::ofstream log_file;
+
+  void set_level_filter(log_level level) noexcept {
+    level_initialized = true;
+    current_level = level;
+  }
 
   static void ensure_initialized() noexcept {
     if (initialized) {
@@ -84,12 +90,15 @@ namespace bbzl::log {
     }
     initialized = true;
 
-    char* level_str = std::getenv("BBZL_LOG_LEVEL");
-    auto level = str_to_level(level_str);
-    if (level.has_value()) {
-      current_level = level.value();
-    } else {
-      current_level = log_level::INFO;
+    if (!level_initialized) {
+      level_initialized = true;
+      char* level_str = std::getenv("BBZL_LOG_LEVEL");
+      auto level = str_to_level(level_str);
+      if (level.has_value()) {
+        current_level = level.value();
+      } else {
+        current_level = log_level::INFO;
+      }
     }
 
     char* log_file_str = std::getenv("BBZL_LOG_FILE");
