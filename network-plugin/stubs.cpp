@@ -27,57 +27,57 @@ int bambu_network_set_country_code(void* agentp, std::string country_code) {
   return 0;
 }
 
-typedef int (*func_set_on_ssdp_msg_fn)(void* agentp, OnMsgArrivedFn fn);
-int bambu_network_set_on_ssdp_msg_fn(void* agentp, OnMsgArrivedFn fn) {
+typedef int (*func_set_on_ssdp_msg_fn)(void* agentp, BBL::OnMsgArrivedFn fn);
+int bambu_network_set_on_ssdp_msg_fn(void* agentp, BBL::OnMsgArrivedFn fn) {
   (void)agentp;
   (void)fn;
   return 0;
 }
 
-typedef int (*func_set_on_user_login_fn)(void* agentp, OnUserLoginFn fn);
-int bambu_network_set_on_user_login_fn(void* agentp, OnUserLoginFn fn) {
+typedef int (*func_set_on_user_login_fn)(void* agentp, BBL::OnUserLoginFn fn);
+int bambu_network_set_on_user_login_fn(void* agentp, BBL::OnUserLoginFn fn) {
   (void)agentp;
   (void)fn;
   return 0;
 }
 
-typedef int (*func_set_on_http_error_fn)(void* agentp, OnHttpErrorFn fn);
-int bambu_network_set_on_http_error_fn(void* agentp, OnHttpErrorFn fn) {
+typedef int (*func_set_on_http_error_fn)(void* agentp, BBL::OnHttpErrorFn fn);
+int bambu_network_set_on_http_error_fn(void* agentp, BBL::OnHttpErrorFn fn) {
   (void)agentp;
   (void)fn;
   return 0;
 }
 
-typedef int (*func_set_get_country_code_fn)(void* agentp, GetCountryCodeFn fn);
-int bambu_network_set_get_country_code_fn(void* agentp, GetCountryCodeFn fn) {
+typedef int (*func_set_get_country_code_fn)(void* agentp, BBL::GetCountryCodeFn fn);
+int bambu_network_set_get_country_code_fn(void* agentp, BBL::GetCountryCodeFn fn) {
   (void)agentp;
   (void)fn;
   return 0;
 }
 
-typedef int (*func_set_on_subscribe_failure_fn)(void* agentp, GetSubscribeFailureFn fn);
-int bambu_network_set_on_subscribe_failure_fn(void* agentp, GetSubscribeFailureFn fn) {
+typedef int (*func_set_on_subscribe_failure_fn)(void* agentp, BBL::GetSubscribeFailureFn fn);
+int bambu_network_set_on_subscribe_failure_fn(void* agentp, BBL::GetSubscribeFailureFn fn) {
   (void)agentp;
   (void)fn;
   return 0;
 }
 
-typedef int (*func_set_on_message_fn)(void* agentp, OnMessageFn fn);
-int bambu_network_set_on_message_fn(void* agentp, OnMessageFn fn) {
+typedef int (*func_set_on_message_fn)(void* agentp, BBL::OnMessageFn fn);
+int bambu_network_set_on_message_fn(void* agentp, BBL::OnMessageFn fn) {
   (void)agentp;
   (void)fn;
   return 0;
 }
 
-typedef int (*func_set_on_user_message_fn)(void* agentp, OnMessageFn fn);
-int bambu_network_set_on_user_message_fn(void* agentp, OnMessageFn fn) {
+typedef int (*func_set_on_user_message_fn)(void* agentp, BBL::OnMessageFn fn);
+int bambu_network_set_on_user_message_fn(void* agentp, BBL::OnMessageFn fn) {
   (void)agentp;
   (void)fn;
   return 0;
 }
 
-typedef int (*func_set_queue_on_main_fn)(void* agentp, QueueOnMainFn fn);
-int bambu_network_set_queue_on_main_fn(void* agentp, QueueOnMainFn fn) {
+typedef int (*func_set_queue_on_main_fn)(void* agentp, BBL::QueueOnMainFn fn);
+int bambu_network_set_queue_on_main_fn(void* agentp, BBL::QueueOnMainFn fn) {
   (void)agentp;
   (void)fn;
   return 0;
@@ -227,8 +227,8 @@ int bambu_network_ping_bind(void* agentp, std::string ping_code) {
   return 0;
 }
 
-typedef int (*func_bind_detect)(void* agentp, std::string dev_ip, std::string sec_link, detectResult& detect);
-int bambu_network_bind_detect(void* agentp, std::string dev_ip, std::string sec_link, detectResult& detect) {
+typedef int (*func_bind_detect)(void* agentp, std::string dev_ip, std::string sec_link, BBL::detectResult& detect);
+int bambu_network_bind_detect(void* agentp, std::string dev_ip, std::string sec_link, BBL::detectResult& detect) {
   (void)agentp;
   (void)dev_ip;
   (void)sec_link;
@@ -236,15 +236,15 @@ int bambu_network_bind_detect(void* agentp, std::string dev_ip, std::string sec_
   return 0;
 }
 
-typedef int (*func_set_server_callback)(void* agentp, OnServerErrFn fn);
-int bambu_network_set_server_callback(void* agentp, OnServerErrFn fn) {
+typedef int (*func_set_server_callback)(void* agentp, BBL::OnServerErrFn fn);
+int bambu_network_set_server_callback(void* agentp, BBL::OnServerErrFn fn) {
   (void)agentp;
   (void)fn;
   return 0;
 }
 
-typedef int (*func_bind)(void* agentp, std::string dev_ip, std::string dev_id, std::string sec_link, std::string timezone, bool improved, OnUpdateStatusFn update_fn);
-int bambu_network_bind(void* agentp, std::string dev_ip, std::string dev_id, std::string sec_link, std::string timezone, bool improved, OnUpdateStatusFn update_fn) {
+typedef int (*func_bind)(void* agentp, std::string dev_ip, std::string dev_id, std::string sec_link, std::string timezone, bool improved, BBL::OnUpdateStatusFn update_fn);
+int bambu_network_bind(void* agentp, std::string dev_ip, std::string dev_id, std::string sec_link, std::string timezone, bool improved, BBL::OnUpdateStatusFn update_fn) {
   (void)agentp;
   (void)dev_ip;
   (void)dev_id;
@@ -294,8 +294,8 @@ int bambu_network_put_setting(void* agentp, std::string setting_id, std::string 
   return 0;
 }
 
-typedef int (*func_get_setting_list)(void* agentp, std::string bundle_version, ProgressFn pro_fn, WasCancelledFn cancel_fn);
-int bambu_network_get_setting_list(void* agentp, std::string bundle_version, ProgressFn pro_fn, WasCancelledFn cancel_fn) {
+typedef int (*func_get_setting_list)(void* agentp, std::string bundle_version, BBL::ProgressFn pro_fn, BBL::WasCancelledFn cancel_fn);
+int bambu_network_get_setting_list(void* agentp, std::string bundle_version, BBL::ProgressFn pro_fn, BBL::WasCancelledFn cancel_fn) {
   (void)agentp;
   (void)bundle_version;
   (void)pro_fn;
@@ -303,8 +303,8 @@ int bambu_network_get_setting_list(void* agentp, std::string bundle_version, Pro
   return 0;
 }
 
-typedef int (*func_get_setting_list2)(void* agentp, std::string bundle_version, CheckFn chk_fn, ProgressFn pro_fn, WasCancelledFn cancel_fn);
-int bambu_network_get_setting_list2(void* agentp, std::string bundle_version, CheckFn chk_fn, ProgressFn pro_fn, WasCancelledFn cancel_fn) {
+typedef int (*func_get_setting_list2)(void* agentp, std::string bundle_version, BBL::CheckFn chk_fn, BBL::ProgressFn pro_fn, BBL::WasCancelledFn cancel_fn);
+int bambu_network_get_setting_list2(void* agentp, std::string bundle_version, BBL::CheckFn chk_fn, BBL::ProgressFn pro_fn, BBL::WasCancelledFn cancel_fn) {
   (void)agentp;
   (void)bundle_version;
   (void)chk_fn;
@@ -360,8 +360,8 @@ int bambu_network_get_user_print_info(void* agentp, unsigned int* http_code, std
   return 0;
 }
 
-typedef int (*func_get_user_tasks)(void* agentp, TaskQueryParams params, std::string* http_body);
-int bambu_network_get_user_tasks(void* agentp, TaskQueryParams params, std::string* http_body) {
+typedef int (*func_get_user_tasks)(void* agentp, BBL::TaskQueryParams params, std::string* http_body);
+int bambu_network_get_user_tasks(void* agentp, BBL::TaskQueryParams params, std::string* http_body) {
   (void)agentp;
   (void)params;
   (void)http_body;
@@ -453,8 +453,8 @@ int bambu_network_get_design_staffpick(void* agentp, int offset, int limit, std:
   return 0;
 }
 
-typedef int (*func_start_publish)(void* agentp, PublishParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, std::string* out);
-int bambu_network_start_publish(void* agentp, PublishParams params, OnUpdateStatusFn update_fn, WasCancelledFn cancel_fn, std::string* out) {
+typedef int (*func_start_publish)(void* agentp, BBL::PublishParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, std::string* out);
+int bambu_network_start_publish(void* agentp, BBL::PublishParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, std::string* out) {
   (void)agentp;
   (void)params;
   (void)update_fn;
@@ -463,8 +463,8 @@ int bambu_network_start_publish(void* agentp, PublishParams params, OnUpdateStat
   return 0;
 }
 
-typedef int (*func_get_profile_3mf)(void* agentp, BBLProfile* profile);
-int bambu_network_get_profile_3mf(void* agentp, BBLProfile* profile) {
+typedef int (*func_get_profile_3mf)(void* agentp, Slic3r::BBLProfile* profile);
+int bambu_network_get_profile_3mf(void* agentp, Slic3r::BBLProfile* profile) {
   (void)agentp;
   (void)profile;
   return 0;
@@ -477,8 +477,8 @@ int bambu_network_get_model_publish_url(void* agentp, std::string* url) {
   return 0;
 }
 
-typedef int (*func_get_subtask)(void* agentp, BBLModelTask* task, OnGetSubTaskFn getsub_fn);
-int bambu_network_get_subtask(void* agentp, BBLModelTask* task, OnGetSubTaskFn getsub_fn) {
+typedef int (*func_get_subtask)(void* agentp, Slic3r::BBLModelTask* task, Slic3r::OnGetSubTaskFn getsub_fn);
+int bambu_network_get_subtask(void* agentp, Slic3r::BBLModelTask* task, Slic3r::OnGetSubTaskFn getsub_fn) {
   (void)agentp;
   (void)task;
   (void)getsub_fn;

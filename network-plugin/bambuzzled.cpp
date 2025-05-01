@@ -102,7 +102,7 @@ int bambu_network_set_config_dir(void* agentp, std::string config_dir) {
   });
 }
 
-int bambu_network_set_on_printer_connected_fn(void* agentp, OnPrinterConnectedFn fn) {
+int bambu_network_set_on_printer_connected_fn(void* agentp, BBL::OnPrinterConnectedFn fn) {
   auto agent = reinterpret_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     agent->set_on_printer_connected_fn(std::move(fn));
@@ -110,7 +110,7 @@ int bambu_network_set_on_printer_connected_fn(void* agentp, OnPrinterConnectedFn
   });
 }
 
-int bambu_network_set_on_server_connected_fn(void* agentp, OnServerConnectedFn fn) {
+int bambu_network_set_on_server_connected_fn(void* agentp, BBL::OnServerConnectedFn fn) {
   auto agent = reinterpret_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     agent->set_on_server_connected_fn(std::move(fn));
@@ -118,7 +118,7 @@ int bambu_network_set_on_server_connected_fn(void* agentp, OnServerConnectedFn f
   });
 }
 
-int bambu_network_set_on_local_connect_fn(void* agentp, OnLocalConnectedFn fn) {
+int bambu_network_set_on_local_connect_fn(void* agentp, BBL::OnLocalConnectedFn fn) {
   auto agent = reinterpret_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     agent->set_on_local_connected_fn(std::move(fn));
@@ -126,7 +126,7 @@ int bambu_network_set_on_local_connect_fn(void* agentp, OnLocalConnectedFn fn) {
   });
 }
 
-int bambu_network_set_on_local_message_fn(void* agentp, OnMessageFn fn) {
+int bambu_network_set_on_local_message_fn(void* agentp, BBL::OnMessageFn fn) {
   auto agent = reinterpret_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     agent->set_on_local_message_fn(std::move(fn));
@@ -147,10 +147,10 @@ std::string bambu_network_build_logout_cmd(void* agentp) {
 
 int bambu_network_start_print(
   void* agentp,
-  PrintParams params,
-  OnUpdateStatusFn update_fn,
-  WasCancelledFn cancel_fn,
-  OnWaitFn wait_fn
+  BBL::PrintParams params,
+  BBL::OnUpdateStatusFn update_fn,
+  BBL::WasCancelledFn cancel_fn,
+  BBL::OnWaitFn wait_fn
 ) {
   (void)agentp;
   (void)params;
@@ -163,10 +163,10 @@ int bambu_network_start_print(
 
 int bambu_network_start_local_print_with_record(
   void* agentp,
-  PrintParams params,
-  OnUpdateStatusFn update_fn,
-  WasCancelledFn cancel_fn,
-  OnWaitFn wait_fn
+  BBL::PrintParams params,
+  BBL::OnUpdateStatusFn update_fn,
+  BBL::WasCancelledFn cancel_fn,
+  BBL::OnWaitFn wait_fn
 ) {
   (void)agentp;
   (void)params;
@@ -179,10 +179,10 @@ int bambu_network_start_local_print_with_record(
 
 int bambu_network_start_send_gcode_to_sdcard(
   void* agentp,
-  PrintParams params,
-  OnUpdateStatusFn update_fn,
-  WasCancelledFn cancel_fn,
-  OnWaitFn wait_fn
+  BBL::PrintParams params,
+  BBL::OnUpdateStatusFn update_fn,
+  BBL::WasCancelledFn cancel_fn,
+  BBL::OnWaitFn wait_fn
 ) {
   (void)agentp;
   (void)params;
@@ -196,9 +196,9 @@ int bambu_network_start_send_gcode_to_sdcard(
 
 int bambu_network_start_local_print(
   void* agentp,
-  PrintParams params,
-  OnUpdateStatusFn update_fn,
-  WasCancelledFn cancel_fn
+  BBL::PrintParams params,
+  BBL::OnUpdateStatusFn update_fn,
+  BBL::WasCancelledFn cancel_fn
 ) {
   (void)agentp;
   (void)params;
@@ -210,9 +210,9 @@ int bambu_network_start_local_print(
 
 int bambu_network_start_sdcard_print(
   void* agentp,
-  PrintParams params,
-  OnUpdateStatusFn update_fn,
-  WasCancelledFn cancel_fn
+  BBL::PrintParams params,
+  BBL::OnUpdateStatusFn update_fn,
+  BBL::WasCancelledFn cancel_fn
 ) {
   (void)agentp;
   (void)params;

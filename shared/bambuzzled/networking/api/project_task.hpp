@@ -8,6 +8,8 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem.hpp>
 
+namespace Slic3r {
+
 class BBLProject;
 class BBLProfile;
 class BBLTask;
@@ -280,3 +282,5 @@ public:
 
   void reset();
 };
+
+}

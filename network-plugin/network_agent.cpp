@@ -20,19 +20,19 @@ void network_agent::set_config_dir(std::string&& dir) {
   log::trace_fmt("set_config_dir: {}", dir);
 }
 
-void network_agent::set_on_printer_connected_fn(OnPrinterConnectedFn&& fn) {
+void network_agent::set_on_printer_connected_fn(BBL::OnPrinterConnectedFn&& fn) {
   this->on_printer_connected_fn = std::move(fn);
 }
 
-void network_agent::set_on_server_connected_fn(OnServerConnectedFn&& fn) {
+void network_agent::set_on_server_connected_fn(BBL::OnServerConnectedFn&& fn) {
   this->on_server_connected_fn = std::move(fn);
 }
 
-void network_agent::set_on_local_connected_fn(OnLocalConnectedFn&& fn) {
+void network_agent::set_on_local_connected_fn(BBL::OnLocalConnectedFn&& fn) {
   this->on_local_connected_fn = std::move(fn);
 }
 
-void network_agent::set_on_local_message_fn(OnMessageFn&& fn) {
+void network_agent::set_on_local_message_fn(BBL::OnMessageFn&& fn) {
   this->on_local_message_fn = std::move(fn);
 }
 

@@ -35,18 +35,18 @@ class network_agent {
 private:
   std::string config_dir;
   std::map<std::string, network_client*> connections;
-  OnPrinterConnectedFn on_printer_connected_fn;
-  OnServerConnectedFn on_server_connected_fn;
-  OnLocalConnectedFn on_local_connected_fn;
-  OnMessageFn on_local_message_fn;
+  BBL::OnPrinterConnectedFn on_printer_connected_fn;
+  BBL::OnServerConnectedFn on_server_connected_fn;
+  BBL::OnLocalConnectedFn on_local_connected_fn;
+  BBL::OnMessageFn on_local_message_fn;
   network_client* get_or_create_conn(std::string& dev_id);
 public:
   network_agent();
   void set_config_dir(std::string&& dir);
-  void set_on_printer_connected_fn(OnPrinterConnectedFn&& fn);
-  void set_on_server_connected_fn(OnServerConnectedFn&& fn);
-  void set_on_local_connected_fn(OnLocalConnectedFn&& fn);
-  void set_on_local_message_fn(OnMessageFn&& fn);
+  void set_on_printer_connected_fn(BBL::OnPrinterConnectedFn&& fn);
+  void set_on_server_connected_fn(BBL::OnServerConnectedFn&& fn);
+  void set_on_local_connected_fn(BBL::OnLocalConnectedFn&& fn);
+  void set_on_local_message_fn(BBL::OnMessageFn&& fn);
   std::string get_user_selected_machine();
   void set_user_selected_machine(std::string dev_id);
   int start();
