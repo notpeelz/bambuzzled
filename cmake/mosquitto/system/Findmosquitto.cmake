@@ -1,11 +1,6 @@
 include(FindPackageHandleStandardArgs)
 include(ExternalProject)
 
-if(MOSQUITTO_USE_STATIC_LIBS)
-  # TODO: are there any Linux distros that ship static libs? Maybe on Windows?
-  message(FATAL_ERROR "Static linking to system mosquitto is not supported")
-endif()
-
 find_package(PkgConfig REQUIRED QUIET)
 if(PKGCONFIG_FOUND)
   pkg_check_modules(
@@ -18,7 +13,7 @@ if(PKGCONFIG_FOUND)
 endif()
 
 if(LIBMOSQUITTO_FOUND)
-  add_library(mosquitto::libmosquitto INTERFACE IMPORTED)
+  add_library(mosquitto::libmosquitto UNKNOWN IMPORTED)
   target_include_directories(
     mosquitto::libmosquitto
     INTERFACE

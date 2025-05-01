@@ -4,3 +4,6 @@
 [submodule "libs/nlohmann_json"]
 	path = libs/nlohmann-json
 	url = https://github.com/nlohmann/json.git
+[submodule "libs/curl"]
+	path = libs/curl
+	url = https://github.com/curl/curl.git

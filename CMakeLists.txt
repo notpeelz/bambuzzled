@@ -24,6 +24,10 @@ set(BBZL_WITH_MOSQUITTO "SYSTEM" CACHE STRING "Build with mosquitto")
 set_property(CACHE BBZL_WITH_MOSQUITTO PROPERTY STRINGS "SYSTEM" "VENDOR")
 string(TOUPPER "${BBZL_WITH_MOSQUITTO}" BBZL_WITH_MOSQUITTO)
 
+set(BBZL_WITH_CURL "SYSTEM" CACHE STRING "Build with curl")
+set_property(CACHE BBZL_WITH_CURL PROPERTY STRINGS "SYSTEM" "VENDOR")
+string(TOUPPER "${BBZL_WITH_CURL}" BBZL_WITH_CURL)
+
 set(BBZL_STATIC_DEPS "AUTO" CACHE STRING "Statically link all dependencies")
 set_property(CACHE BBZL_STATIC_DEPS PROPERTY STRINGS "AUTO" ON OFF)
 string(TOUPPER "${BBZL_STATIC_DEPS}" BBZL_STATIC_DEPS)
@@ -43,6 +47,23 @@ else()
   message(FATAL_ERROR "BBZL_WITH_MOSQUITTO must be either SYSTEM or VENDOR")
 endif()
 
+if(BBZL_WITH_CURL STREQUAL "SYSTEM")
+elseif(BBZL_WITH_CURL STREQUAL "VENDOR")
+  list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/curl")
+else()
+  message(FATAL_ERROR "BBZL_WITH_CURL must be either SYSTEM or VENDOR")
+endif()
+
+function(warn_system_dep opt_name dep_name)
+  if(${${opt_name}} STREQUAL "SYSTEM")
+  message(
+    AUTHOR_WARNING
+    "Static dependencies requested but ${opt_name} is set to SYSTEM."
+    " ${dep_name} may not be linked statically."
+  )
+  endif()
+endfunction()
+
 if(
   BBZL_STATIC_DEPS STREQUAL "ON"
   OR BBZL_STATIC_DEPS STREQUAL "TRUE"
@@ -51,6 +72,9 @@ if(
   set(Boost_USE_STATIC_LIBS ON)
   set(MOSQUITTO_USE_STATIC_LIBS ON)
   set(OPENSSL_USE_STATIC_LIBS ON)
+  set(CURL_USE_STATIC_LIBS ON)
+  warn_system_dep(BBZL_WITH_MOSQUITTO libmosquitto)
+  warn_system_dep(BBZL_WITH_CURL libcurl)
 elseif(
   BBZL_STATIC_DEPS STREQUAL "OFF"
   OR BBZL_STATIC_DEPS STREQUAL "FALSE"
@@ -59,6 +83,7 @@ elseif(
   set(Boost_USE_STATIC_LIBS OFF)
   set(MOSQUITTO_USE_STATIC_LIBS OFF)
   set(OPENSSL_USE_STATIC_LIBS OFF)
+  set(CURL_USE_STATIC_LIBS OFF)
 elseif(BBZL_STATIC_DEPS STREQUAL "AUTO")
 else()
   message(FATAL_ERROR "Invalid value for BBZL_STATIC_DEPS")
