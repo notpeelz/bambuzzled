@@ -56,11 +56,17 @@ endif()
 
 function(warn_system_dep opt_name dep_name)
   if(${${opt_name}} STREQUAL "SYSTEM")
-  message(
-    AUTHOR_WARNING
-    "Static dependencies requested but ${opt_name} is set to SYSTEM."
-    " ${dep_name} may not be linked statically."
-  )
+    message(
+      AUTHOR_WARNING
+      "Static dependencies requested but ${opt_name} is set to SYSTEM."
+      " ${dep_name} may not be linked statically."
+    )
+  endif()
+endfunction()
+
+function(set_if_undefined opt_name val)
+  if(NOT DEFINED ${opt_name})
+    set(${opt_name} ${val} PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -69,24 +75,30 @@ if(
   OR BBZL_STATIC_DEPS STREQUAL "TRUE"
   OR BBZL_STATIC_DEPS STREQUAL "1"
 )
-  set(Boost_USE_STATIC_LIBS ON)
-  set(MOSQUITTO_USE_STATIC_LIBS ON)
-  set(OPENSSL_USE_STATIC_LIBS ON)
-  set(CURL_USE_STATIC_LIBS ON)
-  warn_system_dep(BBZL_WITH_MOSQUITTO libmosquitto)
-  warn_system_dep(BBZL_WITH_CURL libcurl)
+  set_if_undefined(Boost_USE_STATIC_LIBS ON)
+  set_if_undefined(MOSQUITTO_USE_STATIC_LIBS ON)
+  set_if_undefined(OPENSSL_USE_STATIC_LIBS ON)
+  set_if_undefined(CURL_USE_STATIC_LIBS ON)
 elseif(
   BBZL_STATIC_DEPS STREQUAL "OFF"
   OR BBZL_STATIC_DEPS STREQUAL "FALSE"
   OR BBZL_STATIC_DEPS STREQUAL "0"
 )
-  set(Boost_USE_STATIC_LIBS OFF)
-  set(MOSQUITTO_USE_STATIC_LIBS OFF)
-  set(OPENSSL_USE_STATIC_LIBS OFF)
-  set(CURL_USE_STATIC_LIBS OFF)
+  set_if_undefined(Boost_USE_STATIC_LIBS OFF)
+  set_if_undefined(MOSQUITTO_USE_STATIC_LIBS OFF)
+  set_if_undefined(OPENSSL_USE_STATIC_LIBS OFF)
+  set_if_undefined(CURL_USE_STATIC_LIBS OFF)
 elseif(BBZL_STATIC_DEPS STREQUAL "AUTO")
 else()
   message(FATAL_ERROR "Invalid value for BBZL_STATIC_DEPS")
+endif()
+
+if(MOSQUITTO_USE_STATIC_LIBS)
+  warn_system_dep(BBZL_WITH_MOSQUITTO libmosquitto)
+endif()
+
+if(CURL_USE_STATIC_LIBS)
+  warn_system_dep(BBZL_WITH_CURL libcurl)
 endif()
 
 add_subdirectory(shared)
