@@ -37,7 +37,7 @@ private:
     handle = dlopen(lib_path.c_str(), RTLD_LAZY);
     #endif
 
-    if (!handle) {
+    if (handle == nullptr) {
 #if defined(_WIN32) || defined(__CYGWIN__)
       DWORD error = GetLastError();
       LPSTR buf = nullptr;
@@ -100,7 +100,7 @@ public:
     addr = dlsym(handle, name.c_str());
   #endif
 
-    if (!addr) {
+    if (addr == nullptr) {
   #if defined(_WIN32) || defined(__CYGWIN__)
       DWORD error = GetLastError();
       throw std::runtime_error("failed to get symbol '" + name + "', error code: " + std::to_string(error));

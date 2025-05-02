@@ -23,7 +23,7 @@ openssl_ctx_ptr create_openssl_context() {
   const SSL_METHOD* method = TLS_client_method();
   auto ctx = openssl_ctx_ptr(SSL_CTX_new(method));
 
-  if (!ctx) {
+  if (ctx == nullptr) {
     throw std::runtime_error("failed to create OpenSSL context: " + get_openssl_err());
   }
 

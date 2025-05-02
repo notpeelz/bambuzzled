@@ -42,7 +42,7 @@ static inline std::string stringify_value(std::nullptr_t) {
 
 template<typename T>
 std::string stringify_pointer(const T* ptr) {
-  if (!ptr) {
+  if (ptr == nullptr) {
     return "nullptr";
   }
 
@@ -64,7 +64,7 @@ std::string stringify_pointer(const T* ptr) {
 }
 
 static inline std::string stringify_void_pointer(const void* ptr) {
-  if (!ptr) {
+  if (ptr == nullptr) {
     return "nullptr";
   }
 
