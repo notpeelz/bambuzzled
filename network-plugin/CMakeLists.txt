@@ -1,6 +1,7 @@
 find_package(OpenSSL REQUIRED)
-find_package(mosquitto REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(mosquitto REQUIRED)
+find_package(CURL REQUIRED)
 
 add_library(
   bambuzzled-network-plugin
@@ -29,6 +30,7 @@ target_link_libraries(
   PRIVATE
   bbzl::shared
   OpenSSL::SSL
-  mosquitto::libmosquitto
   nlohmann_json::nlohmann_json
+  mosquitto::libmosquitto
+  CURL::libcurl
 )
