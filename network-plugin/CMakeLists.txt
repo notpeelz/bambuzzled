@@ -6,6 +6,7 @@ find_package(CURL REQUIRED)
 add_library(
   bambuzzled-network-plugin
   SHARED
+  init.cpp
   bambuzzled.cpp
   stubs.cpp
   network_agent.cpp
