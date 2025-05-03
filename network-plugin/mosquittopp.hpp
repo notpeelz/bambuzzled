@@ -6,18 +6,12 @@
 #include <span>
 #include <functional>
 
+#include <bambuzzled/utils/ssl.hpp>
+
 #include <openssl/ssl.h>
 #include <mosquitto.h>
 
 namespace bbzl::mqtt {
-
-struct openssl_ctx_deleter {
-  void operator()(SSL_CTX* ctx) const {
-    if (ctx != nullptr) {
-      SSL_CTX_free(ctx);
-    }
-  }
-};
 
 struct mosquitto_deleter {
   void operator()(mosquitto* mosq) const {
@@ -27,7 +21,6 @@ struct mosquitto_deleter {
   }
 };
 
-using openssl_ctx_ptr = std::unique_ptr<SSL_CTX, openssl_ctx_deleter>;
 using mosquitto_ptr = std::unique_ptr<mosquitto, mosquitto_deleter>;
 using message_id = int;
 
@@ -56,7 +49,7 @@ using on_message_cb_fn = std::function<void(
 
 class mosquittopp {
 private:
-  openssl_ctx_ptr openssl_ctx;
+  bbzl::utils::openssl_ctx_ptr openssl_ctx;
   on_connect_cb_fn on_connect_cb;
   on_disconnect_cb_fn on_disconnect_cb;
   on_suback_cb_fn on_suback_cb;

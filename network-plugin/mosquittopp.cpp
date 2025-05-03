@@ -3,21 +3,14 @@
 #include <mutex>
 #include <stdexcept>
 
-#include <openssl/err.h>
+#include <bambuzzled/utils/ssl.hpp>
 
 #include "mosquittopp.hpp"
 
 namespace bbzl::mqtt {
 
-std::string get_openssl_err() {
-  BIO* bio = BIO_new(BIO_s_mem());
-  ERR_print_errors(bio);
-  char* buf;
-  size_t len = BIO_get_mem_data(bio, &buf);
-  std::string s(buf, len);
-  BIO_free(bio);
-  return s;
-}
+using bbzl::utils::openssl_ctx_ptr;
+using bbzl::utils::get_openssl_err;
 
 openssl_ctx_ptr create_openssl_context() {
   const SSL_METHOD* method = TLS_client_method();
