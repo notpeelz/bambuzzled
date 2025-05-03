@@ -101,6 +101,15 @@ inline auto call_fn(
   return fallback;
 }
 
+template<typename F>
+inline auto create_wrapper_non_null(F orig, auto wrapper) {
+  if (orig == nullptr) {
+    return static_cast<F>(nullptr);
+  } else {
+    return static_cast<F>(wrapper);
+  }
+}
+
 }
 
 typedef bool (*func_check_debug_consistent)(bool is_debug);
@@ -193,10 +202,10 @@ int bambu_network_set_on_ssdp_msg_fn(void* agent, BBL::OnMsgArrivedFn fn) {
     "bambu_network_set_on_ssdp_msg_fn",
     0,
     agent,
-    [fn](std::string dev_info_json_str) {
+    create_wrapper_non_null(fn, [fn](std::string dev_info_json_str) {
       auto scope = BBZL_TRACE_SCOPE(dev_info_json_str);
       return fn(dev_info_json_str);
-    }
+    })
   );
 }
 
@@ -206,10 +215,10 @@ int bambu_network_set_on_user_login_fn(void* agent, BBL::OnUserLoginFn fn) {
     "bambu_network_set_on_user_login_fn",
     0,
     agent,
-    [fn](int online_login, bool login) {
+    create_wrapper_non_null(fn, [fn](int online_login, bool login) {
       auto scope = BBZL_TRACE_SCOPE(online_login, login);
       return fn(online_login, login);
-    }
+    })
   );
 }
 
@@ -219,10 +228,10 @@ int bambu_network_set_on_printer_connected_fn(void* agent, BBL::OnPrinterConnect
     "bambu_network_set_on_printer_connected_fn",
     0,
     agent,
-    [fn](std::string topic_str) {
+    create_wrapper_non_null(fn, [fn](std::string topic_str) {
       auto scope = BBZL_TRACE_SCOPE(topic_str);
       return fn(topic_str);
-    }
+    })
   );
 }
 
@@ -232,10 +241,10 @@ int bambu_network_set_on_server_connected_fn(void* agent, BBL::OnServerConnected
     "bambu_network_set_on_server_connected_fn",
     0,
     agent,
-    [fn](int return_code, int reason_code) {
+    create_wrapper_non_null(fn, [fn](int return_code, int reason_code) {
       auto scope = BBZL_TRACE_SCOPE(return_code, reason_code);
       return fn(return_code, reason_code);
-    }
+    })
   );
 }
 
@@ -245,10 +254,10 @@ int bambu_network_set_on_http_error_fn(void* agent, BBL::OnHttpErrorFn fn) {
     "bambu_network_set_on_http_error_fn",
     0,
     agent,
-    [fn](unsigned int http_code, std::string http_body) {
+    create_wrapper_non_null(fn, [fn](unsigned int http_code, std::string http_body) {
       auto scope = BBZL_TRACE_SCOPE(http_code, http_body);
       return fn(http_code, http_body);
-    }
+    })
   );
 }
 
@@ -258,10 +267,10 @@ int bambu_network_set_get_country_code_fn(void* agent, BBL::GetCountryCodeFn fn)
     "bambu_network_set_get_country_code_fn",
     0,
     agent,
-    [fn]() {
+    create_wrapper_non_null(fn, [fn]() {
       auto scope = BBZL_TRACE_SCOPE();
       return fn();
-    }
+    })
   );
 }
 
@@ -271,10 +280,10 @@ int bambu_network_set_on_subscribe_failure_fn(void* agent, BBL::GetSubscribeFail
     "bambu_network_set_on_subscribe_failure_fn",
     0,
     agent,
-    [fn](std::string topic_str) {
+    create_wrapper_non_null(fn, [fn](std::string topic_str) {
       auto scope = BBZL_TRACE_SCOPE(topic_str);
       return fn(topic_str);
-    }
+    })
   );
 }
 
@@ -284,10 +293,10 @@ int bambu_network_set_on_message_fn(void* agent, BBL::OnMessageFn fn) {
     "bambu_network_set_on_message_fn",
     0,
     agent,
-    [fn](std::string dev_id, std::string msg) {
+    create_wrapper_non_null(fn, [fn](std::string dev_id, std::string msg) {
       auto scope = BBZL_TRACE_SCOPE(dev_id, msg);
       return fn(dev_id, msg);
-    }
+    })
   );
 }
 
@@ -297,10 +306,10 @@ int bambu_network_set_on_user_message_fn(void* agent, BBL::OnMessageFn fn) {
     "bambu_network_set_on_user_message_fn",
     0,
     agent,
-    [fn](std::string dev_id, std::string msg) {
+    create_wrapper_non_null(fn, [fn](std::string dev_id, std::string msg) {
       auto scope = BBZL_TRACE_SCOPE(dev_id, msg);
       return fn(dev_id, msg);
-    }
+    })
   );
 }
 
@@ -310,10 +319,10 @@ int bambu_network_set_on_local_connect_fn(void* agent, BBL::OnLocalConnectedFn f
     "bambu_network_set_on_local_connect_fn",
     0,
     agent,
-    [fn](int status, std::string dev_id, std::string msg) {
+    create_wrapper_non_null(fn, [fn](int status, std::string dev_id, std::string msg) {
       auto scope = BBZL_TRACE_SCOPE(status, dev_id, msg);
       return fn(status, dev_id, msg);
-    }
+    })
   );
 }
 
@@ -323,10 +332,10 @@ int bambu_network_set_on_local_message_fn(void* agent, BBL::OnMessageFn fn) {
     "bambu_network_set_on_local_message_fn",
     0,
     agent,
-    [fn](std::string dev_id, std::string msg) {
+    create_wrapper_non_null(fn, [fn](std::string dev_id, std::string msg) {
       auto scope = BBZL_TRACE_SCOPE(dev_id, msg);
       return fn(dev_id, msg);
-    }
+    })
   );
 }
 
@@ -336,10 +345,10 @@ int bambu_network_set_queue_on_main_fn(void* agent, BBL::QueueOnMainFn fn) {
     "bambu_network_set_queue_on_main_fn",
     0,
     agent,
-    [fn](std::function<void()> f) {
+    create_wrapper_non_null(fn, [fn](std::function<void()> f) {
       auto scope = BBZL_TRACE_SCOPE(f);
       return fn(f);
-    }
+    })
   );
 }
 
@@ -626,10 +635,10 @@ int bambu_network_set_server_callback(void* agent, BBL::OnServerErrFn fn) {
     "bambu_network_set_server_callback",
     0,
     agent,
-    [fn](std::string url, int status) {
+    create_wrapper_non_null(fn, [fn](std::string url, int status) {
       auto scope = BBZL_TRACE_SCOPE(url, status);
       return fn(url, status);
-    }
+    })
   );
 }
 
@@ -693,18 +702,18 @@ int bambu_network_start_print(void* agent, BBL::PrintParams params, BBL::OnUpdat
     0,
     agent,
     params,
-    [update_fn](int status, int code, std::string msg) {
+    create_wrapper_non_null(update_fn, [update_fn](int status, int code, std::string msg) {
       auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
       return update_fn(status, code, msg);
-    },
-    [cancel_fn]() {
+    }),
+    create_wrapper_non_null(cancel_fn, [cancel_fn]() {
       auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
       return cancel_fn();
-    },
-    [wait_fn](int status, std::string job_info) {
+    }),
+    create_wrapper_non_null(wait_fn, [wait_fn](int status, std::string job_info) {
       auto scope = BBZL_TRACE_SCOPE_NAMED("wait_fn", status, job_info);
       return wait_fn(status, job_info);
-    }
+    })
   );
   return 0;
 }
@@ -716,18 +725,18 @@ int bambu_network_start_local_print_with_record(void* agent, BBL::PrintParams pa
     0,
     agent,
     params,
-    [update_fn](int status, int code, std::string msg) {
+    create_wrapper_non_null(update_fn, [update_fn](int status, int code, std::string msg) {
       auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
       return update_fn(status, code, msg);
-    },
-    [cancel_fn]() {
+    }),
+    create_wrapper_non_null(cancel_fn, [cancel_fn]() {
       auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
       return cancel_fn();
-    },
-    [wait_fn](int status, std::string job_info) {
+    }),
+    create_wrapper_non_null(wait_fn, [wait_fn](int status, std::string job_info) {
       auto scope = BBZL_TRACE_SCOPE_NAMED("wait_fn", status, job_info);
       return wait_fn(status, job_info);
-    }
+    })
   );
   return 0;
 }
@@ -739,18 +748,18 @@ int bambu_network_start_send_gcode_to_sdcard(void* agent, BBL::PrintParams param
     0,
     agent,
     params,
-    [update_fn](int status, int code, std::string msg) {
+    create_wrapper_non_null(update_fn, [update_fn](int status, int code, std::string msg) {
       auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
       return update_fn(status, code, msg);
-    },
-    [cancel_fn]() {
+    }),
+    create_wrapper_non_null(cancel_fn, [cancel_fn]() {
       auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
       return cancel_fn();
-    },
-    [wait_fn](int status, std::string job_info) {
+    }),
+    create_wrapper_non_null(wait_fn, [wait_fn](int status, std::string job_info) {
       auto scope = BBZL_TRACE_SCOPE_NAMED("wait_fn", status, job_info);
       return wait_fn(status, job_info);
-    }
+    })
   );
 }
 
@@ -761,14 +770,14 @@ int bambu_network_start_local_print(void* agent, BBL::PrintParams params, BBL::O
     0,
     agent,
     params,
-    [update_fn](int status, int code, std::string msg) {
+    create_wrapper_non_null(update_fn, [update_fn](int status, int code, std::string msg) {
       auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
       return update_fn(status, code, msg);
-    },
-    [cancel_fn]() {
+    }),
+    create_wrapper_non_null(cancel_fn, [cancel_fn]() {
       auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
       return cancel_fn();
-    }
+    })
   );
   return 0;
 }
@@ -780,14 +789,14 @@ int bambu_network_start_sdcard_print(void* agent, BBL::PrintParams params, BBL::
     0,
     agent,
     params,
-    [update_fn](int status, int code, std::string msg) {
+    create_wrapper_non_null(update_fn, [update_fn](int status, int code, std::string msg) {
       auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
       return update_fn(status, code, msg);
-    },
-    [cancel_fn]() {
+    }),
+    create_wrapper_non_null(cancel_fn, [cancel_fn]() {
       auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
       return cancel_fn();
-    }
+    })
   );
   return 0;
 }
@@ -1027,10 +1036,10 @@ int bambu_network_get_camera_url(void* agent, std::string dev_id, std::function<
     0,
     agent,
     dev_id,
-    [callback](std::string url) {
+    create_wrapper_non_null(callback, [callback](std::string url) {
       auto scope = BBZL_TRACE_SCOPE(url);
       return callback(url);
-    }
+    })
   );
 }
 
