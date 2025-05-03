@@ -32,7 +32,7 @@ static inline std::string stringify_value(const std::string& value) {
   return quote_string(value);
 }
 
-static inline std::string stringify_value(const std::string_view& value) {
+static inline std::string stringify_value(std::string_view value) {
   return quote_string(value);
 }
 

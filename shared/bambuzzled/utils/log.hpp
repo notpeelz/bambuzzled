@@ -106,7 +106,7 @@ static inline trace_scope_guard trace_scope(
 
 template<typename... Args>
 static inline trace_scope_guard trace_scope_named(
-  const std::string_view& name,
+  std::string_view name,
   const std::source_location&& location,
   Args&&... args
 ) {

@@ -31,7 +31,7 @@ BOOL WINAPI DllMain(
 #else
 
 __attribute__((constructor))
-static void init() {
+static void ctor() {
   bbzl::log::set_level_filter(bbzl::log::log_level::TRACE);
 }
 

@@ -1,6 +1,5 @@
 #include <string>
 #include <memory>
-#include <mutex>
 #include <stdexcept>
 
 #include <bambuzzled/utils/ssl.hpp>
@@ -87,14 +86,6 @@ void on_message(
 
 mosquittopp::mosquittopp() {
   int rc;
-
-  static std::once_flag once;
-  std::call_once(once, []() {
-    mosquitto_lib_init();
-    SSL_library_init();
-    SSL_load_error_strings();
-    OpenSSL_add_all_algorithms();
-  });
 
   this->mosq = mosquitto_ptr(mosquitto_new(nullptr, true, this));
   if (this->mosq == nullptr) {
