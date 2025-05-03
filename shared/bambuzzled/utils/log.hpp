@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <format>
 #include <source_location>
@@ -68,14 +69,14 @@ static inline void error(const std::string& s) noexcept {
 
 class trace_scope_guard {
 private:
-  const std::source_location location;
+  std::string name;
 
 public:
-  trace_scope_guard(const std::source_location location)
-    : location(location) {}
+  trace_scope_guard(std::string name)
+    : name(name) {}
 
   ~trace_scope_guard() {
-    trace_fmt("EXIT: {}", this->location.function_name());
+    trace_fmt("EXIT: {}", this->name);
   }
 };
 
@@ -94,11 +95,37 @@ static inline trace_scope_guard trace_scope(
   })(args), ...);
 
   trace(oss.str());
-  return trace_scope_guard(std::move(location));
+  return trace_scope_guard(location.function_name());
 }
 
 #define BBZL_TRACE_SCOPE(...) \
 ::bbzl::log::trace_scope( \
+  std::source_location::current() \
+  __VA_OPT__(,) __VA_ARGS__ \
+)
+
+template<typename... Args>
+static inline trace_scope_guard trace_scope_named(
+  const std::string_view& name,
+  const std::source_location&& location,
+  Args&&... args
+) {
+  std::ostringstream oss;
+  oss << "ENTER: " << name << ": " << location.function_name();
+
+  size_t i = 0;
+  (([&](const auto& arg) {
+    oss << "\n  " << i << ": " << bbzl::utils::to_string(arg);
+    i++;
+  })(args), ...);
+
+  trace(oss.str());
+  return trace_scope_guard(location.function_name());
+}
+
+#define BBZL_TRACE_SCOPE_NAMED(name, ...) \
+::bbzl::log::trace_scope_named( \
+  name, \
   std::source_location::current() \
   __VA_OPT__(,) __VA_ARGS__ \
 )

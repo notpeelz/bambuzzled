@@ -693,10 +693,20 @@ int bambu_network_start_print(void* agent, BBL::PrintParams params, BBL::OnUpdat
     0,
     agent,
     params,
-    update_fn,
-    cancel_fn,
-    wait_fn
+    [update_fn](int status, int code, std::string msg) {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
+      return update_fn(status, code, msg);
+    },
+    [cancel_fn]() {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
+      return cancel_fn();
+    },
+    [wait_fn](int status, std::string job_info) {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("wait_fn", status, job_info);
+      return wait_fn(status, job_info);
+    }
   );
+  return 0;
 }
 
 typedef int (*func_start_local_print_with_record)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, BBL::OnWaitFn wait_fn);
@@ -706,10 +716,20 @@ int bambu_network_start_local_print_with_record(void* agent, BBL::PrintParams pa
     0,
     agent,
     params,
-    update_fn,
-    cancel_fn,
-    wait_fn
+    [update_fn](int status, int code, std::string msg) {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
+      return update_fn(status, code, msg);
+    },
+    [cancel_fn]() {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
+      return cancel_fn();
+    },
+    [wait_fn](int status, std::string job_info) {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("wait_fn", status, job_info);
+      return wait_fn(status, job_info);
+    }
   );
+  return 0;
 }
 
 typedef int (*func_start_send_gcode_to_sdcard)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, BBL::OnWaitFn wait_fn);
@@ -719,9 +739,18 @@ int bambu_network_start_send_gcode_to_sdcard(void* agent, BBL::PrintParams param
     0,
     agent,
     params,
-    update_fn,
-    cancel_fn,
-    wait_fn
+    [update_fn](int status, int code, std::string msg) {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
+      return update_fn(status, code, msg);
+    },
+    [cancel_fn]() {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
+      return cancel_fn();
+    },
+    [wait_fn](int status, std::string job_info) {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("wait_fn", status, job_info);
+      return wait_fn(status, job_info);
+    }
   );
 }
 
@@ -732,9 +761,16 @@ int bambu_network_start_local_print(void* agent, BBL::PrintParams params, BBL::O
     0,
     agent,
     params,
-    update_fn,
-    cancel_fn
+    [update_fn](int status, int code, std::string msg) {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
+      return update_fn(status, code, msg);
+    },
+    [cancel_fn]() {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
+      return cancel_fn();
+    }
   );
+  return 0;
 }
 
 typedef int (*func_start_sdcard_print)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn);
@@ -744,9 +780,16 @@ int bambu_network_start_sdcard_print(void* agent, BBL::PrintParams params, BBL::
     0,
     agent,
     params,
-    update_fn,
-    cancel_fn
+    [update_fn](int status, int code, std::string msg) {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
+      return update_fn(status, code, msg);
+    },
+    [cancel_fn]() {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
+      return cancel_fn();
+    }
   );
+  return 0;
 }
 
 typedef int (*func_get_user_presets)(void* agent, std::map<std::string, std::map<std::string, std::string>>* user_presets);
