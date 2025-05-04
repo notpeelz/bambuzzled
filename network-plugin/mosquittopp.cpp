@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <format>
 
-#include <bambuzzled/utils/ssl.hpp>
+#include <bambuzzled/ssl.hpp>
 
 #include "mosquittopp.hpp"
 

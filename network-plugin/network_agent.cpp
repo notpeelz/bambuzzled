@@ -3,8 +3,8 @@
 #include <stdexcept>
 #include <cassert>
 
-#include <bambuzzled/utils/log.hpp>
-#include <bambuzzled/utils/try_wrapper.hpp>
+#include <bambuzzled/log.hpp>
+#include <bambuzzled/try_wrapper.hpp>
 
 #include "mosquittopp.hpp"
 #include "network_agent.hpp"
@@ -12,7 +12,7 @@
 namespace bbzl {
 
 using namespace std::string_view_literals;
-using namespace bbzl::utils::try_wrapper;
+using namespace bbzl::try_wrapper;
 
 network_agent::network_agent() {}
 

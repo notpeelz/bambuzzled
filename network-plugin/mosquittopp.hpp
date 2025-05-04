@@ -6,7 +6,7 @@
 #include <span>
 #include <functional>
 
-#include <bambuzzled/utils/ssl.hpp>
+#include <bambuzzled/ssl.hpp>
 
 #include <openssl/ssl.h>
 #include <mosquitto.h>

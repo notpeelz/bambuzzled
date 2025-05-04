@@ -8,10 +8,10 @@ find_package(
 add_library(
   bambuzzled-shared
   STATIC
-  bambuzzled/utils/log.cpp
-  bambuzzled/utils/quote.cpp
-  bambuzzled/utils/demangle.cpp
-  bambuzzled/utils/win32.cpp
+  bambuzzled/log.cpp
+  bambuzzled/quote.cpp
+  bambuzzled/demangle.cpp
+  bambuzzled/win32.cpp
 )
 add_library(bbzl::shared ALIAS bambuzzled-shared)
 set_target_properties(

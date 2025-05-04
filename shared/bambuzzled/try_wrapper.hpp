@@ -27,7 +27,7 @@ static inline void log_exception(
 
 }
 
-namespace bbzl::utils::try_wrapper {
+namespace bbzl::try_wrapper {
 
 template<typename F>
 static inline void try_(

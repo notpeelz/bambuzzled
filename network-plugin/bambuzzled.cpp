@@ -5,14 +5,14 @@
 #include <functional>
 
 #include <nlohmann/json.hpp>
-#include <bambuzzled/utils/log.hpp>
-#include <bambuzzled/utils/try_wrapper.hpp>
+#include <bambuzzled/log.hpp>
+#include <bambuzzled/try_wrapper.hpp>
 #include <bambuzzled/networking/plugin.hpp>
 
 #include "network_agent.hpp"
 
 using network_agent = bbzl::network_agent;
-using namespace bbzl::utils::try_wrapper;
+using namespace bbzl::try_wrapper;
 
 bool bambu_network_check_debug_consistent(bool is_debug) {
   auto scope = BBZL_TRACE_SCOPE(is_debug);
