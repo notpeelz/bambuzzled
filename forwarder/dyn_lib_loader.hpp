@@ -95,7 +95,7 @@ public:
 
     void* addr = nullptr;
   #if defined(_WIN32) || defined(__CYGWIN__)
-    addr = reinterpret_cast<void*>(GetProcAddress(handle, name.c_str()));
+    addr = static_cast<void*>(GetProcAddress(handle, name.c_str()));
   #else
     addr = dlsym(handle, name.c_str());
   #endif

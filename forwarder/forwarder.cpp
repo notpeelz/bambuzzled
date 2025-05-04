@@ -91,7 +91,7 @@ inline auto call_fn(
     oss << utils::to_string(arg);
   })(args), ...);
 
-  auto fn = reinterpret_cast<F>(get_fn<F>(name));
+  auto fn = get_fn<F>(name);
   if (fn) {
     auto ret = fn(std::forward<Args>(args)...);
     bbzl::log::trace_fmt("{}({}) -> {}", name, oss.str(), utils::to_string(ret));

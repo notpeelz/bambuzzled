@@ -32,7 +32,7 @@ void* bambu_network_create_agent(std::string log_dir) {
 }
 
 int bambu_network_destroy_agent(void* agentp) {
-  auto agent = reinterpret_cast<network_agent*>(agentp);
+  auto agent = static_cast<network_agent*>(agentp);
   try_([&]() {
     delete agent;
   });
@@ -40,7 +40,7 @@ int bambu_network_destroy_agent(void* agentp) {
 }
 
 int bambu_network_start(void* agentp) {
-  auto agent = reinterpret_cast<network_agent*>(agentp);
+  auto agent = static_cast<network_agent*>(agentp);
   return try_or(1, [&agent]() {
     return agent->start();
   });
@@ -53,7 +53,7 @@ bool bambu_network_start_discovery(void* agentp, bool start, bool sending) {
 
 std::string bambu_network_get_user_selected_machine(void* agentp) {
   auto scope = BBZL_TRACE_SCOPE(agentp);
-  auto agent = reinterpret_cast<network_agent*>(agentp);
+  auto agent = static_cast<network_agent*>(agentp);
   return try_or_default([&]() {
     return agent->get_user_selected_machine();
   });
@@ -61,7 +61,7 @@ std::string bambu_network_get_user_selected_machine(void* agentp) {
 
 int bambu_network_set_user_selected_machine(void* agentp, std::string dev_id) {
   auto scope = BBZL_TRACE_SCOPE(agentp, dev_id);
-  auto agent = reinterpret_cast<network_agent*>(agentp);
+  auto agent = static_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     agent->set_user_selected_machine(dev_id);
     return 0;
@@ -76,14 +76,14 @@ int bambu_network_connect_printer(
   std::string password,
   bool use_ssl
 ) {
-  auto agent = reinterpret_cast<network_agent*>(agentp);
+  auto agent = static_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     return agent->connect_printer(dev_id, dev_ip, username, password, use_ssl);
   });
 }
 
 int bambu_network_send_message_to_printer(void* agentp, std::string dev_id, std::string json_str, int qos) {
-  auto agent = reinterpret_cast<network_agent*>(agentp);
+  auto agent = static_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     return agent->send_message_to_printer(dev_id, json_str, qos);
   });
@@ -95,7 +95,7 @@ int bambu_network_disconnect_printer(void* agentp) {
 }
 
 int bambu_network_set_config_dir(void* agentp, std::string config_dir) {
-  auto agent = reinterpret_cast<network_agent*>(agentp);
+  auto agent = static_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     agent->set_config_dir(std::move(config_dir));
     return 0;
@@ -103,7 +103,7 @@ int bambu_network_set_config_dir(void* agentp, std::string config_dir) {
 }
 
 int bambu_network_set_on_printer_connected_fn(void* agentp, BBL::OnPrinterConnectedFn fn) {
-  auto agent = reinterpret_cast<network_agent*>(agentp);
+  auto agent = static_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     agent->set_on_printer_connected_fn(std::move(fn));
     return 0;
@@ -111,7 +111,7 @@ int bambu_network_set_on_printer_connected_fn(void* agentp, BBL::OnPrinterConnec
 }
 
 int bambu_network_set_on_server_connected_fn(void* agentp, BBL::OnServerConnectedFn fn) {
-  auto agent = reinterpret_cast<network_agent*>(agentp);
+  auto agent = static_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     agent->set_on_server_connected_fn(std::move(fn));
     return 0;
@@ -119,7 +119,7 @@ int bambu_network_set_on_server_connected_fn(void* agentp, BBL::OnServerConnecte
 }
 
 int bambu_network_set_on_local_connect_fn(void* agentp, BBL::OnLocalConnectedFn fn) {
-  auto agent = reinterpret_cast<network_agent*>(agentp);
+  auto agent = static_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     agent->set_on_local_connected_fn(std::move(fn));
     return 0;
@@ -127,7 +127,7 @@ int bambu_network_set_on_local_connect_fn(void* agentp, BBL::OnLocalConnectedFn 
 }
 
 int bambu_network_set_on_local_message_fn(void* agentp, BBL::OnMessageFn fn) {
-  auto agent = reinterpret_cast<network_agent*>(agentp);
+  auto agent = static_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
     agent->set_on_local_message_fn(std::move(fn));
     return 0;

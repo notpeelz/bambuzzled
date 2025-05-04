@@ -39,7 +39,7 @@ void on_connect(
   void* obj,
   int reason_code
 ) noexcept {
-  auto& mosqpp = *reinterpret_cast<mosquittopp*>(obj);
+  auto& mosqpp = *static_cast<mosquittopp*>(obj);
   if (mosqpp.on_connect_cb != nullptr) {
     mosqpp.on_connect_cb(mosqpp, reason_code);
   }
@@ -50,7 +50,7 @@ void on_disconnect(
   void* obj,
   int reason_code
 ) noexcept {
-  auto& mosqpp = *reinterpret_cast<mosquittopp*>(obj);
+  auto& mosqpp = *static_cast<mosquittopp*>(obj);
   if (mosqpp.on_disconnect_cb != nullptr) {
     mosqpp.on_disconnect_cb(mosqpp, reason_code);
   }
@@ -63,7 +63,7 @@ void on_suback(
   int qos_count,
   const int* granted_qos
 ) noexcept {
-  auto& mosqpp = *reinterpret_cast<mosquittopp*>(obj);
+  auto& mosqpp = *static_cast<mosquittopp*>(obj);
   if (mosqpp.on_suback_cb != nullptr) {
     auto qos_arr = std::span(
       granted_qos,
@@ -78,7 +78,7 @@ void on_message(
   void* obj,
   const mosquitto_message* msg
 ) noexcept {
-  auto& mosqpp = *reinterpret_cast<mosquittopp*>(obj);
+  auto& mosqpp = *static_cast<mosquittopp*>(obj);
   if (mosqpp.on_message_cb != nullptr) {
     mosqpp.on_message_cb(mosqpp, msg);
   }
