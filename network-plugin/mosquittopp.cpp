@@ -14,6 +14,7 @@ using bbzl::ssl::openssl_ctx_handle;
 openssl_ctx_handle create_openssl_context() {
   SSL_METHOD const* method = TLS_client_method();
   auto ctx = openssl_ctx_handle(SSL_CTX_new(method));
+  SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
 
   if (ctx == nullptr) {
     throw std::runtime_error(std::format(
@@ -27,15 +28,20 @@ openssl_ctx_handle create_openssl_context() {
   X509_STORE* store = SSL_CTX_get_cert_store(ctx);
   X509_STORE_set_flags(store, X509_V_FLAG_NO_CHECK_TIME);
 
-  // TODO: embed this file or make it packageable/configurable?
-  if (SSL_CTX_load_verify_file(ctx, "/home/peelz/code/3dp/re/bambuzzled/blcert.pem") != 1) {
-    throw std::runtime_error(std::format(
-      "failed to load CA certificate(s): {}",
-      bbzl::ssl::get_err_msg()
-    ));
-  }
-
-  SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
+  X509_LOOKUP* lookup = X509_STORE_add_lookup(
+    store,
+    X509_LOOKUP_hash_dir()
+  );
+  X509_LOOKUP_add_dir(
+    lookup,
+    nullptr,
+    X509_FILETYPE_DEFAULT
+  );
+  X509_LOOKUP_add_dir(
+    lookup,
+    bbzl::ssl::get_certs_dir().c_str(),
+    X509_FILETYPE_PEM
+  );
 
   return ctx;
 }

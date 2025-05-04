@@ -6,7 +6,7 @@
 
 namespace bbzl::utils::win32 {
 
-std::string get_err_msg(DWORD error = GetLastError());
+std::string get_err_msg(DWORD error = GetLastError()) noexcept;
 
 }
 

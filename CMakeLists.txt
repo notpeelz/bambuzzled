@@ -71,7 +71,6 @@ if(
   OR BBZL_STATIC_DEPS STREQUAL "TRUE"
   OR BBZL_STATIC_DEPS STREQUAL "1"
 )
-  bbzl_set_if_undefined(Boost_USE_STATIC_LIBS ON)
   bbzl_set_if_undefined(MOSQUITTO_USE_STATIC_LIBS ON)
   bbzl_set_if_undefined(OPENSSL_USE_STATIC_LIBS ON)
   bbzl_set_if_undefined(CURL_USE_STATIC_LIBS ON)
@@ -80,7 +79,6 @@ elseif(
   OR BBZL_STATIC_DEPS STREQUAL "FALSE"
   OR BBZL_STATIC_DEPS STREQUAL "0"
 )
-  bbzl_set_if_undefined(Boost_USE_STATIC_LIBS OFF)
   bbzl_set_if_undefined(MOSQUITTO_USE_STATIC_LIBS OFF)
   bbzl_set_if_undefined(OPENSSL_USE_STATIC_LIBS OFF)
   bbzl_set_if_undefined(CURL_USE_STATIC_LIBS OFF)
@@ -96,6 +94,11 @@ endif()
 if(CURL_USE_STATIC_LIBS)
   warn_system_dep(BBZL_WITH_CURL libcurl)
 endif()
+
+install(
+  DIRECTORY certs
+  DESTINATION share/bambuzzled
+)
 
 add_subdirectory(shared)
 add_subdirectory(network-plugin)

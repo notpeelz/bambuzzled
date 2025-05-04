@@ -23,6 +23,7 @@ set_target_properties(
   bambuzzled-network-plugin
   PROPERTIES
   OUTPUT_NAME bambu_networking
+  DEFINE_SYMBOL ""
   CXX_VISIBILITY_PRESET hidden
   C_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN ON
@@ -35,4 +36,8 @@ target_link_libraries(
   nlohmann_json::nlohmann_json
   mosquitto::libmosquitto
   CURL::libcurl
+)
+install(
+  TARGETS bambuzzled-network-plugin
+  DESTINATION lib/bambuzzled
 )

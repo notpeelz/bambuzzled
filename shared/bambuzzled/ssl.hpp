@@ -1,10 +1,10 @@
 #pragma once
 
+#include <filesystem>
 #include <string>
 #include <memory>
 
 #include <openssl/ssl.h>
-#include <openssl/err.h>
 
 namespace bbzl::ssl {
 
@@ -25,14 +25,8 @@ public:
   operator SSL_CTX*() const { return this->get(); }
 };
 
-static std::string get_err_msg() {
-  BIO* bio = BIO_new(BIO_s_mem());
-  ERR_print_errors(bio);
-  char* buf;
-  size_t len = BIO_get_mem_data(bio, &buf);
-  std::string s(buf, len);
-  BIO_free(bio);
-  return s;
-}
+std::string get_err_msg() noexcept;
+
+std::filesystem::path const& get_certs_dir() noexcept;
 
 }

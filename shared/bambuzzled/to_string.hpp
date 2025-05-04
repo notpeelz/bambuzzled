@@ -10,6 +10,19 @@
 #include "demangle.hpp"
 #include "quote.hpp"
 
+namespace {
+
+template<typename, typename = void>
+constexpr bool is_type_complete_v = false;
+
+template<typename T>
+constexpr bool is_type_complete_v<
+  T,
+  std::void_t<decltype(sizeof(T))>
+> = true;
+
+}
+
 namespace bbzl::utils {
 
 template<typename T>
@@ -40,6 +53,16 @@ static inline std::string stringify_value(std::nullptr_t) {
   return "nullptr";
 }
 
+static inline std::string stringify_void_pointer(void const* ptr) {
+  if (ptr == nullptr) {
+    return "nullptr";
+  }
+
+  std::ostringstream oss;
+  oss << "void*[" << ptr << "]";
+  return oss.str();
+}
+
 template<typename T>
 std::string stringify_pointer(T const* ptr) {
   if (ptr == nullptr) {
@@ -63,16 +86,6 @@ std::string stringify_pointer(T const* ptr) {
   return oss.str();
 }
 
-static inline std::string stringify_void_pointer(void const* ptr) {
-  if (ptr == nullptr) {
-    return "nullptr";
-  }
-
-  std::ostringstream oss;
-  oss << "void*[" << ptr << "]";
-  return oss.str();
-}
-
 template<typename T>
 static inline std::string to_string(T const& value) {
   return stringify_value(value);
@@ -80,7 +93,11 @@ static inline std::string to_string(T const& value) {
 
 template<typename T>
 std::string to_string(T* ptr) {
-  return stringify_pointer(ptr);
+  if constexpr (!is_type_complete_v<T>) {
+    return stringify_void_pointer(static_cast<void const*>(ptr));
+  } else {
+    return stringify_pointer(ptr);
+  }
 }
 
 static inline std::string to_string(void* ptr) {
