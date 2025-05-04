@@ -8,7 +8,7 @@
 #include "api/bambu_networking.hpp"
 #include "api/project_task.hpp"
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32)
 
 #if defined(BBZL_NETWORK_PLUGIN_EXPORT)
 #define BBZL_NETWORK_API extern "C" __declspec(dllexport)

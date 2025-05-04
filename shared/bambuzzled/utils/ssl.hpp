@@ -25,7 +25,7 @@ public:
   operator SSL_CTX*() const { return this->get(); }
 };
 
-static std::string get_openssl_err() {
+static std::string get_openssl_err_msg() {
   BIO* bio = BIO_new(BIO_s_mem());
   ERR_print_errors(bio);
   char* buf;

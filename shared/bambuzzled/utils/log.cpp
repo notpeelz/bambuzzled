@@ -115,11 +115,11 @@ namespace bbzl::log {
     auto time = std::chrono::system_clock::to_time_t(now);
     std::tm tm;
 
-#ifdef _WIN32
+    #if defined(_WIN32)
     localtime_s(&tm, &time);
-#else
+    #else
     localtime_r(&time, &tm);
-#endif
+    #endif
 
     char buffer[32];
     (void)std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);

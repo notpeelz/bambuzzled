@@ -39,7 +39,7 @@ static void cleanup() {
   OPENSSL_cleanup();
 }
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32)
 
 #include <windows.h>
 

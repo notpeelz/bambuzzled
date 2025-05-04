@@ -5,8 +5,9 @@
 #include <iostream>
 #include <stdexcept>
 #include <mutex>
+#include <format>
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32)
 #include <windows.h>
 #elif defined(__APPLE__) || defined(__linux__)
 #include <dlfcn.h>
@@ -18,51 +19,42 @@ namespace bbzl::forwarder {
 
 class dyn_lib_loader {
 private:
-#if defined(_WIN32) || defined(__CYGWIN__)
+  #if defined(_WIN32)
   HMODULE handle = nullptr;
-#else
+  #else
   void* handle = nullptr;
-#endif
+  #endif
 
   std::string lib_path;
   std::unordered_map<std::string, void*> cached_symbols;
   std::mutex mutex;
 
-  bool ensure_loaded() {
-    if (handle != nullptr) return true;
+  void ensure_loaded() {
+    if (handle != nullptr) {
+      return;
+    }
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+    #if defined(_WIN32)
     handle = LoadLibraryA(lib_path.c_str());
-#elif defined(__APPLE__) || defined(__linux__)
+    #elif defined(__APPLE__) || defined(__linux__)
     handle = dlopen(lib_path.c_str(), RTLD_LAZY);
     #endif
 
-    if (handle == nullptr) {
-#if defined(_WIN32) || defined(__CYGWIN__)
-      DWORD error = GetLastError();
-      LPSTR buf = nullptr;
-      size_t size = FormatMessageA(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER |
-        FORMAT_MESSAGE_FROM_SYSTEM |
-        FORMAT_MESSAGE_IGNORE_INSERTS,
-        nullptr,
-        error,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPSTR)&buf,
-        0,
-        nullptr
-      );
-
-      std::string message(buf, size);
-
-      throw std::runtime_error("Failed to load library: " + lib_path + ", error: " + message);
-#else
-      throw std::runtime_error("Failed to load library: " + lib_path + ", error: " + dlerror());
-#endif
-      return false;
+    if (handle != nullptr) {
+      return;
     }
 
-    return true;
+    #if defined(_WIN32)
+    auto message = bbzl::utils::win32::get_err_msg();
+    #else
+    auto message = std::string(dlerror());
+    #endif
+
+    throw std::runtime_error(std::format(
+      "Failed to load library '{}': {}",
+      lib_path,
+      message
+    ));
   }
 
 public:
@@ -71,12 +63,12 @@ public:
   }
 
   ~dyn_lib_loader() {
-    if (handle) {
-  #if defined(_WIN32) || defined(__CYGWIN__)
-      FreeLibrary(handle);
-  #else
-      dlclose(handle);
-  #endif
+    if (handle != nullptr) {
+      #if defined(_WIN32)
+      (void)FreeLibrary(handle);
+      #else
+      (void)dlclose(handle);
+      #endif
     }
   }
 
@@ -89,24 +81,27 @@ public:
       return reinterpret_cast<T>(it->second);
     }
 
-    if (!ensure_loaded()) {
-      throw std::runtime_error("library not loaded: " + lib_path);
-    }
+    ensure_loaded();
 
     void* addr = nullptr;
-  #if defined(_WIN32) || defined(__CYGWIN__)
+    #if defined(_WIN32)
     addr = static_cast<void*>(GetProcAddress(handle, name.c_str()));
-  #else
+    #else
     addr = dlsym(handle, name.c_str());
-  #endif
+    #endif
 
     if (addr == nullptr) {
-  #if defined(_WIN32) || defined(__CYGWIN__)
-      DWORD error = GetLastError();
-      throw std::runtime_error("failed to get symbol '" + name + "', error code: " + std::to_string(error));
-  #else
-      throw std::runtime_error("failed to get symbol '" + name + "', error: " + dlerror());
-  #endif
+      #if defined(_WIN32)
+      auto message = bbzl::utils::win32::get_err_msg();
+      #else
+      auto message = std::string(dlerror());
+      #endif
+
+      throw std::runtime_error(std::format(
+        "failed to get symbol '{}', error code: {}",
+        name,
+        message
+      ));
     }
 
     cached_symbols[name] = addr;

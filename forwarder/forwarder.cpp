@@ -12,7 +12,7 @@
 namespace utils = bbzl::utils;
 using bbzl::forwarder::dyn_lib_loader;
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32)
 
 #include <windows.h>
 
