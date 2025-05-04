@@ -1,4 +1,5 @@
 find_package(OpenSSL REQUIRED)
+find_package(CURL REQUIRED)
 
 add_library(
   bambuzzled-shared
@@ -25,5 +26,6 @@ target_include_directories(
   bambuzzled-shared
   PUBLIC
   ${OPENSSL_INCLUDE_DIR}
+  ${CURL_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
 )

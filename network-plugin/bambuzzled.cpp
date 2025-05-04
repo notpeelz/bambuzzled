@@ -10,6 +10,7 @@
 #include <bambuzzled/networking/plugin.hpp>
 
 #include "network_agent.hpp"
+#include "ftp.hpp"
 
 using network_agent = bbzl::network_agent;
 using namespace bbzl::try_wrapper;
@@ -189,8 +190,17 @@ int bambu_network_start_send_gcode_to_sdcard(
   (void)update_fn;
   (void)cancel_fn;
   (void)wait_fn;
-  // NOTE: after sending gcode to sdcard, the slicer calls bambu_network_start_local_print
+
+  // TODO: callbacks
   auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn, wait_fn);
+  auto url = std::format("ftps://{}/{}", params.dev_ip, params.project_name);
+  bbzl::ftp::upload_file(
+    url,
+    params.username,
+    params.password,
+    params.filename
+  );
+
   return 0;
 }
 

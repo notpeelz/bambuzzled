@@ -11,6 +11,7 @@ add_library(
   stubs.cpp
   network_agent.cpp
   mosquittopp.cpp
+  ftp.cpp
 )
 add_library(bbzl::network-plugin ALIAS bambuzzled-network-plugin)
 bbzl_target_link_options_no_undefined(bambuzzled-network-plugin)
