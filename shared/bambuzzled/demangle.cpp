@@ -10,7 +10,7 @@ namespace bbzl::utils {
 #include <DbgHelp.h>
 #pragma comment(lib, "DbgHelp.lib")
 
-std::string demangle(const char* name) {
+std::string demangle(char const* name) {
   if (name[0] != '?') {
     return name;
   }
@@ -32,7 +32,7 @@ std::string demangle(const char* name) {
 
 #include <cxxabi.h>
 
-std::string demangle(const char* name) {
+std::string demangle(char const* name) {
   int status = 0;
   std::unique_ptr<char, void(*)(void*)> res {
     abi::__cxa_demangle(name, nullptr, nullptr, &status),

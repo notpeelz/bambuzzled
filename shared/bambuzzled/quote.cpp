@@ -5,7 +5,7 @@
 
 namespace bbzl::utils {
 
-static void replace_all_mut(std::string& str, const std::string& from, const std::string& to) {
+static void replace_all_mut(std::string& str, std::string const& from, std::string const& to) {
   size_t start_pos = 0;
   while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
     str.replace(start_pos, from.length(), to);

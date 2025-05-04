@@ -16,7 +16,7 @@ class network_client {
 private:
   void on_connect(int reason_code);
   void on_disconnect(int reason_code);
-  void on_message(const mosquitto_message* msg);
+  void on_message(mosquitto_message const* msg);
   void on_suback(mqtt::message_id mid);
 public:
   network_agent* agent;

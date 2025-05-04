@@ -10,8 +10,8 @@
 namespace {
 
 static inline void log_exception(
-  const std::exception& ex,
-  const std::source_location& location
+  std::exception const& ex,
+  std::source_location const& location
 ) noexcept {
   // TODO: don't log file_name/line in release builds
   bbzl::log::error_fmt(
@@ -32,7 +32,7 @@ namespace bbzl::try_wrapper {
 template<typename F>
 static inline void try_(
   F fn,
-  const std::source_location&& location = std::source_location::current()
+  std::source_location const&& location = std::source_location::current()
 ) noexcept requires std::invocable<F> {
   try {
     fn();
@@ -44,7 +44,7 @@ static inline void try_(
 template<typename F>
 static inline auto try_or_default(
   F fn,
-  const std::source_location&& location = std::source_location::current()
+  std::source_location const&& location = std::source_location::current()
 ) noexcept -> typename std::invoke_result_t<F>
 requires std::invocable<F> {
   try {
@@ -59,7 +59,7 @@ template<typename F>
 static inline auto try_or(
   typename std::invoke_result_t<F> fallback,
   F fn,
-  const std::source_location&& location = std::source_location::current()
+  std::source_location const&& location = std::source_location::current()
 ) noexcept -> typename std::invoke_result_t<F>
 requires std::invocable<F> {
   try {
@@ -73,7 +73,7 @@ requires std::invocable<F> {
 template<typename F>
 static auto wrap_try(
   F fn,
-  const std::source_location&& location = std::source_location::current()
+  std::source_location const&& location = std::source_location::current()
 ) noexcept {
   return [
     fn = std::move(fn),
@@ -81,7 +81,7 @@ static auto wrap_try(
   ](auto&&... args) {
     try {
       fn(std::forward<decltype(args)>(args)...);
-    } catch (const std::exception& ex) {
+    } catch (std::exception const& ex) {
       log_exception(ex, location);
     }
   };

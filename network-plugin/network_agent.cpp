@@ -77,7 +77,7 @@ void network_client::on_disconnect(
 }
 
 void network_client::on_message(
-  const mosquitto_message* msg
+  mosquitto_message const* msg
 ) {
   auto msg_str = std::string((char*)msg->payload, msg->payloadlen);
   log::trace_fmt("received message ({}): {}", msg->topic, msg_str);
@@ -132,13 +132,13 @@ network_client* network_agent::get_or_create_conn(std::string& dev_id) {
   conn->mosqpp->set_on_message_cb(
     wrap_try([conn](
       mqtt::mosquittopp&,
-      const mosquitto_message* msg
+      mosquitto_message const* msg
     ) {
       conn->on_message(msg);
     })
   );
 
-  const auto& [_, emplaced] = this->connections.emplace(dev_id, conn);
+  auto const& [_, emplaced] = this->connections.emplace(dev_id, conn);
   assert(emplaced);
   return conn;
 }

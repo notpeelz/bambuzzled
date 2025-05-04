@@ -40,7 +40,7 @@ static void ctor() {
 namespace {
 
 static std::string get_forward_path() {
-  const char* s = std::getenv("BBZL_FORWARD");
+  char const* s = std::getenv("BBZL_FORWARD");
   if (s == nullptr) {
     return "";
   }
@@ -49,7 +49,7 @@ static std::string get_forward_path() {
 }
 
 template<typename T>
-T get_fn(const std::string& name) {
+T get_fn(std::string const& name) {
   static dyn_lib_loader* loader{};
   try {
     if (loader == nullptr) {
@@ -69,7 +69,7 @@ T get_fn(const std::string& name) {
 }
 
 template<typename F, typename... Args>
-void call_fn_void(const char* name, Args&&... args) {
+void call_fn_void(char const* name, Args&&... args) {
   auto fn = get_fn<F>(name);
   if (fn) {
     return fn(std::forward<Args>(args)...);
@@ -78,13 +78,13 @@ void call_fn_void(const char* name, Args&&... args) {
 
 template<typename F, typename... Args>
 inline auto call_fn(
-  const char* name,
+  char const* name,
   typename std::invoke_result_t<F, Args...> fallback,
   Args&&... args
 ) -> typename std::invoke_result_t<F, Args...> {
   std::ostringstream oss;
 
-  (([&](const auto& arg) {
+  (([&](auto const& arg) {
     if (!oss.str().empty()) {
       oss << ", ";
     }

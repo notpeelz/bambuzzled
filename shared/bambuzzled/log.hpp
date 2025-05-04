@@ -20,7 +20,7 @@ enum class log_level {
 
 void set_level_filter(log_level level) noexcept;
 
-void log_internal(log_level level, const std::string& msg) noexcept;
+void log_internal(log_level level, std::string const& msg) noexcept;
 
 template<typename... Args>
 static inline void trace_fmt(std::format_string<Args...> fmt, Args&&... args) noexcept {
@@ -47,23 +47,23 @@ static inline void error_fmt(std::format_string<Args...> fmt, Args&&... args) no
   log_internal(log_level::ERROR, std::format(fmt, std::forward<Args>(args)...));
 }
 
-static inline void trace(const std::string& s) noexcept {
+static inline void trace(std::string const& s) noexcept {
   log_internal(log_level::TRACE, s);
 }
 
-static inline void debug(const std::string& s) noexcept {
+static inline void debug(std::string const& s) noexcept {
   log_internal(log_level::DEBUG, s);
 }
 
-static inline void info(const std::string& s) noexcept {
+static inline void info(std::string const& s) noexcept {
   log_internal(log_level::INFO, s);
 }
 
-static inline void warn(const std::string& s) noexcept {
+static inline void warn(std::string const& s) noexcept {
   log_internal(log_level::WARN, s);
 }
 
-static inline void error(const std::string& s) noexcept {
+static inline void error(std::string const& s) noexcept {
   log_internal(log_level::ERROR, s);
 }
 
@@ -82,14 +82,14 @@ public:
 
 template<typename... Args>
 static inline trace_scope_guard trace_scope(
-  const std::source_location&& location,
+  std::source_location const&& location,
   Args&&... args
 ) {
   std::ostringstream oss;
   oss << "ENTER: " << location.function_name();
 
   size_t i = 0;
-  (([&](const auto& arg) {
+  (([&](auto const& arg) {
     oss << "\n  " << i << ": " << bbzl::utils::to_string(arg);
     i++;
   })(args), ...);
@@ -107,14 +107,14 @@ static inline trace_scope_guard trace_scope(
 template<typename... Args>
 static inline trace_scope_guard trace_scope_named(
   std::string_view name,
-  const std::source_location&& location,
+  std::source_location const&& location,
   Args&&... args
 ) {
   std::ostringstream oss;
   oss << "ENTER: " << name << ": " << location.function_name();
 
   size_t i = 0;
-  (([&](const auto& arg) {
+  (([&](auto const& arg) {
     oss << "\n  " << i << ": " << bbzl::utils::to_string(arg);
     i++;
   })(args), ...);

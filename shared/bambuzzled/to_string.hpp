@@ -13,7 +13,7 @@
 namespace bbzl::utils {
 
 template<typename T>
-static inline std::string stringify_value(const T& value) {
+static inline std::string stringify_value(T const& value) {
   std::ostringstream oss;
   if constexpr (std::is_arithmetic_v<T> || std::is_enum_v<T>) {
     oss << value;
@@ -28,7 +28,7 @@ static inline std::string stringify_value(const T& value) {
   return oss.str();
 }
 
-static inline std::string stringify_value(const std::string& value) {
+static inline std::string stringify_value(std::string const& value) {
   return quote_string(value);
 }
 
@@ -41,7 +41,7 @@ static inline std::string stringify_value(std::nullptr_t) {
 }
 
 template<typename T>
-std::string stringify_pointer(const T* ptr) {
+std::string stringify_pointer(T const* ptr) {
   if (ptr == nullptr) {
     return "nullptr";
   }
@@ -63,7 +63,7 @@ std::string stringify_pointer(const T* ptr) {
   return oss.str();
 }
 
-static inline std::string stringify_void_pointer(const void* ptr) {
+static inline std::string stringify_void_pointer(void const* ptr) {
   if (ptr == nullptr) {
     return "nullptr";
   }
@@ -74,7 +74,7 @@ static inline std::string stringify_void_pointer(const void* ptr) {
 }
 
 template<typename T>
-static inline std::string to_string(const T& value) {
+static inline std::string to_string(T const& value) {
   return stringify_value(value);
 }
 
@@ -87,7 +87,7 @@ static inline std::string to_string(void* ptr) {
   return stringify_void_pointer(ptr);
 }
 
-static inline std::string to_string(const void* ptr) {
+static inline std::string to_string(void const* ptr) {
   return stringify_void_pointer(ptr);
 }
 

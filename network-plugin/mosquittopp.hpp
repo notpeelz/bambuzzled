@@ -52,12 +52,12 @@ using on_suback_cb_fn = std::function<void(
 
 using on_message_cb_fn = std::function<void(
   mosquittopp& mosq,
-  const mosquitto_message* msg
+  mosquitto_message const* msg
 )>;
 
 class mosquittopp {
 private:
-  bbzl::utils::openssl_ctx_handle openssl_ctx;
+  bbzl::ssl::openssl_ctx_handle openssl_ctx;
   on_connect_cb_fn on_connect_cb;
   on_disconnect_cb_fn on_disconnect_cb;
   on_suback_cb_fn on_suback_cb;
@@ -80,14 +80,14 @@ private:
   friend void on_message(
     mosquitto*,
     void* obj,
-    const mosquitto_message* msg
+    mosquitto_message const* msg
   ) noexcept;
   friend void on_suback(
     mosquitto*,
     void* obj,
     int mid,
     int qos_count,
-    const int* granted_qos
+    int const* granted_qos
   ) noexcept;
 public:
   mosquittopp();
@@ -105,16 +105,16 @@ public:
     int keepalive = 0
   );
   void disconnect();
-  message_id subscribe(const std::string& topic, int qos);
+  message_id subscribe(std::string const& topic, int qos);
   message_id publish(
-    const std::string& topic,
+    std::string const& topic,
     const std::span<const std::byte>& payload,
     int qos,
     bool retain = false
   );
   message_id publish(
-    const std::string& topic,
-    const std::string& payload,
+    std::string const& topic,
+    std::string const& payload,
     int qos,
     bool retain = false
   );

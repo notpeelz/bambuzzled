@@ -9,17 +9,16 @@
 
 namespace bbzl::mqtt {
 
-using bbzl::utils::openssl_ctx_handle;
-using bbzl::utils::get_openssl_err_msg;
+using bbzl::ssl::openssl_ctx_handle;
 
 openssl_ctx_handle create_openssl_context() {
-  const SSL_METHOD* method = TLS_client_method();
+  SSL_METHOD const* method = TLS_client_method();
   auto ctx = openssl_ctx_handle(SSL_CTX_new(method));
 
   if (ctx == nullptr) {
     throw std::runtime_error(std::format(
       "failed to create OpenSSL context: {}",
-      get_openssl_err_msg()
+      bbzl::ssl::get_err_msg()
     ));
   }
 
@@ -32,7 +31,7 @@ openssl_ctx_handle create_openssl_context() {
   if (SSL_CTX_load_verify_file(ctx, "/home/peelz/code/3dp/re/bambuzzled/blcert.pem") != 1) {
     throw std::runtime_error(std::format(
       "failed to load CA certificate(s): {}",
-      get_openssl_err_msg()
+      bbzl::ssl::get_err_msg()
     ));
   }
 
@@ -68,7 +67,7 @@ void on_suback(
   void* obj,
   int mid,
   int qos_count,
-  const int* granted_qos
+  int const* granted_qos
 ) noexcept {
   auto& mosqpp = *static_cast<mosquittopp*>(obj);
   if (mosqpp.on_suback_cb != nullptr) {
@@ -83,7 +82,7 @@ void on_suback(
 void on_message(
   mosquitto*,
   void* obj,
-  const mosquitto_message* msg
+  mosquitto_message const* msg
 ) noexcept {
   auto& mosqpp = *static_cast<mosquittopp*>(obj);
   if (mosqpp.on_message_cb != nullptr) {
@@ -284,7 +283,7 @@ void mosquittopp::disconnect() {
   (void)this->thread.get_stop_source().request_stop();
 }
 
-message_id mosquittopp::subscribe(const std::string& topic, int qos) {
+message_id mosquittopp::subscribe(std::string const& topic, int qos) {
   message_id mid;
   int rc = mosquitto_subscribe(this->mosq, &mid, topic.c_str(), qos);
   if (rc != MOSQ_ERR_SUCCESS) {
@@ -298,7 +297,7 @@ message_id mosquittopp::subscribe(const std::string& topic, int qos) {
 }
 
 message_id mosquittopp::publish(
-  const std::string& topic,
+  std::string const& topic,
   const std::span<const std::byte>& payload,
   int qos,
   bool retain
@@ -330,13 +329,13 @@ message_id mosquittopp::publish(
 }
 
 message_id mosquittopp::publish(
-  const std::string& topic,
-  const std::string& payload,
+  std::string const& topic,
+  std::string const& payload,
   int qos,
   bool retain
 ) {
   auto span = std::span(
-    reinterpret_cast<const std::byte*>(payload.data()),
+    reinterpret_cast<std::byte const*>(payload.data()),
     payload.length()
   );
   return this->publish(topic, span, qos, retain);

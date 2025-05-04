@@ -4,6 +4,6 @@
 
 namespace bbzl::utils {
 
-std::string demangle(const char* name);
+std::string demangle(char const* name);
 
 }

@@ -58,7 +58,7 @@ private:
   }
 
 public:
-  dyn_lib_loader(const std::string& lib_path) : lib_path(lib_path) {
+  dyn_lib_loader(std::string const& lib_path) : lib_path(lib_path) {
     ensure_loaded();
   }
 
@@ -73,8 +73,8 @@ public:
   }
 
   template<typename T>
-  T get_symbol(const std::string& name) {
-    std::lock_guard<std::mutex> lock(mutex);
+  T get_symbol(std::string const& name) {
+    auto lock = std::lock_guard(mutex);
 
     auto it = cached_symbols.find(name);
     if (it != cached_symbols.end()) {

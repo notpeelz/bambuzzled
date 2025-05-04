@@ -36,7 +36,7 @@ namespace bbzl::log {
     }
   }
 
-  static std::optional<log_level> str_to_level(const char* level) noexcept {
+  static std::optional<log_level> str_to_level(char const* level) noexcept {
     if (level == nullptr) {
       return std::nullopt;
     }
@@ -126,8 +126,8 @@ namespace bbzl::log {
     return buffer;
   }
 
-  void log_internal(log_level level, const std::string& msg) noexcept {
-    std::lock_guard<std::mutex> lock(mutex);
+  void log_internal(log_level level, std::string const& msg) noexcept {
+    auto lock = std::lock_guard(mutex);
     ensure_initialized();
 
     if (level < current_level) {

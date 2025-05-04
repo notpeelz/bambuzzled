@@ -53,7 +53,7 @@ public:
     weight = 0.0f;
   }
 
-  BBLSliceInfo(const BBLSliceInfo& obj) {
+  BBLSliceInfo(BBLSliceInfo const& obj) {
     this->index = obj.index;
     this->title = obj.title;
     this->thumbnail_dir = obj.thumbnail_dir;
@@ -121,7 +121,7 @@ public:
 
   BBLSubTask(BBLTask* task = nullptr);
 
-  BBLSubTask(const BBLSubTask& obj) {
+  BBLSubTask(BBLSubTask const& obj) {
     task_id = obj.task_id;
     parent_id = obj.parent_id;
     task_model_id = obj.task_model_id;

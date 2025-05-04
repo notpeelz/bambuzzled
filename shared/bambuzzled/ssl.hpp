@@ -6,7 +6,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-namespace bbzl::utils {
+namespace bbzl::ssl {
 
 struct openssl_ctx_handle_deleter {
   void operator()(SSL_CTX* ctx) const {
@@ -25,7 +25,7 @@ public:
   operator SSL_CTX*() const { return this->get(); }
 };
 
-static std::string get_openssl_err_msg() {
+static std::string get_err_msg() {
   BIO* bio = BIO_new(BIO_s_mem());
   ERR_print_errors(bio);
   char* buf;
