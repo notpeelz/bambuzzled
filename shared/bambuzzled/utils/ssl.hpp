@@ -8,7 +8,7 @@
 
 namespace bbzl::utils {
 
-struct openssl_ctx_deleter {
+struct openssl_ctx_handle_deleter {
   void operator()(SSL_CTX* ctx) const {
     if (ctx != nullptr) {
       SSL_CTX_free(ctx);
@@ -16,7 +16,14 @@ struct openssl_ctx_deleter {
   }
 };
 
-using openssl_ctx_ptr = std::unique_ptr<SSL_CTX, openssl_ctx_deleter>;
+class openssl_ctx_handle
+  : public std::unique_ptr<SSL_CTX, openssl_ctx_handle_deleter>
+{
+public:
+  using base = std::unique_ptr<SSL_CTX, openssl_ctx_handle_deleter>;
+  using base::base;
+  operator SSL_CTX*() const { return this->get(); }
+};
 
 static std::string get_openssl_err() {
   BIO* bio = BIO_new(BIO_s_mem());

@@ -13,7 +13,7 @@
 
 namespace bbzl::mqtt {
 
-struct mosquitto_deleter {
+struct mosquitto_handle_deleter {
   void operator()(mosquitto* mosq) const {
     if (mosq != nullptr) {
       mosquitto_destroy(mosq);
@@ -21,7 +21,15 @@ struct mosquitto_deleter {
   }
 };
 
-using mosquitto_ptr = std::unique_ptr<mosquitto, mosquitto_deleter>;
+class mosquitto_handle
+  : public std::unique_ptr<mosquitto, mosquitto_handle_deleter>
+{
+public:
+  using base = std::unique_ptr<mosquitto, mosquitto_handle_deleter>;
+  using base::base;
+  operator mosquitto*() const { return this->get(); }
+};
+
 using message_id = int;
 
 class mosquittopp;
@@ -49,12 +57,12 @@ using on_message_cb_fn = std::function<void(
 
 class mosquittopp {
 private:
-  bbzl::utils::openssl_ctx_ptr openssl_ctx;
+  bbzl::utils::openssl_ctx_handle openssl_ctx;
   on_connect_cb_fn on_connect_cb;
   on_disconnect_cb_fn on_disconnect_cb;
   on_suback_cb_fn on_suback_cb;
   on_message_cb_fn on_message_cb;
-  mosquitto_ptr mosq;
+  mosquitto_handle mosq;
   int keepalive = 0;
   void thread_main(std::stop_token st);
   std::jthread thread;
