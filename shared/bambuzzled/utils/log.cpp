@@ -127,12 +127,12 @@ namespace bbzl::log {
   }
 
   void log_internal(log_level level, const std::string& msg) noexcept {
+    std::lock_guard<std::mutex> lock(mutex);
+    ensure_initialized();
+
     if (level < current_level) {
       return;
     }
-
-    std::lock_guard<std::mutex> lock(mutex);
-    ensure_initialized();
 
     auto log_line = std::format(
       "[{}] [{}] {}\n"sv,
