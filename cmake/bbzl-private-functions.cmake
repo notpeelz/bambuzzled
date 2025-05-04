@@ -1,0 +1,22 @@
+include(CheckLinkerFlag)
+
+function(bbzl_set_if_undefined OPT_NAME VAL)
+  if(NOT DEFINED ${OPT_NAME})
+    set(${OPT_NAME} ${VAL} PARENT_SCOPE)
+  endif()
+endfunction()
+
+function(bbzl_target_link_options_no_undefined TARGET)
+  if(MSVC)
+    return()
+  endif()
+
+  if(CMAKE_C_COMPILER_ID MATCHES "AppleClang")
+    target_link_options(${TARGET} PRIVATE "-Wl,-undefined,error")
+  else()
+    check_linker_flag(CXX "-Wl,--no-undefined" HAVE_WL_NO_UNDEFINED)
+    if(HAVE_WL_NO_UNDEFINED AND NOT ((CMAKE_C_COMPILER_ID MATCHES "Clang") AND WIN32))
+      target_link_options(${TARGET} PRIVATE "-Wl,--no-undefined")
+    endif()
+  endif()
+endfunction()

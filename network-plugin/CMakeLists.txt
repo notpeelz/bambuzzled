@@ -13,6 +13,7 @@ add_library(
   mosquittopp.cpp
 )
 add_library(bbzl::network-plugin ALIAS bambuzzled-network-plugin)
+bbzl_target_link_options_no_undefined(bambuzzled-network-plugin)
 target_compile_definitions(
   bambuzzled-network-plugin
   PRIVATE

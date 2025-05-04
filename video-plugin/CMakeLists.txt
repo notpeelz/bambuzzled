@@ -4,6 +4,7 @@ add_library(
   video.cpp
 )
 add_library(bbzl::video ALIAS bambuzzled-video-plugin)
+bbzl_target_link_options_no_undefined(bambuzzled-video-plugin)
 set_target_properties(
   bambuzzled-video-plugin
   PROPERTIES
