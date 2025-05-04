@@ -1,0 +1,13 @@
+#pragma once
+
+#if defined(_WIN32)
+
+#include <windows.h>
+
+namespace bbzl::utils::win32 {
+
+std::string get_err_msg(DWORD error = GetLastError());
+
+}
+
+#endif
