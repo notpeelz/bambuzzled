@@ -32,6 +32,7 @@ cmake -B build -S . \
   -DOPENSSL_ROOT_DIR="/path/to/openssl/install" \
   -DBBZL_WITH_NLOHMANN_JSON=VENDOR \
   -DBBZL_WITH_MOSQUITTO=VENDOR \
+  -DBBZL_WITH_CURL=VENDOR \
   -DBBZL_STATIC_DEPS=ON
 cmake --build build --config Release -j
 ```
@@ -57,14 +58,6 @@ For VSCode, you may add this to your `settings.json`:
 }
 ```
 
-## Compiling Boost
-
-You'll need to download, extract, then build Boost:
-```pwsh
-boostrap.bat toolset=msvc
-b2.exe toolset=msvc link=static address-model=64
-```
-
 ## Configuring and building
 
 In order to build the project, you'll need to install `cmake`, `ninja`, `patch` and `openssl` via [scoop](https://scoop.sh/).
@@ -73,10 +66,10 @@ In order to build the project, you'll need to install `cmake`, `ninja`, `patch` 
 cmake -B build -S . `
   -G Ninja `
   -DCMAKE_BUILD_TYPE=RelWithDebInfo `
-  -DCMAKE_PREFIX_PATH="C:/path/to/boost/stage/lib/cmake" `
   -DOPENSSL_ROOT_DIR="${env:UserProfile}/scoop/apps/openssl/current" `
   -DBBZL_WITH_NLOHMANN_JSON=VENDOR `
   -DBBZL_WITH_MOSQUITTO=VENDOR `
+  -DBBZL_WITH_CURL=VENDOR `
   -DBBZL_STATIC_DEPS=ON
 cmake --build build -j
 
