@@ -1,6 +1,7 @@
 add_library(
   bambuzzled-forwarder
   SHARED
+  init.cpp
   forwarder.cpp
 )
 add_library(bbzl::forwarder ALIAS bambuzzled-forwarder)

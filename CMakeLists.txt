@@ -20,7 +20,8 @@ if(WIN32)
     _CRT_NONSTDC_NO_DEPRECATE
     # less Windows cruft
     WIN32_LEAN_AND_MEAN
-    # workaround for macro pollution (e.g. `#define ERROR`) from wingdi.h
+    # avoid macro pollution (min/max, ERROR)
+    NOMINMAX
     NOGDI
   )
 endif()
