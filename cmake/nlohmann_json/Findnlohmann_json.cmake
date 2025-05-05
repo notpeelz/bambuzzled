@@ -1,14 +1,17 @@
 include(FindPackageHandleStandardArgs)
 include(ExternalProject)
 
+set(NLOHMANN_JSON_SOURCE_DIR ${PROJECT_SOURCE_DIR}/libs/nlohmann-json)
 set(NLOHMANN_JSON_INSTALL_DIR ${CMAKE_BINARY_DIR}/libs/install/nlohmann-json)
 set(NLOHMANN_JSON_INCLUDE_DIR ${NLOHMANN_JSON_INSTALL_DIR}/include)
+
+bbzl_validate_submodule(${NLOHMANN_JSON_SOURCE_DIR})
 
 if(NOT TARGET vendored-nlohmann-json)
   ExternalProject_Add(
     vendored-nlohmann-json
     PREFIX ${CMAKE_BINARY_DIR}/libs/prefix/nlohmann-json
-    URL ${PROJECT_SOURCE_DIR}/libs/nlohmann-json
+    URL ${NLOHMANN_JSON_SOURCE_DIR}
     CMAKE_ARGS
       -DJSON_BuildTests=OFF
       -DCMAKE_INSTALL_PREFIX=${NLOHMANN_JSON_INSTALL_DIR}

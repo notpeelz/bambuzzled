@@ -1,8 +1,11 @@
 include(FindPackageHandleStandardArgs)
 include(ExternalProject)
 
+set(MOSQUITTO_SOURCE_DIR ${PROJECT_SOURCE_DIR}/libs/mosquitto)
 set(MOSQUITTO_INSTALL_DIR ${CMAKE_BINARY_DIR}/libs/install/libmosquitto)
 set(MOSQUITTO_INCLUDE_DIR ${MOSQUITTO_INSTALL_DIR}/include)
+
+bbzl_validate_submodule(${MOSQUITTO_SOURCE_DIR})
 
 find_package(OpenSSL REQUIRED)
 
@@ -60,7 +63,7 @@ if(NOT TARGET vendored-mosquitto)
   ExternalProject_Add(
     vendored-mosquitto
     PREFIX ${CMAKE_BINARY_DIR}/libs/prefix/libmosquitto
-    URL ${PROJECT_SOURCE_DIR}/libs/mosquitto
+    URL ${MOSQUITTO_SOURCE_DIR}
     CMAKE_ARGS ${MOSQUITTO_CMAKE_ARGS}
     INSTALL_DIR ${MOSQUITTO_INSTALL_DIR}
     BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG>

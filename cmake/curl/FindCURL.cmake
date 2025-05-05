@@ -1,8 +1,11 @@
 include(FindPackageHandleStandardArgs)
 include(ExternalProject)
 
+set(CURL_SOURCE_DIR ${PROJECT_SOURCE_DIR}/libs/curl)
 set(CURL_INSTALL_DIR ${CMAKE_BINARY_DIR}/libs/install/libcurl)
 set(CURL_INCLUDE_DIR ${CURL_INSTALL_DIR}/include)
+
+bbzl_validate_submodule(${CURL_SOURCE_DIR})
 
 find_package(OpenSSL REQUIRED)
 
@@ -69,7 +72,7 @@ if(NOT TARGET vendored-curl)
   ExternalProject_Add(
     vendored-curl
     PREFIX ${CMAKE_BINARY_DIR}/libs/prefix/libcurl
-    URL ${PROJECT_SOURCE_DIR}/libs/curl
+    URL ${CURL_SOURCE_DIR}
     CMAKE_ARGS ${CURL_CMAKE_ARGS}
     INSTALL_DIR ${CURL_INSTALL_DIR}
     BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG>
