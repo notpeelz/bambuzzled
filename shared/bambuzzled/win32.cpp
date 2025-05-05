@@ -4,7 +4,7 @@
 
 namespace bbzl::utils::win32 {
 
-std::string get_err_msg(DWORD error) {
+std::string get_err_msg(DWORD error) noexcept {
   LPSTR buf = nullptr;
   size_t size = FormatMessageA(
     FORMAT_MESSAGE_ALLOCATE_BUFFER |

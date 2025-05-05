@@ -13,9 +13,24 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(WIN32)
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-  add_definitions("-D_CRT_SECURE_NO_WARNINGS")
-  add_definitions("-D_CRT_SECURE_NO_DEPRECATE")
-  add_compile_options("/Zc:preprocessor")
+  bbzl_add_global_defines(
+    # don't complain about POSIX APIs
+    _CRT_SECURE_NO_WARNINGS
+    _CRT_SECURE_NO_DEPRECATE
+    _CRT_NONSTDC_NO_DEPRECATE
+    # less Windows cruft
+    WIN32_LEAN_AND_MEAN
+    # workaround for macro pollution (e.g. `#define ERROR`) from wingdi.h
+    NOGDI
+  )
+endif()
+
+if(MSVC)
+  # workaround for broken __VA_OPT__
+  # https://stackoverflow.com/questions/77700691/getting-va-opt-to-be-recognized-by-visual-studio
+  bbzl_add_global_compile_options(
+    /Zc:preprocessor
+  )
 endif()
 
 set(BBZL_WITH_NLOHMANN_JSON "SYSTEM" CACHE STRING "Build with nlohmann-json")

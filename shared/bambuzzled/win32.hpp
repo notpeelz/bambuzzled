@@ -2,6 +2,7 @@
 
 #if defined(_WIN32)
 
+#include <string>
 #include <windows.h>
 
 namespace bbzl::utils::win32 {

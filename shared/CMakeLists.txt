@@ -25,7 +25,7 @@ target_compile_definitions(
 target_include_directories(
   bambuzzled-shared
   PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${OPENSSL_INCLUDE_DIR}
   ${CURL_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}
 )

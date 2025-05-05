@@ -9,6 +9,7 @@
 
 #if defined(_WIN32)
 #include <windows.h>
+#include <bambuzzled/win32.hpp>
 #elif defined(__APPLE__) || defined(__linux__)
 #include <dlfcn.h>
 #else
