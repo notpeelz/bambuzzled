@@ -11,7 +11,6 @@ add_library(
   bambuzzled/win32.cpp
 )
 add_library(bbzl::shared ALIAS bambuzzled-shared)
-bbzl_target_link_options_no_undefined(bambuzzled-shared)
 set_target_properties(
   bambuzzled-shared
   PROPERTIES
