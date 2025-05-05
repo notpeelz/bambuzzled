@@ -15,7 +15,16 @@ using bbzl::forwarder::dyn_lib_loader;
 namespace {
 
 static std::string get_forward_path() {
-  char const* s = std::getenv("BBZL_FORWARD");
+  constexpr char const* BBZL_FORWARD = "BBZL_FORWARD";
+  #if defined(_WIN32)
+  auto s_owned = utils::win32::getenv_utf8(BBZL_FORWARD);
+  char const* s = s_owned.empty()
+    ? nullptr
+    : s_owned.c_str();
+  #else
+  char const* s = std::getenv(BBZL_FORWARD);
+  #endif
+
   if (s == nullptr) {
     return "";
   }

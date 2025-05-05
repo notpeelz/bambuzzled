@@ -7,8 +7,13 @@
 #include <format>
 #include <chrono>
 
+#if defined(_WIN32)
+#include <bambuzzled/win32.hpp>
+#endif
+
 #include "log.hpp"
 
+namespace utils = bbzl::utils;
 using namespace std::string_view_literals;
 
 namespace bbzl::log {
@@ -93,7 +98,17 @@ namespace bbzl::log {
 
     if (!level_initialized) {
       level_initialized = true;
-      char* level_str = std::getenv("BBZL_LOG_LEVEL");
+
+      constexpr char const* BBZL_LOG_LEVEL = "BBZL_LOG_LEVEL";
+      #if defined(_WIN32)
+      auto level_str_owned = utils::win32::getenv_utf8(BBZL_LOG_LEVEL);
+      char const* level_str = level_str_owned.empty()
+        ? nullptr
+        : level_str_owned.c_str();
+      #else
+      char const* level_str = std::getenv(BBZL_LOG_LEVEL);
+      #endif
+
       auto level = str_to_level(level_str);
       if (level.has_value()) {
         current_level = level.value();
@@ -102,7 +117,16 @@ namespace bbzl::log {
       }
     }
 
-    char* log_file_str = std::getenv("BBZL_LOG_FILE");
+    constexpr char const* BBZL_LOG_FILE = "BBZL_LOG_FILE";
+    #if defined(_WIN32)
+    auto log_file_str_owned = utils::win32::getenv_utf8(BBZL_LOG_FILE);
+    char const* log_file_str = log_file_str_owned.empty()
+      ? nullptr
+      : log_file_str_owned.c_str();
+    #else
+    char const* log_file_str = std::getenv(BBZL_LOG_FILE);
+    #endif
+
     if (log_file_str != nullptr) {
       try {
         log_file.open(log_file_str, std::ios::out);

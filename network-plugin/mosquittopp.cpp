@@ -39,7 +39,9 @@ openssl_ctx_handle create_openssl_context() {
   );
   X509_LOOKUP_add_dir(
     lookup,
-    bbzl::ssl::get_certs_dir().c_str(),
+    reinterpret_cast<char const*>(
+      bbzl::ssl::get_certs_dir().u8string().c_str()
+    ),
     X509_FILETYPE_PEM
   );
 
