@@ -12,6 +12,7 @@
 #include "network_agent.hpp"
 #include "ftp.hpp"
 
+using json = nlohmann::json;
 using network_agent = bbzl::network_agent;
 using namespace bbzl::try_wrapper;
 
@@ -193,9 +194,8 @@ int bambu_network_start_send_gcode_to_sdcard(
 
   // TODO: callbacks
   auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn, wait_fn);
-  auto url = std::format("ftps://{}/{}", params.dev_ip, params.project_name);
   bbzl::ftp::upload_file(
-    url,
+    std::format("ftps://{}/{}", params.dev_ip, params.project_name),
     params.username,
     params.password,
     params.filename
@@ -215,6 +215,44 @@ int bambu_network_start_local_print(
   (void)update_fn;
   (void)cancel_fn;
   auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn);
+  auto agent = static_cast<network_agent*>(agentp);
+
+  auto file_name = std::format("{}.gcode.3mf", params.project_name);
+  bbzl::ftp::upload_file(
+    std::format("ftps://{}/{}", params.dev_ip, file_name),
+    params.username,
+    params.password,
+    params.filename
+  );
+
+  auto o = json::object();
+  o["print"] = json::object({
+    { "ams_mapping", json::array() }, // TODO
+    { "bed_leveling", params.task_bed_leveling },
+    { "bed_type", params.task_bed_type }, // TODO: OpenBambuAPI says this should be "auto" for local prints?
+    { "command", "project_file" },
+    { "file", file_name },
+    { "flow_cali", params.task_flow_cali },
+    { "layer_inspect", params.task_layer_inspect },
+    { "md5", "" }, // TODO: compute md5 hash?
+    { "param", std::format("Metadata/plate_{}.gcode", params.plate_index) },
+    { "profile_id", "0" },
+    { "project_id", "0" },
+    { "sequence_id", "0" }, // TODO: "50000"? ++sequence_id
+    { "subtask_id", "0" },
+    { "subtask_name", params.project_name }, // ?
+    { "task_id", "0" },
+    { "timelapse", params.task_record_timelapse },
+    { "url", std::format("file:///sdcard/{}", file_name) }, // TODO: use params.ftp_folder?
+    { "use_ams", params.task_use_ams },
+    { "vibration_cali", params.task_vibration_cali },
+  });
+
+  auto s = o.dump();
+
+  // TODO: do something with the return value
+  agent->send_message_to_printer(params.dev_id, s, 1);
+
   return 0;
 }
 
