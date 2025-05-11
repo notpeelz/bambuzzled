@@ -1,8 +1,7 @@
-#include <type_traits>
-#include <iostream>
 #include <string>
-#include <sstream>
 #include <functional>
+#include <filesystem>
+#include <system_error>
 
 #include <nlohmann/json.hpp>
 #include <bambuzzled/log.hpp>
@@ -151,15 +150,15 @@ int bambu_network_start_print(
   void* agentp,
   BBL::PrintParams params,
   BBL::OnUpdateStatusFn update_fn,
-  BBL::WasCancelledFn cancel_fn,
+  BBL::WasCancelledFn was_cancelled_fn,
   BBL::OnWaitFn wait_fn
 ) {
   (void)agentp;
   (void)params;
   (void)update_fn;
-  (void)cancel_fn;
+  (void)was_cancelled_fn;
   (void)wait_fn;
-  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn, wait_fn);
+  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, was_cancelled_fn, wait_fn);
   return 0;
 }
 
@@ -167,15 +166,15 @@ int bambu_network_start_local_print_with_record(
   void* agentp,
   BBL::PrintParams params,
   BBL::OnUpdateStatusFn update_fn,
-  BBL::WasCancelledFn cancel_fn,
+  BBL::WasCancelledFn was_cancelled_fn,
   BBL::OnWaitFn wait_fn
 ) {
   (void)agentp;
   (void)params;
   (void)update_fn;
-  (void)cancel_fn;
+  (void)was_cancelled_fn;
   (void)wait_fn;
-  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn, wait_fn);
+  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, was_cancelled_fn, wait_fn);
   return 0;
 }
 
@@ -183,17 +182,17 @@ int bambu_network_start_send_gcode_to_sdcard(
   void* agentp,
   BBL::PrintParams params,
   BBL::OnUpdateStatusFn update_fn,
-  BBL::WasCancelledFn cancel_fn,
+  BBL::WasCancelledFn was_cancelled_fn,
   BBL::OnWaitFn wait_fn
 ) {
   (void)agentp;
   (void)params;
   (void)update_fn;
-  (void)cancel_fn;
+  (void)was_cancelled_fn;
   (void)wait_fn;
 
   // TODO: callbacks
-  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn, wait_fn);
+  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, was_cancelled_fn, wait_fn);
   bbzl::ftp::upload_file(
     std::format("ftps://{}/{}", params.dev_ip, params.project_name),
     params.username,
@@ -208,33 +207,79 @@ int bambu_network_start_local_print(
   void* agentp,
   BBL::PrintParams params,
   BBL::OnUpdateStatusFn update_fn,
-  BBL::WasCancelledFn cancel_fn
+  BBL::WasCancelledFn was_cancelled_fn
 ) {
-  (void)agentp;
-  (void)params;
-  (void)update_fn;
-  (void)cancel_fn;
-  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn);
+  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, was_cancelled_fn);
   auto agent = static_cast<network_agent*>(agentp);
 
+  if (update_fn != nullptr) {
+    update_fn(
+      BBL::SendingPrintJobStage::PrintingStageUpload,
+      BAMBU_NETWORK_SUCCESS,
+      ""
+    );
+  }
+
+  std::error_code ec;
+  auto file_size = std::filesystem::file_size(params.filename, ec);
+  if (ec.value() != 0) {
+    return BAMBU_NETWORK_ERR_PRINT_WR_FILE_NOT_EXIST;
+  }
+
+  if (file_size > 1 * 1024 * 1024 * 1024) {
+    if (update_fn != nullptr) {
+      update_fn(
+        BBL::SendingPrintJobStage::PrintingStageUpload,
+        BAMBU_NETWORK_ERR_PRINT_LP_FILE_OVER_SIZE,
+        "The size of the uploaded file cannot exceed 1 GB."
+      );
+    }
+    return BAMBU_NETWORK_ERR_PRINT_LP_FILE_OVER_SIZE;
+  }
+
+  // TODO: urlencode
   auto file_name = std::format("{}.gcode.3mf", params.project_name);
-  bbzl::ftp::upload_file(
-    std::format("ftps://{}/{}", params.dev_ip, file_name),
-    params.username,
-    params.password,
-    params.filename
-  );
+  try {
+    bbzl::ftp::upload_file(
+      std::format("ftps://{}/{}", params.dev_ip, file_name),
+      params.username,
+      params.password,
+      params.filename
+    );
+  } catch (std::exception& ex) {
+    if (update_fn != nullptr) {
+      update_fn(
+        BBL::SendingPrintJobStage::PrintingStageUpload,
+        BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED,
+        ex.what()
+      );
+    }
+    return BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED;
+  }
+
+  if (was_cancelled_fn()) {
+    return BAMBU_NETWORK_ERR_CANCELED;
+  }
+
+  if (update_fn != nullptr) {
+    update_fn(
+      BBL::SendingPrintJobStage::PrintingStageWaiting,
+      BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED,
+      ""
+    );
+  }
 
   auto o = json::object();
-  o["print"] = json::object({
+  auto& p = o["print"];
+  p = json::object({
     { "ams_mapping", json::array() }, // TODO
     { "bed_leveling", params.task_bed_leveling },
-    { "bed_type", params.task_bed_type }, // TODO: OpenBambuAPI says this should be "auto" for local prints?
+    { "bed_type", "auto" },
     { "command", "project_file" },
     { "file", file_name },
     { "flow_cali", params.task_flow_cali },
     { "layer_inspect", params.task_layer_inspect },
-    { "md5", "" }, // TODO: compute md5 hash?
+    { "md5", "" }, // TODO: compute md5 hash
     { "param", std::format("Metadata/plate_{}.gcode", params.plate_index) },
     { "profile_id", "0" },
     { "project_id", "0" },
@@ -243,15 +288,62 @@ int bambu_network_start_local_print(
     { "subtask_name", params.project_name }, // ?
     { "task_id", "0" },
     { "timelapse", params.task_record_timelapse },
-    { "url", std::format("file:///sdcard/{}", file_name) }, // TODO: use params.ftp_folder?
     { "use_ams", params.task_use_ams },
     { "vibration_cali", params.task_vibration_cali },
   });
 
+  if (!params.task_bed_type.empty()) {
+    p["bed_type"] = params.task_bed_type;
+  }
+
+  if (!params.ams_mapping.empty()) {
+    try {
+      p["ams_mapping"] = json::parse(params.ams_mapping);
+    } catch (std::exception& ex) {
+      update_fn(
+        BBL::SendingPrintJobStage::PrintingStageSending,
+        BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED,
+        std::format("failed to parse ams mapping: {}", ex.what())
+      );
+      return BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED;
+    }
+  }
+
+  auto ftp_folder = params.ftp_folder;
+  if (ftp_folder.length() > 1 && ftp_folder.back() == '/') {
+    ftp_folder.pop_back();
+  }
+
+  if (params.print_type == "from_normal") {
+    if (ftp_folder.empty()) {
+      p["url"] = std::format("file:///mnt/sdcard/{}", file_name);
+    } else {
+      p["url"] = std::format("file:///{}/{}", ftp_folder, file_name);
+    }
+  } else if (params.print_type == "from_sdcard_view") {
+    p["url"] = std::format("file:///{}", params.dst_file);
+  }
+
   auto s = o.dump();
 
-  // TODO: do something with the return value
-  agent->send_message_to_printer(params.dev_id, s, 1);
+  try {
+    agent->send_message_to_printer(params.dev_id, s, 1);
+  } catch (std::exception& ex) {
+    if (update_fn != nullptr) {
+      update_fn(
+        BBL::SendingPrintJobStage::PrintingStageSending,
+        BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED,
+        ex.what()
+      );
+    }
+    return BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED;
+  }
+
+  update_fn(
+    BBL::SendingPrintJobStage::PrintingStageFinished,
+    BAMBU_NETWORK_SUCCESS,
+    ""
+  );
 
   return 0;
 }
@@ -260,12 +352,12 @@ int bambu_network_start_sdcard_print(
   void* agentp,
   BBL::PrintParams params,
   BBL::OnUpdateStatusFn update_fn,
-  BBL::WasCancelledFn cancel_fn
+  BBL::WasCancelledFn was_cancelled_fn
 ) {
   (void)agentp;
   (void)params;
   (void)update_fn;
-  (void)cancel_fn;
-  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, cancel_fn);
+  (void)was_cancelled_fn;
+  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, was_cancelled_fn);
   return 0;
 }

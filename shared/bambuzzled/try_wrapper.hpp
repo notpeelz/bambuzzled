@@ -1,7 +1,5 @@
 #pragma once
 
-#include <functional>
-#include <stdexcept>
 #include <type_traits>
 #include <source_location>
 

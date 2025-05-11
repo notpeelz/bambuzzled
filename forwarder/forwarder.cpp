@@ -46,8 +46,8 @@ T get_fn(std::string const& name) {
     }
 
     return loader->get_symbol<T>(name);
-  } catch (std::exception& e) {
-    bbzl::log::error_fmt("failed to get fn ptr for {}: {}", name, e.what());
+  } catch (std::exception& ex) {
+    bbzl::log::error_fmt("failed to get fn ptr for {}: {}", name, ex.what());
     return nullptr;
   }
 }
@@ -679,8 +679,8 @@ int bambu_network_set_user_selected_machine(void* agent, std::string dev_id) {
   );
 }
 
-typedef int (*func_start_print)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, BBL::OnWaitFn wait_fn);
-int bambu_network_start_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, BBL::OnWaitFn wait_fn) {
+typedef int (*func_start_print)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, BBL::OnWaitFn wait_fn);
+int bambu_network_start_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, BBL::OnWaitFn wait_fn) {
   return call_fn<func_start_print>(
     "bambu_network_start_print",
     0,
@@ -690,9 +690,9 @@ int bambu_network_start_print(void* agent, BBL::PrintParams params, BBL::OnUpdat
       auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
       return update_fn(status, code, msg);
     }),
-    create_wrapper_non_null(cancel_fn, [cancel_fn]() {
-      auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
-      return cancel_fn();
+    create_wrapper_non_null(was_cancelled_fn, [was_cancelled_fn]() {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("was_cancelled_fn");
+      return was_cancelled_fn();
     }),
     create_wrapper_non_null(wait_fn, [wait_fn](int status, std::string job_info) {
       auto scope = BBZL_TRACE_SCOPE_NAMED("wait_fn", status, job_info);
@@ -702,8 +702,8 @@ int bambu_network_start_print(void* agent, BBL::PrintParams params, BBL::OnUpdat
   return 0;
 }
 
-typedef int (*func_start_local_print_with_record)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, BBL::OnWaitFn wait_fn);
-int bambu_network_start_local_print_with_record(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, BBL::OnWaitFn wait_fn) {
+typedef int (*func_start_local_print_with_record)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, BBL::OnWaitFn wait_fn);
+int bambu_network_start_local_print_with_record(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, BBL::OnWaitFn wait_fn) {
   return call_fn<func_start_local_print_with_record>(
     "bambu_network_start_local_print_with_record",
     0,
@@ -713,9 +713,9 @@ int bambu_network_start_local_print_with_record(void* agent, BBL::PrintParams pa
       auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
       return update_fn(status, code, msg);
     }),
-    create_wrapper_non_null(cancel_fn, [cancel_fn]() {
-      auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
-      return cancel_fn();
+    create_wrapper_non_null(was_cancelled_fn, [was_cancelled_fn]() {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("was_cancelled_fn");
+      return was_cancelled_fn();
     }),
     create_wrapper_non_null(wait_fn, [wait_fn](int status, std::string job_info) {
       auto scope = BBZL_TRACE_SCOPE_NAMED("wait_fn", status, job_info);
@@ -725,8 +725,8 @@ int bambu_network_start_local_print_with_record(void* agent, BBL::PrintParams pa
   return 0;
 }
 
-typedef int (*func_start_send_gcode_to_sdcard)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, BBL::OnWaitFn wait_fn);
-int bambu_network_start_send_gcode_to_sdcard(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, BBL::OnWaitFn wait_fn) {
+typedef int (*func_start_send_gcode_to_sdcard)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, BBL::OnWaitFn wait_fn);
+int bambu_network_start_send_gcode_to_sdcard(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, BBL::OnWaitFn wait_fn) {
   return call_fn<func_start_send_gcode_to_sdcard>(
     "bambu_network_start_send_gcode_to_sdcard",
     0,
@@ -736,9 +736,9 @@ int bambu_network_start_send_gcode_to_sdcard(void* agent, BBL::PrintParams param
       auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
       return update_fn(status, code, msg);
     }),
-    create_wrapper_non_null(cancel_fn, [cancel_fn]() {
-      auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
-      return cancel_fn();
+    create_wrapper_non_null(was_cancelled_fn, [was_cancelled_fn]() {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("was_cancelled_fn");
+      return was_cancelled_fn();
     }),
     create_wrapper_non_null(wait_fn, [wait_fn](int status, std::string job_info) {
       auto scope = BBZL_TRACE_SCOPE_NAMED("wait_fn", status, job_info);
@@ -747,8 +747,8 @@ int bambu_network_start_send_gcode_to_sdcard(void* agent, BBL::PrintParams param
   );
 }
 
-typedef int (*func_start_local_print)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn);
-int bambu_network_start_local_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn) {
+typedef int (*func_start_local_print)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn);
+int bambu_network_start_local_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn) {
   return call_fn<func_start_local_print>(
     "bambu_network_start_local_print",
     0,
@@ -758,16 +758,16 @@ int bambu_network_start_local_print(void* agent, BBL::PrintParams params, BBL::O
       auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
       return update_fn(status, code, msg);
     }),
-    create_wrapper_non_null(cancel_fn, [cancel_fn]() {
-      auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
-      return cancel_fn();
+    create_wrapper_non_null(was_cancelled_fn, [was_cancelled_fn]() {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("was_cancelled_fn");
+      return was_cancelled_fn();
     })
   );
   return 0;
 }
 
-typedef int (*func_start_sdcard_print)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn);
-int bambu_network_start_sdcard_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn) {
+typedef int (*func_start_sdcard_print)(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn);
+int bambu_network_start_sdcard_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn) {
   return call_fn<func_start_sdcard_print>(
     "bambu_network_start_sdcard_print",
     0,
@@ -777,9 +777,9 @@ int bambu_network_start_sdcard_print(void* agent, BBL::PrintParams params, BBL::
       auto scope = BBZL_TRACE_SCOPE_NAMED("update_fn", status, code, msg);
       return update_fn(status, code, msg);
     }),
-    create_wrapper_non_null(cancel_fn, [cancel_fn]() {
-      auto scope = BBZL_TRACE_SCOPE_NAMED("cancel_fn");
-      return cancel_fn();
+    create_wrapper_non_null(was_cancelled_fn, [was_cancelled_fn]() {
+      auto scope = BBZL_TRACE_SCOPE_NAMED("was_cancelled_fn");
+      return was_cancelled_fn();
     })
   );
   return 0;
@@ -820,20 +820,20 @@ int bambu_network_put_setting(void* agent, std::string setting_id, std::string n
   );
 }
 
-typedef int (*func_get_setting_list)(void* agent, std::string bundle_version, BBL::ProgressFn pro_fn, BBL::WasCancelledFn cancel_fn);
-int bambu_network_get_setting_list(void* agent, std::string bundle_version, BBL::ProgressFn pro_fn, BBL::WasCancelledFn cancel_fn) {
+typedef int (*func_get_setting_list)(void* agent, std::string bundle_version, BBL::ProgressFn pro_fn, BBL::WasCancelledFn was_cancelled_fn);
+int bambu_network_get_setting_list(void* agent, std::string bundle_version, BBL::ProgressFn pro_fn, BBL::WasCancelledFn was_cancelled_fn) {
   return call_fn<func_get_setting_list>(
     "bambu_network_get_setting_list",
     0,
     agent,
     bundle_version,
     pro_fn,
-    cancel_fn
+    was_cancelled_fn
   );
 }
 
-typedef int (*func_get_setting_list2)(void* agent, std::string bundle_version, BBL::CheckFn chk_fn, BBL::ProgressFn pro_fn, BBL::WasCancelledFn cancel_fn);
-int bambu_network_get_setting_list2(void* agent, std::string bundle_version, BBL::CheckFn chk_fn, BBL::ProgressFn pro_fn, BBL::WasCancelledFn cancel_fn) {
+typedef int (*func_get_setting_list2)(void* agent, std::string bundle_version, BBL::CheckFn chk_fn, BBL::ProgressFn pro_fn, BBL::WasCancelledFn was_cancelled_fn);
+int bambu_network_get_setting_list2(void* agent, std::string bundle_version, BBL::CheckFn chk_fn, BBL::ProgressFn pro_fn, BBL::WasCancelledFn was_cancelled_fn) {
   return call_fn<func_get_setting_list2>(
     "bambu_network_get_setting_list2",
     0,
@@ -841,7 +841,7 @@ int bambu_network_get_setting_list2(void* agent, std::string bundle_version, BBL
     bundle_version,
     chk_fn,
     pro_fn,
-    cancel_fn
+    was_cancelled_fn
   );
 }
 
@@ -1039,15 +1039,15 @@ int bambu_network_get_design_staffpick(void* agent, int offset, int limit, std::
   );
 }
 
-typedef int (*func_start_publish)(void* agent, BBL::PublishParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, std::string* out);
-int bambu_network_start_publish(void* agent, BBL::PublishParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, std::string* out) {
+typedef int (*func_start_publish)(void* agent, BBL::PublishParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, std::string* out);
+int bambu_network_start_publish(void* agent, BBL::PublishParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, std::string* out) {
   return call_fn<func_start_publish>(
     "bambu_network_start_publish",
     0,
     agent,
     params,
     update_fn,
-    cancel_fn,
+    was_cancelled_fn,
     out
   );
 }

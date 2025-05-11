@@ -19,7 +19,7 @@
 #else
 
 #if defined(BBZL_NETWORK_PLUGIN_EXPORT)
-#define BBZL_NETWORK_API extern "C" __attribute__((visibility("default")))
+#define BBZL_NETWORK_API extern "C" [[gnu::visibility("default")]]
 #else
 #define BBZL_NETWORK_API extern "C"
 #endif
@@ -89,16 +89,16 @@ BBZL_NETWORK_API int bambu_network_unbind(void* agent, std::string dev_id);
 BBZL_NETWORK_API std::string bambu_network_get_bambulab_host(void* agent);
 BBZL_NETWORK_API std::string bambu_network_get_user_selected_machine(void* agent);
 BBZL_NETWORK_API int bambu_network_set_user_selected_machine(void* agent, std::string dev_id);
-BBZL_NETWORK_API int bambu_network_start_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, BBL::OnWaitFn wait_fn);
-BBZL_NETWORK_API int bambu_network_start_local_print_with_record(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, BBL::OnWaitFn wait_fn);
-BBZL_NETWORK_API int bambu_network_start_send_gcode_to_sdcard(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, BBL::OnWaitFn wait_fn);
-BBZL_NETWORK_API int bambu_network_start_local_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn);
-BBZL_NETWORK_API int bambu_network_start_sdcard_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn);
+BBZL_NETWORK_API int bambu_network_start_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, BBL::OnWaitFn wait_fn);
+BBZL_NETWORK_API int bambu_network_start_local_print_with_record(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, BBL::OnWaitFn wait_fn);
+BBZL_NETWORK_API int bambu_network_start_send_gcode_to_sdcard(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, BBL::OnWaitFn wait_fn);
+BBZL_NETWORK_API int bambu_network_start_local_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn);
+BBZL_NETWORK_API int bambu_network_start_sdcard_print(void* agent, BBL::PrintParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn);
 BBZL_NETWORK_API int bambu_network_get_user_presets(void* agent, std::map<std::string, std::map<std::string, std::string>>* user_presets);
 BBZL_NETWORK_API std::string bambu_network_request_setting_id(void* agent, std::string name, std::map<std::string, std::string>* values_map, unsigned int* http_code);
 BBZL_NETWORK_API int bambu_network_put_setting(void* agent, std::string setting_id, std::string name, std::map<std::string, std::string>* values_map, unsigned int* http_code);
-BBZL_NETWORK_API int bambu_network_get_setting_list(void* agent, std::string bundle_version, BBL::ProgressFn pro_fn, BBL::WasCancelledFn cancel_fn);
-BBZL_NETWORK_API int bambu_network_get_setting_list2(void* agent, std::string bundle_version, BBL::CheckFn chk_fn, BBL::ProgressFn pro_fn, BBL::WasCancelledFn cancel_fn);
+BBZL_NETWORK_API int bambu_network_get_setting_list(void* agent, std::string bundle_version, BBL::ProgressFn pro_fn, BBL::WasCancelledFn was_cancelled_fn);
+BBZL_NETWORK_API int bambu_network_get_setting_list2(void* agent, std::string bundle_version, BBL::CheckFn chk_fn, BBL::ProgressFn pro_fn, BBL::WasCancelledFn was_cancelled_fn);
 BBZL_NETWORK_API int bambu_network_delete_setting(void* agent, std::string setting_id);
 BBZL_NETWORK_API std::string bambu_network_get_studio_info_url(void* agent);
 BBZL_NETWORK_API int bambu_network_set_extra_http_header(void* agent, std::map<std::string, std::string> extra_headers);
@@ -116,7 +116,7 @@ BBZL_NETWORK_API int bambu_network_query_bind_status(void* agent, std::vector<st
 BBZL_NETWORK_API int bambu_network_modify_printer_name(void* agent, std::string dev_id, std::string dev_name);
 BBZL_NETWORK_API int bambu_network_get_camera_url(void* agent, std::string dev_id, std::function<void(std::string)> callback);
 BBZL_NETWORK_API int bambu_network_get_design_staffpick(void* agent, int offset, int limit, std::function<void(std::string)> callback);
-BBZL_NETWORK_API int bambu_network_start_publish(void* agent, BBL::PublishParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn cancel_fn, std::string* out);
+BBZL_NETWORK_API int bambu_network_start_publish(void* agent, BBL::PublishParams params, BBL::OnUpdateStatusFn update_fn, BBL::WasCancelledFn was_cancelled_fn, std::string* out);
 BBZL_NETWORK_API int bambu_network_get_profile_3mf(void* agent, Slic3r::BBLProfile* profile);
 BBZL_NETWORK_API int bambu_network_get_model_publish_url(void* agent, std::string* url);
 BBZL_NETWORK_API int bambu_network_get_subtask(void* agent, Slic3r::BBLModelTask* task, Slic3r::OnGetSubTaskFn getsub_fn);

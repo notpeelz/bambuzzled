@@ -13,7 +13,6 @@
 
 #include "log.hpp"
 
-namespace utils = bbzl::utils;
 using namespace std::string_view_literals;
 
 namespace bbzl::log {
@@ -101,7 +100,7 @@ namespace bbzl::log {
 
       constexpr char const* BBZL_LOG_LEVEL = "BBZL_LOG_LEVEL";
       #if defined(_WIN32)
-      auto level_str_owned = utils::win32::getenv_utf8(BBZL_LOG_LEVEL);
+      auto level_str_owned = bbzl::utils::win32::getenv_utf8(BBZL_LOG_LEVEL);
       char const* level_str = level_str_owned.empty()
         ? nullptr
         : level_str_owned.c_str();
@@ -119,7 +118,7 @@ namespace bbzl::log {
 
     constexpr char const* BBZL_LOG_FILE = "BBZL_LOG_FILE";
     #if defined(_WIN32)
-    auto log_file_str_owned = utils::win32::getenv_utf8(BBZL_LOG_FILE);
+    auto log_file_str_owned = bbzl::utils::win32::getenv_utf8(BBZL_LOG_FILE);
     char const* log_file_str = log_file_str_owned.empty()
       ? nullptr
       : log_file_str_owned.c_str();

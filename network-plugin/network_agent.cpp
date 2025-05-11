@@ -1,6 +1,3 @@
-#include <iostream>
-#include <mutex>
-#include <stdexcept>
 #include <cassert>
 
 #include <bambuzzled/log.hpp>
@@ -44,9 +41,8 @@ void network_agent::set_user_selected_machine(std::string dev_id) {
   (void)dev_id;
 }
 
-int network_agent::start() {
+void network_agent::start() {
   auto scope = BBZL_TRACE_SCOPE();
-  return 0;
 }
 
 void network_client::on_connect(int reason_code) {
@@ -143,7 +139,7 @@ network_client* network_agent::get_or_create_conn(std::string& dev_id) {
   return conn;
 }
 
-int network_agent::connect_printer(
+void network_agent::connect_printer(
   std::string& dev_id,
   std::string& dev_ip,
   std::string& username,
@@ -154,10 +150,9 @@ int network_agent::connect_printer(
   auto scope = BBZL_TRACE_SCOPE(dev_id, dev_ip, username, "*PASSWORD*"sv);
   auto conn = this->get_or_create_conn(dev_id);
   conn->mosqpp->connect(dev_ip, 8883, username, password, 60);
-  return 0;
 }
 
-int network_agent::send_message_to_printer(
+void network_agent::send_message_to_printer(
   std::string& dev_id,
   std::string& json_str,
   int qos
@@ -165,7 +160,6 @@ int network_agent::send_message_to_printer(
   auto scope = BBZL_TRACE_SCOPE(dev_id, json_str, qos);
   auto conn = this->get_or_create_conn(dev_id);
   conn->mosqpp->publish("device/" + dev_id + "/request", json_str, qos);
-  return 0;
 }
 
 }

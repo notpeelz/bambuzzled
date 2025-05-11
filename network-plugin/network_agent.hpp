@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <memory>
 
 #include <bambuzzled/networking/api/bambu_networking.hpp>
 
@@ -49,15 +48,15 @@ public:
   void set_on_local_message_fn(BBL::OnMessageFn&& fn);
   std::string get_user_selected_machine();
   void set_user_selected_machine(std::string dev_id);
-  int start();
-  int connect_printer(
+  void start();
+  void connect_printer(
     std::string& dev_id,
     std::string& dev_ip,
     std::string& username,
     std::string& password,
     bool use_ssl
   );
-  int send_message_to_printer(
+  void send_message_to_printer(
     std::string& dev_id,
     std::string& json_str,
     int qos

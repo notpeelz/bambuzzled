@@ -1,7 +1,6 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#include "log.hpp"
 #include "ssl.hpp"
 
 namespace bbzl::ssl {

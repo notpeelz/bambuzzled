@@ -62,12 +62,12 @@ BOOL WINAPI DllMain(
 
 #else
 
-__attribute__((constructor))
+[[gnu::constructor]]
 static void ctor() {
   init();
 }
 
-__attribute__((destructor))
+[[gnu::destructor]]
 static void dtor() {
   cleanup();
 }
