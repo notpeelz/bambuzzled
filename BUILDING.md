@@ -78,3 +78,11 @@ Copy-Item -Path "./build/src/bambu_networking.pdb" -Destination "${env:AppData}/
 Copy-Item -Path "./build/video/BambuSource.dll" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
 Copy-Item -Path "./build/video/BambuSource.pdb" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
 ```
+
+# Useful tricks for development
+
+## OpenSSL certificates
+
+If you have trouble with certificates, you can use the `SSL_CERT_DIR` env var to tell OpenSSL where to find the BBL CA.
+On Linux: `SSL_CERT_DIR="/etc/ssl/certs:$PWD/certs"`
+On Windows: `SSL_CERT_DIR="$PWD/certs"`
