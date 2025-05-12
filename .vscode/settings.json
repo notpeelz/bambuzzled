@@ -1,6 +1,6 @@
 {
   "editor.tabSize": 2,
-  "editor.insertSpaces": false,
+  "editor.insertSpaces": true,
   "C_Cpp.intelliSenseEngine": "disabled",
   "clangd.arguments": [
     "--compile-commands-dir=${workspaceFolder}/build"
