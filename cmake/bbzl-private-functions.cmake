@@ -13,7 +13,7 @@ function(bbzl_add_global_compile_options)
 endfunction()
 
 function(bbzl_validate_submodule DIR)
-  file(GLOB FILES ${DIR})
+  file(GLOB FILES ${DIR}/*)
   list(LENGTH FILES FILES_COUNT)
   if(FILES_COUNT EQUAL 0)
     file(RELATIVE_PATH DIR_RELATIVE ${PROJECT_SOURCE_DIR} ${DIR})
