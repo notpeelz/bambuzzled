@@ -73,10 +73,10 @@ cmake -B build -S . `
   -DBBZL_STATIC_DEPS=ON
 cmake --build build -j
 
-Copy-Item -Path "./build/src/bambu_networking.dll" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
-Copy-Item -Path "./build/src/bambu_networking.pdb" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
-Copy-Item -Path "./build/video/BambuSource.dll" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
-Copy-Item -Path "./build/video/BambuSource.pdb" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
+Copy-Item -Path "./build/network-plugin/bambu_networking.dll" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
+Copy-Item -Path "./build/network-plugin/bambu_networking.pdb" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
+Copy-Item -Path "./build/video-plugin/BambuSource.dll" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
+Copy-Item -Path "./build/video-plugin/BambuSource.pdb" -Destination "${env:AppData}/OrcaSlicer/plugins/." -Force
 ```
 
 # Useful tricks for development
