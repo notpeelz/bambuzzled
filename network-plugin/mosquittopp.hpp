@@ -56,15 +56,16 @@ using on_message_cb_fn = std::function<void(
 
 class mosquittopp {
 private:
-  bbzl::ssl::openssl_ctx_handle openssl_ctx;
-  on_connect_cb_fn on_connect_cb;
-  on_disconnect_cb_fn on_disconnect_cb;
-  on_suback_cb_fn on_suback_cb;
-  on_message_cb_fn on_message_cb;
-  mosquitto_handle mosq;
-  int keepalive = 0;
+  bbzl::ssl::openssl_ctx_handle openssl_ctx_;
+  on_connect_cb_fn on_connect_cb_;
+  on_disconnect_cb_fn on_disconnect_cb_;
+  on_suback_cb_fn on_suback_cb_;
+  on_message_cb_fn on_message_cb_;
+  mosquitto_handle mosq_;
+  int keepalive_ = 0;
+  bool connected_ = false;
   void thread_main(std::stop_token st);
-  std::jthread thread;
+  std::jthread thread_;
 
   friend void on_connect(
     mosquitto*,
@@ -96,6 +97,8 @@ public:
   void set_on_disconnect_cb(on_disconnect_cb_fn&& fn);
   void set_on_suback_cb(on_suback_cb_fn&& fn);
   void set_on_message_cb(on_message_cb_fn&& fn);
+  bool active();
+  bool connected();
   void connect(
     std::string& addr,
     uint16_t port,

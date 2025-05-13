@@ -80,7 +80,7 @@ int bambu_network_connect_printer(
 ) {
   auto agent = static_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
-    agent->connect_printer(dev_id, dev_ip, username, password, use_ssl);
+    agent->connect(dev_id, dev_ip, username, password, use_ssl);
     return 0;
   });
 }
@@ -88,7 +88,7 @@ int bambu_network_connect_printer(
 int bambu_network_send_message_to_printer(void* agentp, std::string dev_id, std::string json_str, int qos) {
   auto agent = static_cast<network_agent*>(agentp);
   return try_or(1, [&]() {
-    agent->send_message_to_printer(dev_id, json_str, qos);
+    agent->send_message(dev_id, json_str, qos);
     return 0;
   });
 }
@@ -330,7 +330,7 @@ int bambu_network_start_local_print(
   auto s = o.dump();
 
   try {
-    agent->send_message_to_printer(params.dev_id, s, 1);
+    agent->send_message(params.dev_id, s, 1);
   } catch (std::exception& ex) {
     if (update_fn != nullptr) {
       update_fn(
