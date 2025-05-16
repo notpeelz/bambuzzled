@@ -1,14 +1,19 @@
+#include <ios>
+#include <cstddef>
 #include <fstream>
 #include <filesystem>
+#include <string>
 #include <stdexcept>
 #include <format>
-
-#include <openssl/ssl.h>
 #include <curl/curl.h>
+#include <openssl/crypto.h>
+#include <openssl/ssl.h>
+#include <openssl/prov_ssl.h>
+#include <openssl/x509.h>
+#include <openssl/x509_vfy.h>
 #include <bambuzzled/log.hpp>
 #include <bambuzzled/ssl.hpp>
 #include <bambuzzled/curl.hpp>
-
 #include "ftp.hpp"
 
 namespace bbzl::ftp {

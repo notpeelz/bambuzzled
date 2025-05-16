@@ -7,16 +7,14 @@
 #include <string>
 #include <vector>
 #include <format>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <unistd.h>
-
 #include <nlohmann/json.hpp>
 #include <bambuzzled/fd_handle.hpp>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
-
 #include "pairing.hpp"
 
 using json = nlohmann::json;
@@ -74,7 +72,7 @@ void discover(
     );
     port = &sa.s6.sin6_port;
   } else {
-    abort();
+    std::abort();
   }
 
   timeval tv = {

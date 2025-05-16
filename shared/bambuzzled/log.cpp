@@ -2,7 +2,11 @@
 #include <optional>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
+#include <cctype>
+#include <ctime>
 #include <mutex>
+#include <string>
 #include <string_view>
 #include <format>
 #include <chrono>

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <string>
-
 #include <bambuzzled/networking/api/bambu_networking.hpp>
+#include <string>
 
 namespace bbzl::pairing {
 

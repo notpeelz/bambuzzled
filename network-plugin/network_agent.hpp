@@ -1,10 +1,10 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include <optional>
-
+#include <mosquitto.h>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
-
 #include "mosquittopp.hpp"
 
 namespace bbzl {

@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <string>
 #include <memory>
-
+#include <openssl/crypto.h>
 #include <openssl/ssl.h>
 
 namespace bbzl::ssl {

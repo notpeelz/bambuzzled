@@ -1,13 +1,15 @@
+#include <format>
 #include <string>
+#include <utility>
+#include <exception>
 #include <functional>
 #include <filesystem>
 #include <system_error>
-
 #include <nlohmann/json.hpp>
 #include <bambuzzled/log.hpp>
 #include <bambuzzled/try_wrapper.hpp>
 #include <bambuzzled/networking/plugin.hpp>
-
+#include <bambuzzled/networking/api/bambu_networking.hpp>
 #include "network_agent.hpp"
 #include "ftp.hpp"
 #include "pairing.hpp"

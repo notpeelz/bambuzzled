@@ -1,13 +1,14 @@
 #pragma once
 
 #include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <thread>
 #include <string>
 #include <span>
 #include <functional>
-
-#include <openssl/ssl.h>
+#include <stop_token>
 #include <mosquitto.h>
 #include <bambuzzled/ssl.hpp>
 

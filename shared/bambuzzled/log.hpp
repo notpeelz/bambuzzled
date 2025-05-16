@@ -1,11 +1,12 @@
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <sstream>
 #include <format>
 #include <source_location>
-
 #include "to_string.hpp"
 
 namespace bbzl::log {

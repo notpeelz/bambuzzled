@@ -1,3 +1,5 @@
+#include <cstdlib>
+#include <openssl/crypto.h>
 #include <openssl/ssl.h>
 #include <mosquitto.h>
 #include <curl/curl.h>
@@ -11,7 +13,7 @@ static void init() {
     nullptr
   );
   if (rc != 1) {
-    abort();
+    std::abort();
   }
 
   rc = OPENSSL_init_crypto(
@@ -20,17 +22,17 @@ static void init() {
     nullptr
   );
   if (rc != 1) {
-    abort();
+    std::abort();
   }
 
   rc = mosquitto_lib_init();
   if (rc != MOSQ_ERR_SUCCESS) {
-    abort();
+    std::abort();
   }
 
   rc = curl_global_init(CURL_GLOBAL_DEFAULT);
   if (rc != CURLE_OK) {
-    abort();
+    std::abort();
   }
 }
 
