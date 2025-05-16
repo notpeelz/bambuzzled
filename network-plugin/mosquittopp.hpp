@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <thread>
 #include <string>
@@ -64,8 +65,13 @@ private:
   mosquitto_handle mosq_;
   int keepalive_ = 0;
   bool connected_ = false;
-  void thread_main(std::stop_token st);
+  void thread_main(
+    std::stop_token st,
+    std::string const& addr,
+    uint16_t port
+  );
   std::jthread thread_;
+  std::atomic_bool thread_active_ = false;
 
   friend void on_connect(
     mosquitto*,
@@ -92,18 +98,18 @@ private:
 public:
   mosquittopp();
   ~mosquittopp();
-  mosquitto* get();
+  mosquitto* get() const;
   void set_on_connect_cb(on_connect_cb_fn&& fn);
   void set_on_disconnect_cb(on_disconnect_cb_fn&& fn);
   void set_on_suback_cb(on_suback_cb_fn&& fn);
   void set_on_message_cb(on_message_cb_fn&& fn);
-  bool active();
-  bool connected();
+  bool active() const;
+  bool connected() const;
   void connect(
-    std::string& addr,
+    std::string const& addr,
     uint16_t port,
-    std::string& username,
-    std::string& password,
+    std::string const& username,
+    std::string const& password,
     int keepalive = 0
   );
   void disconnect();

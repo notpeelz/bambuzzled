@@ -10,6 +10,7 @@
 
 #include "network_agent.hpp"
 #include "ftp.hpp"
+#include "pairing.hpp"
 
 using json = nlohmann::json;
 using network_agent = bbzl::network_agent;
@@ -146,6 +147,21 @@ std::string bambu_network_build_logout_cmd(void* agentp) {
       "sequence_id": "10001"
     })"_json;
     return json.dump();
+  });
+}
+
+int bambu_network_bind_detect(
+  void* agentp,
+  std::string dev_ip,
+  std::string sec_link,
+  BBL::detectResult& detect
+) {
+  auto scope = BBZL_TRACE_SCOPE(agentp, dev_ip, sec_link, detect);
+  auto agent = static_cast<network_agent*>(agentp);
+
+  return try_or(BAMBU_NETWORK_ERR_BIND_FAILED, [&]() {
+    bbzl::pairing::discover(dev_ip, true, detect);
+    return BAMBU_NETWORK_SUCCESS;
   });
 }
 

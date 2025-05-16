@@ -188,14 +188,6 @@ int bambu_network_ping_bind(void* agentp, std::string ping_code) {
   return 0;
 }
 
-int bambu_network_bind_detect(void* agentp, std::string dev_ip, std::string sec_link, BBL::detectResult& detect) {
-  (void)agentp;
-  (void)dev_ip;
-  (void)sec_link;
-  (void)detect;
-  return 0;
-}
-
 int bambu_network_set_server_callback(void* agentp, BBL::OnServerErrFn fn) {
   (void)agentp;
   (void)fn;

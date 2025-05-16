@@ -9,7 +9,6 @@
 
 #include "dyn_lib_loader.hpp"
 
-namespace utils = bbzl::utils;
 using bbzl::forwarder::dyn_lib_loader;
 
 namespace {
@@ -17,7 +16,7 @@ namespace {
 static std::string get_forward_path() {
   constexpr char const* BBZL_FORWARD = "BBZL_FORWARD";
   #if defined(_WIN32)
-  auto s_owned = utils::win32::getenv_utf8(BBZL_FORWARD);
+  auto s_owned = bbzl::utils::win32::getenv_utf8(BBZL_FORWARD);
   char const* s = s_owned.empty()
     ? nullptr
     : s_owned.c_str();
@@ -72,13 +71,13 @@ inline auto call_fn(
     if (!oss.str().empty()) {
       oss << ", ";
     }
-    oss << utils::to_string(arg);
+    oss << bbzl::utils::to_string(arg);
   })(args), ...);
 
   auto fn = get_fn<F>(name);
   if (fn) {
     auto ret = fn(std::forward<Args>(args)...);
-    bbzl::log::trace_fmt("{}({}) -> {}", name, oss.str(), utils::to_string(ret));
+    bbzl::log::trace_fmt("{}({}) -> {}", name, oss.str(), bbzl::utils::to_string(ret));
     return ret;
   }
 

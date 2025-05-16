@@ -1,7 +1,11 @@
+#include <atomic>
+#include <exception>
+#include <thread>
 #include <string>
 #include <stdexcept>
 #include <format>
 
+#include <bambuzzled/log.hpp>
 #include <bambuzzled/ssl.hpp>
 
 #include "mosquittopp.hpp"
@@ -150,11 +154,15 @@ mosquittopp::~mosquittopp() {
   this->disconnect();
 }
 
-mosquitto* mosquittopp::get() {
+mosquitto* mosquittopp::get() const {
   return this->mosq_.get();
 }
 
-void mosquittopp::thread_main(std::stop_token st) {
+void mosquittopp::thread_main(
+  std::stop_token st,
+  std::string const& addr,
+  uint16_t port
+) {
   int rc;
   int err;
 
@@ -219,6 +227,11 @@ void mosquittopp::thread_main(std::stop_token st) {
     }
 
     if (st.stop_requested()) {
+      bbzl::log::debug_fmt(
+        "({}:{}) mosquitto thread caught stop request",
+        addr,
+        port
+      );
       break;
     }
 
@@ -243,19 +256,19 @@ void mosquittopp::set_on_message_cb(on_message_cb_fn&& fn) {
   this->on_message_cb_ = std::move(fn);
 }
 
-bool mosquittopp::active() {
-  return this->thread_.joinable();
+bool mosquittopp::active() const {
+  return this->thread_active_;
 }
 
-bool mosquittopp::connected() {
+bool mosquittopp::connected() const {
   return this->connected_;
 }
 
 void mosquittopp::connect(
-  std::string& addr,
+  std::string const& addr,
   uint16_t port,
-  std::string& username,
-  std::string& password,
+  std::string const& username,
+  std::string const& password,
   int keepalive
 ) {
   int rc;
@@ -264,8 +277,25 @@ void mosquittopp::connect(
     throw std::runtime_error("already connected or connecting");
   }
 
-  this->thread_ = std::jthread([this](std::stop_token st) {
-    this->thread_main(st);
+  this->thread_active_.store(true, std::memory_order_seq_cst);
+  this->thread_ = std::jthread([
+    this,
+    addr(addr),
+    port
+  ](std::stop_token st) {
+    try {
+      bbzl::log::debug_fmt("({}:{}) mosquitto thread started", addr, port);
+      this->thread_main(st, addr, port);
+    } catch (std::exception& ex) {
+      bbzl::log::error_fmt(
+        "({}:{}) caught exception in mosquitto thread: {}",
+        addr,
+        port,
+        ex.what()
+      );
+    }
+    this->thread_active_.store(false, std::memory_order_seq_cst);
+    bbzl::log::debug_fmt("({}:{}) mosquitto thread stopped", addr, port);
   });
 
   rc = mosquitto_username_pw_set(this->mosq_, username.c_str(), password.c_str());
@@ -285,19 +315,19 @@ void mosquittopp::connect(
 }
 
 void mosquittopp::disconnect() {
-  if (!this->connected() || !this->active()) {
-    return;
+  if (this->connected()) {
+    int rc = mosquitto_disconnect(this->mosq_);
+    if (rc != MOSQ_ERR_SUCCESS) {
+      throw std::runtime_error(std::format(
+        "failed to request disconnect: ",
+        mosquitto_strerror(rc)
+      ));
+    }
   }
 
-  int rc = mosquitto_disconnect(this->mosq_);
-  if (rc != MOSQ_ERR_SUCCESS) {
-    throw std::runtime_error(std::format(
-      "failed to request disconnect: ",
-      mosquitto_strerror(rc)
-    ));
+  if (this->active()) {
+    (void)this->thread_.get_stop_source().request_stop();
   }
-
-  (void)this->thread_.get_stop_source().request_stop();
 }
 
 message_id mosquittopp::subscribe(std::string const& topic, int qos) {

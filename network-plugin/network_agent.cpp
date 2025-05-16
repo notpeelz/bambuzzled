@@ -96,7 +96,7 @@ void network_client::on_suback(mqtt::message_id mid) {
   log::error_fmt("received unexpected suback for mid {}", mid);
 }
 
-std::optional<network_client*> network_agent::get_conn(std::string& dev_id) {
+std::optional<network_client*> network_agent::get_conn(std::string const& dev_id) {
   auto pos = this->connections_.find(dev_id);
   if (pos != this->connections_.end()) {
     return pos->second;
@@ -105,7 +105,7 @@ std::optional<network_client*> network_agent::get_conn(std::string& dev_id) {
   return std::nullopt;
 }
 
-network_client* network_agent::get_or_create_conn(std::string& dev_id) {
+network_client* network_agent::get_or_create_conn(std::string const& dev_id) {
   auto pos = this->connections_.find(dev_id);
   if (pos != this->connections_.end()) {
     return pos->second;
@@ -152,10 +152,10 @@ network_client* network_agent::get_or_create_conn(std::string& dev_id) {
 }
 
 void network_agent::connect(
-  std::string& dev_id,
-  std::string& dev_ip,
-  std::string& username,
-  std::string& password,
+  std::string const& dev_id,
+  std::string const& dev_ip,
+  std::string const& username,
+  std::string const& password,
   bool use_ssl
 ) {
   (void)use_ssl; // TODO?
@@ -173,8 +173,8 @@ void network_agent::connect(
 }
 
 void network_agent::send_message(
-  std::string& dev_id,
-  std::string& json_str,
+  std::string const& dev_id,
+  std::string const& json_str,
   int qos
 ) {
   auto scope = BBZL_TRACE_SCOPE(dev_id, json_str, qos);

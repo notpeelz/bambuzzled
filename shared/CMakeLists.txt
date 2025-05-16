@@ -23,6 +23,7 @@ target_compile_definitions(
 )
 target_include_directories(
   bambuzzled-shared
+  SYSTEM
   PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${OPENSSL_INCLUDE_DIR}
