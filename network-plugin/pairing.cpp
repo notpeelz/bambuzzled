@@ -221,7 +221,7 @@ void discover(
   constexpr size_t header_size = 4;
   constexpr size_t trailer_size = end_pattern.size();
   if (buf.size() < (header_size + trailer_size)) {
-    throw std::runtime_error("received message too small to parse");
+    throw std::runtime_error("received message is too small to parse");
   }
 
   auto byte_span = std::span<std::byte const>(
