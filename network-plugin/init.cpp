@@ -37,6 +37,7 @@ static void init() {
 }
 
 static void cleanup() {
+  curl_global_cleanup();
   mosquitto_lib_cleanup();
   OPENSSL_cleanup();
 }
