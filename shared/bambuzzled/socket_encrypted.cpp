@@ -6,9 +6,14 @@
 #include <openssl/ssl.h>
 #include <bambuzzled/ssl.hpp>
 #include <bambuzzled/socket.hpp>
-#include <sys/socket.h>
 #include <utility>
 #include "socket_encrypted.hpp"
+
+#if defined(_WIN32)
+#include <winsock2.h>
+#else
+#include <sys/socket.h>
+#endif
 
 namespace bbzl::utils::socket {
 

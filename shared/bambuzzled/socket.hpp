@@ -2,9 +2,14 @@
 
 #include <span>
 #include <cstddef>
+#include <bambuzzled/socket_handle.hpp>
+
+#if defined(_WIN32)
+#include <ws2ipdef.h>
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <bambuzzled/socket_handle.hpp>
+#endif
 
 namespace bbzl::utils::socket {
 

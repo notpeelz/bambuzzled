@@ -127,9 +127,9 @@ int socket::send(std::span<std::byte> const& data) {
 
   while (true) {
     #if defined(_WIN32)
-    r = send(this->handle_, reinterpret_cast<char*>(data.data()), data.size(), 0);
+    r = ::send(this->handle_, reinterpret_cast<char*>(data.data()), data.size(), 0);
     #else
-    r = write(this->handle_, data.data(), data.size());
+    r = ::write(this->handle_, data.data(), data.size());
     #endif
 
     if (r < 0) {
@@ -157,7 +157,7 @@ int socket::receive(std::span<std::byte>& buf) {
   #endif
 
   while (true) {
-    r = recv(this->handle_, buf_ptr, buf.size_bytes(), 0);
+    r = ::recv(this->handle_, buf_ptr, buf.size_bytes(), 0);
     if (r < 0) {
       if (errno == EINTR) {
         continue;

@@ -1,12 +1,17 @@
 #pragma once
 
-#include <netinet/in.h>
 #include <span>
 #include <cstddef>
 #include <openssl/crypto.h>
 #include <bambuzzled/ssl.hpp>
 #include <bambuzzled/socket.hpp>
+
+#if defined(_WIN32)
+#include <ws2ipdef.h>
+#else
 #include <sys/socket.h>
+#include <netinet/in.h>
+#endif
 
 namespace bbzl::utils::socket {
 

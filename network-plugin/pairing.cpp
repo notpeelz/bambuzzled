@@ -1,4 +1,3 @@
-#include <optional>
 #include <span>
 #include <cstdlib>
 #include <cstddef>
@@ -6,6 +5,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <string>
+#include <variant>
 #include <vector>
 #include <format>
 #include <nlohmann/json.hpp>
@@ -22,7 +22,6 @@
 
 #if defined(_WIN32)
 #include <winsock2.h>
-#include <ws2ipdef.h>
 #include <ws2tcpip.h>
 #else
 #include <unistd.h>
@@ -108,8 +107,6 @@ void discover(
     sockaddr_in6 s6;
     sockaddr_storage ss;
   } ss;
-  std::optional<openssl_ctx_handle> ssl_ctx;
-
   if (!parse_ip(addr, ss.ss)) {
     throw std::runtime_error("invalid address");
   }
@@ -135,17 +132,23 @@ void discover(
     }
   }
 
-
+  openssl_ctx_handle ssl_ctx;
+  auto sock_variant = std::variant<socket, socket_encrypted>();
   if (use_ssl) {
     *ss_port = ::htons(3002);
     ssl_ctx = create_openssl_context();
+    sock_variant.emplace<1>(ssl_ctx);
   } else {
     *ss_port = ::htons(3000);
+    sock_variant.emplace<0>();
   }
+  auto& sock = std::visit(
+    [](auto& s) -> socket& {
+      return s;
+    },
+    sock_variant
+  );
 
-  auto&& sock = use_ssl
-    ? static_cast<socket&&>(socket_encrypted(*ssl_ctx))
-    : static_cast<socket&&>(socket());
   sock.connect(ss.sa, sizeof(ss));
 
   constexpr int timeout_seconds = 5;
