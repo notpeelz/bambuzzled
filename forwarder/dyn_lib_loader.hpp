@@ -2,7 +2,6 @@
 
 #include <string>
 #include <unordered_map>
-#include <iostream>
 #include <stdexcept>
 #include <mutex>
 #include <format>
@@ -86,7 +85,7 @@ public:
 
     void* addr = nullptr;
     #if defined(_WIN32)
-    addr = static_cast<void*>(GetProcAddress(handle, name.c_str()));
+    addr = reinterpret_cast<void*>(GetProcAddress(handle, name.c_str()));
     #else
     addr = dlsym(handle, name.c_str());
     #endif

@@ -7,15 +7,22 @@
 #include <string>
 #include <vector>
 #include <format>
+#include <nlohmann/json.hpp>
+#include <bambuzzled/socket_handle.hpp>
+#include <bambuzzled/networking/api/bambu_networking.hpp>
+#include "pairing.hpp"
+
+#if defined(_WIN32)
+#include <winsock2.h>
+#include <ws2ipdef.h>
+#include <ws2tcpip.h>
+#else
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <nlohmann/json.hpp>
-#include <bambuzzled/fd_handle.hpp>
-#include <bambuzzled/networking/api/bambu_networking.hpp>
-#include "pairing.hpp"
+#endif
 
 using json = nlohmann::json;
 
@@ -59,15 +66,20 @@ void discover(
   }
 
   auto sa_family = sa.sa.sa_family;
+  #if defined(_WIN32)
+  USHORT* port = nullptr;
+  #else
   in_port_t* port = nullptr;
-  bbzl::utils::fd_handle sockfd;
+  #endif
+
+  bbzl::utils::socket_handle sockfd;
   if (sa_family == AF_INET) {
-    sockfd = bbzl::utils::fd_handle(
+    sockfd = bbzl::utils::socket_handle(
       socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
     );
     port = &sa.s4.sin_port;
   } else if (sa_family == AF_INET6) {
-    sockfd = bbzl::utils::fd_handle(
+    sockfd = bbzl::utils::socket_handle(
       socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP)
     );
     port = &sa.s6.sin6_port;
@@ -75,10 +87,30 @@ void discover(
     std::abort();
   }
 
-  timeval tv = {
-    .tv_sec = 5,
+  const int rcvtimeout_sec = 5;
+  const int sndtimeout_sec = 5;
+
+  #if !defined(_WIN32)
+  timeval rcvtimeout_tv = {
+    .tv_sec = rcvtimeout_sec,
   };
-  r = setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+  r = setsockopt(
+    sockfd,
+    SOL_SOCKET,
+    SO_RCVTIMEO,
+    &rcvtimeout_tv,
+    sizeof(rcvtimeout_tv)
+  );
+  #else
+  r = setsockopt(
+    sockfd,
+    SOL_SOCKET,
+    SO_RCVTIMEO,
+    reinterpret_cast<char const*>(&rcvtimeout_sec),
+    sizeof(rcvtimeout_sec)
+  );
+  #endif
+
   if (r < 0) {
     throw std::runtime_error(std::format(
       "failed to set SO_RCVTIMEO: {}",
@@ -86,7 +118,27 @@ void discover(
     ));
   }
 
-  r = setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+  #if !defined(_WIN32)
+  timeval sndtimeout_tv = {
+    .tv_sec = sndtimeout_sec,
+  };
+  r = setsockopt(
+    sockfd,
+    SOL_SOCKET,
+    SO_SNDTIMEO,
+    &sndtimeout_tv,
+    sizeof(sndtimeout_tv)
+  );
+  #else
+  r = setsockopt(
+    sockfd,
+    SOL_SOCKET,
+    SO_SNDTIMEO,
+    reinterpret_cast<char const*>(&sndtimeout_sec),
+    sizeof(sndtimeout_sec)
+  );
+  #endif
+
   if (r < 0) {
     throw std::runtime_error(std::format(
       "failed to set SO_SNDTIMEO: {}",
@@ -134,7 +186,11 @@ void discover(
   static auto const end_pattern = {std::byte(0xa7), std::byte(0xa7)};
 
   while (true) {
+    #if defined(_WIN32)
+    r = send(sockfd, reinterpret_cast<char*>(data.data()), data.size(), 0);
+    #else
     r = write(sockfd, data.data(), data.size());
+    #endif
     if (r < 0) {
       if (errno == EINTR) {
         continue;
@@ -176,7 +232,12 @@ void discover(
       throw std::runtime_error("message received is too large");
     }
 
-    r = recv(sockfd, buf.data() + offset, buf.size() - offset, 0);
+    #if defined(_WIN32)
+    auto recv_buf_ptr = reinterpret_cast<char*>(buf.data() + offset);
+    #else
+    auto recv_buf_ptr = buf.data() + offset;
+    #endif
+    r = recv(sockfd, recv_buf_ptr, buf.size() - offset, 0);
     if (r < 0) {
       if (errno == EINTR) {
         continue;
@@ -196,7 +257,15 @@ void discover(
   }
 
   if (found_end) {
-    auto s = std::string(buf.cbegin() + 4, buf.cend() - 2);
+    std::string s;
+    std::transform(
+      buf.cbegin() + 4,
+      buf.cend() - 2,
+      s.begin(),
+      [](std::byte b) {
+        return static_cast<std::string::value_type>(b);
+      }
+    );
     result.result_msg = s;
 
     auto json = json::parse(s);

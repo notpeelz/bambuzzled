@@ -1,5 +1,7 @@
 #pragma once
 
+#if !defined(_WIN32)
+
 #include <unistd.h>
 
 namespace bbzl::utils {
@@ -55,3 +57,5 @@ public:
 };
 
 }
+
+#endif
