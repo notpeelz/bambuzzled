@@ -28,7 +28,7 @@ using json = nlohmann::json;
 
 namespace bbzl::pairing {
 
-bool parse_ip(std::string const& s, sockaddr_storage& sa) {
+static bool parse_ip(std::string const& s, sockaddr_storage& sa) {
   sa = {};
 
   auto& sa_in6 = reinterpret_cast<sockaddr_in6&>(sa);

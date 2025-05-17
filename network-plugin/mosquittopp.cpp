@@ -26,8 +26,8 @@ namespace bbzl::mqtt {
 
 using bbzl::ssl::openssl_ctx_handle;
 
-openssl_ctx_handle create_openssl_context() {
-  SSL_METHOD const* method = TLS_client_method();
+static openssl_ctx_handle create_openssl_context() {
+  auto method = TLS_client_method();
   auto ctx = openssl_ctx_handle(SSL_CTX_new(method));
   SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
 
