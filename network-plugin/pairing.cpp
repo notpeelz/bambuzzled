@@ -263,7 +263,7 @@ void discover(
       buf.cend() - 2,
       s.begin(),
       [](std::byte b) {
-        return static_cast<std::string::value_type>(b);
+        return static_cast<char>(b);
       }
     );
     result.result_msg = s;
