@@ -27,7 +27,7 @@ public:
   socket_handle(socket_handle&& a) noexcept
     : handle_(a.handle_)
   {
-    a.handle_ = -1;
+    a.handle_ = INVALID_SOCKET_VALUE;
   }
 
   ~socket_handle() {
