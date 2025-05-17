@@ -4,8 +4,8 @@
 #include <string>
 #include <string_view>
 #include <sstream>
+#include <cstddef>
 #include <type_traits>
-#include <typeinfo>
 
 #include "demangle.hpp"
 #include "quote.hpp"
