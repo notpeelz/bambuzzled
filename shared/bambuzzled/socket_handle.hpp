@@ -5,6 +5,7 @@
 using native_socket_handle = SOCKET;
 constexpr native_socket_handle INVALID_SOCKET_VALUE = INVALID_SOCKET;
 #else
+#include <unistd.h>
 using native_socket_handle = int;
 constexpr native_socket_handle INVALID_SOCKET_VALUE = -1;
 #endif
@@ -30,8 +31,12 @@ public:
   }
 
   ~socket_handle() {
-    if (this->handle_ >= 0) {
+    if (this->handle_ != INVALID_SOCKET_VALUE) {
+      #if defined(_WIN32)
       (void)closesocket(this->handle_);
+      #else
+      (void)close(this->handle_);
+      #endif
     }
   }
 
