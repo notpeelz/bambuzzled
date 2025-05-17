@@ -162,7 +162,7 @@ int bambu_network_bind_detect(
   auto agent = static_cast<network_agent*>(agentp);
 
   return try_or(BAMBU_NETWORK_ERR_BIND_FAILED, [&]() {
-    bbzl::pairing::discover(dev_ip, true, detect);
+    bbzl::pairing::discover(dev_ip, sec_link == "secure", detect);
     return BAMBU_NETWORK_SUCCESS;
   });
 }

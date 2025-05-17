@@ -9,6 +9,8 @@ add_library(
   bambuzzled/quote.cpp
   bambuzzled/demangle.cpp
   bambuzzled/win32.cpp
+  bambuzzled/socket.cpp
+  bambuzzled/socket_encrypted.cpp
 )
 add_library(bbzl::shared ALIAS bambuzzled-shared)
 set_target_properties(

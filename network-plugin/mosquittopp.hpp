@@ -58,7 +58,7 @@ using on_message_cb_fn = std::function<void(
 
 class mosquittopp {
 private:
-  bbzl::ssl::openssl_ctx_handle openssl_ctx_;
+  bbzl::ssl::openssl_ctx_handle ssl_ctx_;
   on_connect_cb_fn on_connect_cb_;
   on_disconnect_cb_fn on_disconnect_cb_;
   on_suback_cb_fn on_suback_cb_;
@@ -96,6 +96,7 @@ private:
     int qos_count,
     int const* granted_qos
   ) noexcept;
+
 public:
   mosquittopp();
   ~mosquittopp();

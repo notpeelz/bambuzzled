@@ -25,6 +25,23 @@ public:
   operator SSL_CTX*() const { return this->get(); }
 };
 
+struct openssl_ssl_handle_deleter {
+  void operator()(SSL* ssl) const {
+    if (ssl != nullptr) {
+      SSL_free(ssl);
+    }
+  }
+};
+
+class openssl_ssl_handle
+  : public std::unique_ptr<SSL, openssl_ssl_handle_deleter>
+{
+public:
+  using base = std::unique_ptr<SSL, openssl_ssl_handle_deleter>;
+  using base::base;
+  operator SSL*() const { return this->get(); }
+};
+
 std::string get_err_msg() noexcept;
 
 std::filesystem::path const& get_certs_dir() noexcept;

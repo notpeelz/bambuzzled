@@ -1,4 +1,5 @@
-#include <cerrno>
+#include <optional>
+#include <span>
 #include <cstdlib>
 #include <cstddef>
 #include <cstring>
@@ -8,7 +9,14 @@
 #include <vector>
 #include <format>
 #include <nlohmann/json.hpp>
-#include <bambuzzled/socket_handle.hpp>
+#include <openssl/crypto.h>
+#include <openssl/ssl.h>
+#include <openssl/prov_ssl.h>
+#include <openssl/x509.h>
+#include <openssl/x509_vfy.h>
+#include <bambuzzled/ssl.hpp>
+#include <bambuzzled/socket.hpp>
+#include <bambuzzled/socket_encrypted.hpp>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
 #include "pairing.hpp"
 
@@ -25,6 +33,7 @@
 #endif
 
 using json = nlohmann::json;
+using bbzl::ssl::openssl_ctx_handle;
 
 namespace bbzl::pairing {
 
@@ -47,125 +56,103 @@ static bool parse_ip(std::string const& s, sockaddr_storage& sa) {
   return false;
 }
 
+static openssl_ctx_handle create_openssl_context() {
+  auto method = TLS_client_method();
+  auto ctx = openssl_ctx_handle(SSL_CTX_new(method));
+  SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
+
+  if (ctx == nullptr) {
+    throw std::runtime_error(std::format(
+      "failed to create OpenSSL context: {}",
+      bbzl::ssl::get_err_msg()
+    ));
+  }
+
+  SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
+
+  X509_STORE* store = SSL_CTX_get_cert_store(ctx);
+  X509_STORE_set_flags(store, X509_V_FLAG_NO_CHECK_TIME);
+
+  X509_LOOKUP* lookup = X509_STORE_add_lookup(
+    store,
+    X509_LOOKUP_hash_dir()
+  );
+  X509_LOOKUP_add_dir(
+    lookup,
+    nullptr,
+    X509_FILETYPE_DEFAULT
+  );
+  X509_LOOKUP_add_dir(
+    lookup,
+    reinterpret_cast<char const*>(
+      bbzl::ssl::get_certs_dir().u8string().c_str()
+    ),
+    X509_FILETYPE_PEM
+  );
+
+  return ctx;
+}
+
 void discover(
   std::string const& addr,
   bool use_ssl,
   BBL::detectResult& result
 ) {
-  int r;
+  using utils::socket::socket;
+  using utils::socket::socket_encrypted;
 
+  int r;
   union {
     sockaddr sa;
     sockaddr_in s4;
     sockaddr_in6 s6;
     sockaddr_storage ss;
-  } sa;
+  } ss;
+  std::optional<openssl_ctx_handle> ssl_ctx;
 
-  if (!parse_ip(addr, sa.ss)) {
+  if (!parse_ip(addr, ss.ss)) {
     throw std::runtime_error("invalid address");
   }
 
-  auto sa_family = sa.sa.sa_family;
   #if defined(_WIN32)
-  USHORT* port = nullptr;
+  USHORT* ss_port = nullptr;
   #else
-  in_port_t* port = nullptr;
+  in_port_t* ss_port = nullptr;
   #endif
 
-  bbzl::utils::socket_handle sockfd;
-  if (sa_family == AF_INET) {
-    sockfd = bbzl::utils::socket_handle(
-      socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
-    );
-    port = &sa.s4.sin_port;
-  } else if (sa_family == AF_INET6) {
-    sockfd = bbzl::utils::socket_handle(
-      socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP)
-    );
-    port = &sa.s6.sin6_port;
+  switch (ss.sa.sa_family) {
+    case AF_INET: {
+      ss_port = &ss.s4.sin_port;
+      break;
+    }
+    case AF_INET6: {
+      ss_port = &ss.s6.sin6_port;
+      break;
+    }
+    default: {
+      std::abort();
+      break;
+    }
+  }
+
+
+  if (use_ssl) {
+    *ss_port = ::htons(3002);
+    ssl_ctx = create_openssl_context();
   } else {
-    std::abort();
+    *ss_port = ::htons(3000);
   }
 
-  const int rcvtimeout_sec = 5;
-  const int sndtimeout_sec = 5;
+  auto&& sock = use_ssl
+    ? static_cast<socket&&>(socket_encrypted(*ssl_ctx))
+    : static_cast<socket&&>(socket());
+  sock.connect(ss.sa, sizeof(ss));
 
-  #if !defined(_WIN32)
-  timeval rcvtimeout_tv = {
-    .tv_sec = rcvtimeout_sec,
-  };
-  r = setsockopt(
-    sockfd,
-    SOL_SOCKET,
-    SO_RCVTIMEO,
-    &rcvtimeout_tv,
-    sizeof(rcvtimeout_tv)
-  );
-  #else
-  r = setsockopt(
-    sockfd,
-    SOL_SOCKET,
-    SO_RCVTIMEO,
-    reinterpret_cast<char const*>(&rcvtimeout_sec),
-    sizeof(rcvtimeout_sec)
-  );
-  #endif
+  constexpr int timeout_seconds = 5;
+  sock.set_recv_timeout(timeout_seconds);
+  sock.set_send_timeout(timeout_seconds);
 
-  if (r < 0) {
-    throw std::runtime_error(std::format(
-      "failed to set SO_RCVTIMEO: {}",
-      strerror(errno)
-    ));
-  }
-
-  #if !defined(_WIN32)
-  timeval sndtimeout_tv = {
-    .tv_sec = sndtimeout_sec,
-  };
-  r = setsockopt(
-    sockfd,
-    SOL_SOCKET,
-    SO_SNDTIMEO,
-    &sndtimeout_tv,
-    sizeof(sndtimeout_tv)
-  );
-  #else
-  r = setsockopt(
-    sockfd,
-    SOL_SOCKET,
-    SO_SNDTIMEO,
-    reinterpret_cast<char const*>(&sndtimeout_sec),
-    sizeof(sndtimeout_sec)
-  );
-  #endif
-
-  if (r < 0) {
-    throw std::runtime_error(std::format(
-      "failed to set SO_SNDTIMEO: {}",
-      strerror(errno)
-    ));
-  }
-
-  // TODO: do OpenSSL stuff if use_ssl
-  *port = htons(3000);
-
-  if (sockfd < 0) {
-    auto err = std::strerror(errno);
-    throw std::runtime_error(std::format(
-      "failed to create socket: {}",
-      err
-    ));
-  }
-
-  r = connect(sockfd, &sa.sa, sizeof(sa));
-  if (r < 0) {
-    throw std::runtime_error(std::format(
-      "can't connect: {}",
-      strerror(errno)
-    ));
-  }
-
-  auto json = R"({
+  auto request_json = R"({
     "login": {
       "command": "detect",
       "sequence_id": "50000"
@@ -177,37 +164,18 @@ void discover(
   data.push_back(std::byte{0xa5});
   data.push_back(std::byte{0x3a});
   data.push_back(std::byte{0x00});
-  for (auto& c : json.dump()) {
+  for (auto& c : request_json.dump()) {
     data.push_back(static_cast<std::byte>(c));
   }
   data.push_back(std::byte{0xa7});
   data.push_back(std::byte{0xa7});
 
-  static auto const end_pattern = {std::byte(0xa7), std::byte(0xa7)};
+  constexpr static auto end_pattern = {std::byte(0xa7), std::byte(0xa7)};
 
-  while (true) {
-    #if defined(_WIN32)
-    r = send(sockfd, reinterpret_cast<char*>(data.data()), data.size(), 0);
-    #else
-    r = write(sockfd, data.data(), data.size());
-    #endif
-    if (r < 0) {
-      if (errno == EINTR) {
-        continue;
-      }
-
-      throw std::runtime_error(std::format(
-        "failed to send message: {}",
-        strerror(errno)
-      ));
-    }
-
-    break;
-  }
+  sock.send(data);
 
   bool found_end = false;
-  auto buf = std::vector<std::byte>();
-  buf.resize(0x800);
+  auto buf = std::vector<std::byte>(0x800);
 
   size_t offset = 0;
   while (true) {
@@ -232,52 +200,52 @@ void discover(
       throw std::runtime_error("message received is too large");
     }
 
-    #if defined(_WIN32)
-    auto recv_buf_ptr = reinterpret_cast<char*>(buf.data() + offset);
-    #else
-    auto recv_buf_ptr = buf.data() + offset;
-    #endif
-    r = recv(sockfd, recv_buf_ptr, buf.size() - offset, 0);
-    if (r < 0) {
-      if (errno == EINTR) {
-        continue;
-      }
-
-      throw std::runtime_error(std::format(
-        "failed to receive message: {}",
-        strerror(errno)
-      ));
-    }
-
+    auto buf_span = std::span<std::byte>(
+      buf.begin() + offset,
+      buf.end()
+    );
+    r = sock.receive(buf_span);
     if (r == 0) {
       break;
     }
-
     offset += r;
   }
 
-  if (found_end) {
-    std::string s;
-    std::transform(
-      buf.cbegin() + 4,
-      buf.cend() - 2,
-      s.begin(),
-      [](std::byte b) {
-        return static_cast<char>(b);
-      }
-    );
-    result.result_msg = s;
-
-    auto json = json::parse(s);
-    auto& login = json["login"];
-    result.command = login["command"];
-    result.dev_id = login["id"];
-    result.model_id = login["model"];
-    result.dev_name = login["name"];
-    result.version = login["version"];
-    result.bind_state = login["bind"];
-    result.connect_type = login["connect"];
+  if (!found_end) {
+    throw std::runtime_error("received incomplete message");
   }
+
+  constexpr size_t header_size = 4;
+  constexpr size_t trailer_size = end_pattern.size();
+  if (buf.size() < (header_size + trailer_size)) {
+    throw std::runtime_error("received message too small to parse");
+  }
+
+  auto byte_span = std::span<std::byte const>(
+    buf.cbegin() + header_size,
+    buf.cend() - trailer_size
+  );
+  auto s = std::string(buf.size(), '\0');
+  auto s_end = std::transform(
+    byte_span.begin(),
+    byte_span.end(),
+    s.begin(),
+    [](std::byte b) {
+      return static_cast<char>(b);
+    }
+  );
+  s.erase(s_end, s.cend());
+  result.result_msg = s;
+
+  auto json = json::parse(s);
+  auto& login = json["login"];
+  result.command = login["command"];
+  result.dev_id = login["id"];
+  result.model_id = login["model"];
+  result.dev_name = login["name"];
+  result.version = login["version"];
+  result.bind_state = login["bind"];
+  result.connect_type = login["connect"];
 }
 
 }

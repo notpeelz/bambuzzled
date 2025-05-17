@@ -86,21 +86,29 @@ void network_client::on_message(
   mosquitto_message const* msg
 ) {
   auto msg_str = std::string((char*)msg->payload, msg->payloadlen);
-  log::trace_fmt("received message ({}): {}", msg->topic, msg_str);
+  log::debug_fmt("({}) received message ({}): {}", this->dev_id, msg->topic, msg_str);
   this->agent->on_local_message_fn_(this->dev_id, msg_str);
 }
 
 void network_client::on_suback(mqtt::message_id mid) {
-  log::trace_fmt("received suback for mid {}", mid);
+  log::debug_fmt("received suback for mid {}", mid);
 
   if (mid == this->report_sub_mid) {
     this->report_sub_mid = 0;
-    log::trace_fmt("subscribed to topic: device/{}/request", this->dev_id);
+    log::debug_fmt(
+      "({}) subscribed to topic: device/{}/request",
+      this->dev_id,
+      this->dev_id
+    );
     this->agent->on_local_connected_fn_(0, this->dev_id, "ssl:");
     return;
   }
 
-  log::error_fmt("received unexpected suback for mid {}", mid);
+  log::error_fmt(
+    "({}) received unexpected suback for mid {}",
+    this->dev_id,
+    mid
+  );
 }
 
 std::optional<network_client*> network_agent::get_conn(std::string const& dev_id) {
@@ -169,10 +177,16 @@ void network_agent::connect(
   auto scope = BBZL_TRACE_SCOPE(dev_id, dev_ip, username, "*PASSWORD*"sv);
   auto conn = this->get_or_create_conn(dev_id);
   if (conn->mosqpp->connected()) {
-    log::debug("connect called while already connected; requesting disconnect");
+    log::debug_fmt(
+      "({}) connect called while already connected; requesting disconnect",
+      dev_id
+    );
     conn->mosqpp->disconnect();
     while (conn->mosqpp->active()) {
-      log::debug("waiting for mosqpp thread to terminate");
+      log::debug_fmt(
+        "({}) waiting for mosquitto thread to terminate",
+        dev_id
+      );
       std::this_thread::sleep_for(200ms);
     }
   }

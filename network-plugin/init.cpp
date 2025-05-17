@@ -5,33 +5,33 @@
 #include <curl/curl.h>
 
 static void init() {
-  int rc;
+  int r;
 
-  rc = OPENSSL_init_ssl(
+  r = OPENSSL_init_ssl(
     OPENSSL_INIT_LOAD_SSL_STRINGS
     | OPENSSL_INIT_LOAD_CRYPTO_STRINGS,
     nullptr
   );
-  if (rc != 1) {
+  if (r != 1) {
     std::abort();
   }
 
-  rc = OPENSSL_init_crypto(
+  r = OPENSSL_init_crypto(
     OPENSSL_INIT_ADD_ALL_CIPHERS
     | OPENSSL_INIT_ADD_ALL_DIGESTS,
     nullptr
   );
-  if (rc != 1) {
+  if (r != 1) {
     std::abort();
   }
 
-  rc = mosquitto_lib_init();
-  if (rc != MOSQ_ERR_SUCCESS) {
+  r = mosquitto_lib_init();
+  if (r != MOSQ_ERR_SUCCESS) {
     std::abort();
   }
 
-  rc = curl_global_init(CURL_GLOBAL_DEFAULT);
-  if (rc != CURLE_OK) {
+  r = curl_global_init(CURL_GLOBAL_DEFAULT);
+  if (r != CURLE_OK) {
     std::abort();
   }
 }
