@@ -90,7 +90,7 @@ int bambu_network_connect_printer(
 
 int bambu_network_send_message_to_printer(void* agentp, std::string dev_id, std::string json_str, int qos) {
   auto agent = static_cast<network_agent*>(agentp);
-  return try_or(1, [&]() {
+  return try_or(BAMBU_NETWORK_ERR_SEND_MSG_FAILED, [&]() {
     agent->send_message(dev_id, json_str, qos);
     return 0;
   });

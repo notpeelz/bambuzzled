@@ -202,7 +202,8 @@ void network_agent::send_message(
   auto conn = this->get_conn(dev_id);
   if (!conn.has_value()) {
     throw std::runtime_error(std::format(
-      "network client doesn't exist: {}", dev_id
+      "network client doesn't exist: {}",
+      dev_id
     ));
   }
 
