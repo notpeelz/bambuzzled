@@ -22,6 +22,7 @@ target_compile_definitions(
   bambuzzled-shared
   PRIVATE
   BBZL_CERTS_DIR="${CMAKE_INSTALL_PREFIX}/share/bambuzzled/certs"
+  BBZL_DEFAULT_LOG_LEVEL=${BBZL_DEFAULT_LOG_LEVEL}
 )
 target_include_directories(
   bambuzzled-shared

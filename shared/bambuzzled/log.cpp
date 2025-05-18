@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-#include <cctype>
 #include <ctime>
 #include <mutex>
 #include <string>
@@ -17,11 +16,9 @@
 
 #include "log.hpp"
 
-using namespace std::string_view_literals;
-
 namespace bbzl::log {
 
-  static std::string_view level_to_str(log_level level) noexcept {
+  static constexpr std::string_view level_to_str(log_level level) noexcept {
     switch (level) {
       case log_level::TRACE: {
         return "TRACE";
@@ -44,7 +41,14 @@ namespace bbzl::log {
     }
   }
 
-  static std::optional<log_level> str_to_level(char const* level) noexcept {
+  static constexpr char to_lower_ascii(const char c) {
+    if (c >= 'A' && c <= 'Z') {
+      return c + ('a' - 'A');
+    }
+    return c;
+  }
+
+  static constexpr std::optional<log_level> str_to_level(char const* level) noexcept {
     if (level == nullptr) {
       return std::nullopt;
     }
@@ -55,7 +59,7 @@ namespace bbzl::log {
       level_normalized.end(),
       level_normalized.begin(),
       [](unsigned char c) {
-        return std::tolower(c);
+        return to_lower_ascii(c);
       }
     );
 
@@ -116,7 +120,14 @@ namespace bbzl::log {
       if (level.has_value()) {
         current_level = level.value();
       } else {
-        current_level = log_level::INFO;
+        #undef STRINGIFY
+        #undef QUOTE
+        #define STRINGIFY(x) #x
+        #define QUOTE(x) STRINGIFY(x)
+        constexpr auto default_level_str = QUOTE(BBZL_DEFAULT_LOG_LEVEL);
+        constexpr auto default_level = str_to_level(default_level_str);
+        static_assert(default_level.has_value());
+        current_level = *default_level;
       }
     }
 
@@ -162,7 +173,7 @@ namespace bbzl::log {
     }
 
     auto log_line = std::format(
-      "[{}] [{}] {}\n"sv,
+      "[{}] [{}] {}\n",
       current_time_str(),
       level_to_str(level),
       msg
