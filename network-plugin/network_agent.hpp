@@ -65,7 +65,6 @@ public:
   void set_queue_on_main_fn(BBL::QueueOnMainFn&& fn) noexcept;
   std::string get_user_selected_machine() noexcept;
   void set_user_selected_machine(std::string dev_id) noexcept;
-  void start();
   void disconnect();
   bool disconnect(std::string const& dev_id);
   bool connect(

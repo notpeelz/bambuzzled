@@ -5,26 +5,18 @@
 #include <thread>
 #include <utility>
 #include <string>
-#include <string_view>
 #include <optional>
 #include <exception>
-#include <stdexcept>
 #include <bambuzzled/log.hpp>
 #include <bambuzzled/try_wrapper.hpp>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
 #include "mosquittopp.hpp"
 #include "network_agent.hpp"
 
-namespace {
-
-using namespace bbzl::try_wrapper;
-
-}
-
 namespace bbzl {
 
 using namespace std::chrono_literals;
-using namespace std::string_view_literals;
+using namespace bbzl::try_wrapper;
 
 network_agent::network_agent() {}
 
@@ -70,13 +62,7 @@ void network_agent::set_user_selected_machine(std::string dev_id) noexcept {
   (void)dev_id;
 }
 
-void network_agent::start() {
-  auto scope = BBZL_TRACE_SCOPE();
-}
-
 void network_client::on_connect(int reason_code) {
-  auto scope = BBZL_TRACE_SCOPE(reason_code);
-
   if (reason_code != 0) {
     bbzl::log::error_fmt(
       "failed connecting to MQTT broker: {}",
@@ -243,8 +229,6 @@ bool network_agent::connect(
   std::string const& password,
   bool use_ssl
 ) {
-  auto scope = BBZL_TRACE_SCOPE(dev_id, dev_ip, username, "*PASSWORD*"sv);
-
   if (!use_ssl) {
     bbzl::log::warn(
       "attempted to connect without SSL (not implemented);"
@@ -279,7 +263,6 @@ bool network_agent::send_message(
   std::string const& json_str,
   int qos
 ) {
-  auto scope = BBZL_TRACE_SCOPE(dev_id, json_str, qos);
   auto maybe_conn = this->get_conn(dev_id);
   if (!maybe_conn.has_value()) {
     throw network_client_not_found(dev_id);

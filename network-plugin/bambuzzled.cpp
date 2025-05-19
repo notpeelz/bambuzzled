@@ -5,6 +5,7 @@
 #include <exception>
 #include <functional>
 #include <filesystem>
+#include <string_view>
 #include <system_error>
 #include <nlohmann/json.hpp>
 #include <bambuzzled/log.hpp>
@@ -17,6 +18,7 @@
 
 using json = nlohmann::json;
 using network_agent = bbzl::network_agent;
+using namespace std::string_view_literals;
 using namespace bbzl::try_wrapper;
 
 bool bambu_network_check_debug_consistent(bool is_debug) {
@@ -30,26 +32,25 @@ std::string bambu_network_get_version() {
 }
 
 void* bambu_network_create_agent(std::string log_dir) {
-  (void)log_dir;
+  auto scope = BBZL_TRACE_SCOPE(log_dir);
   return try_or(nullptr, []() {
     return new network_agent();
   });
 }
 
 int bambu_network_destroy_agent(void* agentp) {
+  auto scope = BBZL_TRACE_SCOPE(agentp);
   try_([&]() {
     auto agent = static_cast<network_agent*>(agentp);
     delete agent;
   });
-  return 0;
+  return BAMBU_NETWORK_SUCCESS;
 }
 
 int bambu_network_start(void* agentp) {
+  auto scope = BBZL_TRACE_SCOPE(agentp);
   auto agent = static_cast<network_agent*>(agentp);
-  return try_or(1, [&agent]() {
-    agent->start();
-    return 0;
-  });
+  return BAMBU_NETWORK_SUCCESS;
 }
 
 bool bambu_network_start_discovery(void* agentp, bool start, bool sending) {
@@ -70,7 +71,7 @@ int bambu_network_set_user_selected_machine(void* agentp, std::string dev_id) {
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_user_selected_machine(dev_id);
-    return 0;
+    return BAMBU_NETWORK_SUCCESS;
   });
 }
 
@@ -82,6 +83,7 @@ int bambu_network_connect_printer(
   std::string password,
   bool use_ssl
 ) {
+  auto scope = BBZL_TRACE_SCOPE(dev_id, dev_ip, username, "*PASSWORD*"sv);
   return try_or(BAMBU_NETWORK_ERR_CONNECT_FAILED, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     auto thread = std::thread(wrap_try([
@@ -105,6 +107,7 @@ int bambu_network_send_message_to_printer(
   std::string json_str,
   int qos
 ) {
+  auto scope = BBZL_TRACE_SCOPE(dev_id, dev_id, json_str);
   return try_or(BAMBU_NETWORK_ERR_SEND_MSG_FAILED, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     try {
@@ -126,6 +129,7 @@ int bambu_network_disconnect_printer(void* agentp) {
 }
 
 int bambu_network_set_config_dir(void* agentp, std::string config_dir) {
+  auto scope = BBZL_TRACE_SCOPE(agentp, config_dir);
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_config_dir(std::move(config_dir));
@@ -134,6 +138,7 @@ int bambu_network_set_config_dir(void* agentp, std::string config_dir) {
 }
 
 int bambu_network_set_on_printer_connected_fn(void* agentp, BBL::OnPrinterConnectedFn fn) {
+  auto scope = BBZL_TRACE_SCOPE(agentp, fn);
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_on_printer_connected_fn(std::move(fn));
@@ -142,6 +147,7 @@ int bambu_network_set_on_printer_connected_fn(void* agentp, BBL::OnPrinterConnec
 }
 
 int bambu_network_set_on_server_connected_fn(void* agentp, BBL::OnServerConnectedFn fn) {
+  auto scope = BBZL_TRACE_SCOPE(agentp, fn);
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_on_server_connected_fn(std::move(fn));
@@ -150,6 +156,7 @@ int bambu_network_set_on_server_connected_fn(void* agentp, BBL::OnServerConnecte
 }
 
 int bambu_network_set_on_local_connect_fn(void* agentp, BBL::OnLocalConnectedFn fn) {
+  auto scope = BBZL_TRACE_SCOPE(agentp, fn);
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_on_local_connected_fn(std::move(fn));
@@ -158,6 +165,7 @@ int bambu_network_set_on_local_connect_fn(void* agentp, BBL::OnLocalConnectedFn 
 }
 
 int bambu_network_set_on_local_message_fn(void* agentp, BBL::OnMessageFn fn) {
+  auto scope = BBZL_TRACE_SCOPE(agentp, fn);
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_on_local_message_fn(std::move(fn));
@@ -166,6 +174,7 @@ int bambu_network_set_on_local_message_fn(void* agentp, BBL::OnMessageFn fn) {
 }
 
 int bambu_network_set_queue_on_main_fn(void* agentp, BBL::QueueOnMainFn fn) {
+  auto scope = BBZL_TRACE_SCOPE(agentp, fn);
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_queue_on_main_fn(std::move(fn));
@@ -174,7 +183,7 @@ int bambu_network_set_queue_on_main_fn(void* agentp, BBL::QueueOnMainFn fn) {
 }
 
 std::string bambu_network_build_logout_cmd(void* agentp) {
-  (void)agentp;
+  auto scope = BBZL_TRACE_SCOPE(agentp);
   return try_or_default([]() {
     auto json = R"({
       "command": "studio_useroffline",
@@ -246,7 +255,6 @@ int bambu_network_start_send_gcode_to_sdcard(
     was_cancelled_fn,
     wait_fn
   );
-
   return try_or(1, [&]() {
     // TODO: callbacks
     bbzl::ftp::upload_file(
@@ -417,6 +425,11 @@ int bambu_network_start_sdcard_print(
   BBL::OnUpdateStatusFn update_fn,
   BBL::WasCancelledFn was_cancelled_fn
 ) {
-  auto scope = BBZL_TRACE_SCOPE(agentp, params, update_fn, was_cancelled_fn);
+  auto scope = BBZL_TRACE_SCOPE(
+    agentp,
+    params,
+    update_fn,
+    was_cancelled_fn
+  );
   return BAMBU_NETWORK_SUCCESS;
 }
