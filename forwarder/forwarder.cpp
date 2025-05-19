@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <cstdlib>
+#include <optional>
 #include <exception>
 #include <functional>
 #include <type_traits>
@@ -37,15 +38,15 @@ static std::string get_forward_path() {
 
 template<typename T>
 T get_fn(std::string const& name) {
-  static dyn_lib_loader* loader{};
+  static std::optional<dyn_lib_loader> loader;
   try {
-    if (loader == nullptr) {
+    if (!loader.has_value()) {
       auto forward_path = get_forward_path();
       if (forward_path.empty()) {
         return nullptr;
       }
 
-      loader = new dyn_lib_loader(forward_path);
+      loader.emplace(forward_path);
     }
 
     return loader->get_symbol<T>(name);

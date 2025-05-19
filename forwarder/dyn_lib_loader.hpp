@@ -72,6 +72,9 @@ public:
     }
   }
 
+  dyn_lib_loader(const dyn_lib_loader& a) = delete;
+  dyn_lib_loader& operator=(const dyn_lib_loader& a) = delete;
+
   template<typename T>
   T get_symbol(std::string const& name) {
     auto lock = std::lock_guard(mutex);
