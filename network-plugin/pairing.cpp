@@ -200,7 +200,7 @@ void discover(
     }
 
     if (buf.size() > 0x10000) {
-      throw std::runtime_error("message received is too large");
+      throw std::runtime_error("received message is too large");
     }
 
     auto buf_span = std::span<std::byte>(
