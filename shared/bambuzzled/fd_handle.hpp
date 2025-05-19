@@ -18,8 +18,8 @@ public:
     }
   }
 
-  fd_handle(const fd_handle& a) = delete;
-  fd_handle& operator=(const fd_handle& a) = delete;
+  fd_handle(const fd_handle& rhs) = delete;
+  fd_handle& operator=(const fd_handle& rhs) = delete;
 
   fd_handle(fd_handle&& rhs) noexcept
     : fd_(rhs.fd_)

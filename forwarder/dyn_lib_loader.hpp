@@ -30,17 +30,17 @@ private:
   std::mutex mutex;
 
   void ensure_loaded() {
-    if (handle != nullptr) {
+    if (this->handle != nullptr) {
       return;
     }
 
     #if defined(_WIN32)
-    handle = LoadLibraryA(lib_path.c_str());
+    this->handle = LoadLibraryA(this->lib_path.c_str());
     #elif defined(__APPLE__) || defined(__linux__)
-    handle = dlopen(lib_path.c_str(), RTLD_LAZY);
+    this->handle = dlopen(this->lib_path.c_str(), RTLD_LAZY);
     #endif
 
-    if (handle != nullptr) {
+    if (this->handle != nullptr) {
       return;
     }
 
@@ -57,22 +57,24 @@ private:
   }
 
 public:
-  dyn_lib_loader(std::string const& lib_path) : lib_path(lib_path) {
+  dyn_lib_loader(std::string const& lib_path)
+    : lib_path(lib_path)
+  {
     ensure_loaded();
   }
 
   ~dyn_lib_loader() {
-    if (handle != nullptr) {
+    if (this->handle != nullptr) {
       #if defined(_WIN32)
-      (void)FreeLibrary(handle);
+      (void)FreeLibrary(this->handle);
       #else
-      (void)dlclose(handle);
+      (void)dlclose(this->handle);
       #endif
     }
   }
 
-  dyn_lib_loader(const dyn_lib_loader& a) = delete;
-  dyn_lib_loader& operator=(const dyn_lib_loader& a) = delete;
+  dyn_lib_loader(const dyn_lib_loader& rhs) = delete;
+  dyn_lib_loader& operator=(const dyn_lib_loader& rhs) = delete;
 
   template<typename T>
   T get_symbol(std::string const& name) {
@@ -87,9 +89,11 @@ public:
 
     void* addr = nullptr;
     #if defined(_WIN32)
-    addr = reinterpret_cast<void*>(GetProcAddress(handle, name.c_str()));
+    addr = reinterpret_cast<void*>(
+      GetProcAddress(this->handle, name.c_str())
+    );
     #else
-    addr = dlsym(handle, name.c_str());
+    addr = dlsym(this->handle, name.c_str());
     #endif
 
     if (addr == nullptr) {

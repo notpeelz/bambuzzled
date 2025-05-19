@@ -31,8 +31,8 @@ public:
     }
   }
 
-  socket_handle(const socket_handle& a) = delete;
-  socket_handle& operator=(const socket_handle& a) = delete;
+  socket_handle(const socket_handle& rhs) = delete;
+  socket_handle& operator=(const socket_handle& rhs) = delete;
 
   socket_handle(socket_handle&& rhs) noexcept
     : handle_(rhs.handle_)
