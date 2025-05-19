@@ -304,7 +304,7 @@ int bambu_network_start_local_print(
     { "param", std::format("Metadata/plate_{}.gcode", params.plate_index) },
     { "profile_id", "0" },
     { "project_id", "0" },
-    { "sequence_id", "0" }, // TODO: "50000"? ++sequence_id
+    { "sequence_id", "50000" }, // TODO: "50000"? ++sequence_id
     { "subtask_id", "0" },
     { "subtask_name", params.project_name }, // ?
     { "task_id", "0" },
