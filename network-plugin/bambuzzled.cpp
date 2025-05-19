@@ -129,7 +129,9 @@ int bambu_network_disconnect_printer(void* agentp) {
 }
 
 int bambu_network_set_config_dir(void* agentp, std::string config_dir) {
+  #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, config_dir);
+  #endif
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_config_dir(std::move(config_dir));
@@ -138,7 +140,9 @@ int bambu_network_set_config_dir(void* agentp, std::string config_dir) {
 }
 
 int bambu_network_set_on_printer_connected_fn(void* agentp, BBL::OnPrinterConnectedFn fn) {
+  #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, fn);
+  #endif
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_on_printer_connected_fn(std::move(fn));
@@ -147,7 +151,9 @@ int bambu_network_set_on_printer_connected_fn(void* agentp, BBL::OnPrinterConnec
 }
 
 int bambu_network_set_on_server_connected_fn(void* agentp, BBL::OnServerConnectedFn fn) {
+  #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, fn);
+  #endif
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_on_server_connected_fn(std::move(fn));
@@ -156,7 +162,9 @@ int bambu_network_set_on_server_connected_fn(void* agentp, BBL::OnServerConnecte
 }
 
 int bambu_network_set_on_local_connect_fn(void* agentp, BBL::OnLocalConnectedFn fn) {
+  #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, fn);
+  #endif
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_on_local_connected_fn(std::move(fn));
@@ -165,7 +173,9 @@ int bambu_network_set_on_local_connect_fn(void* agentp, BBL::OnLocalConnectedFn 
 }
 
 int bambu_network_set_on_local_message_fn(void* agentp, BBL::OnMessageFn fn) {
+  #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, fn);
+  #endif
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_on_local_message_fn(std::move(fn));
@@ -174,7 +184,9 @@ int bambu_network_set_on_local_message_fn(void* agentp, BBL::OnMessageFn fn) {
 }
 
 int bambu_network_set_queue_on_main_fn(void* agentp, BBL::QueueOnMainFn fn) {
+  #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, fn);
+  #endif
   return try_or(1, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_queue_on_main_fn(std::move(fn));
@@ -183,7 +195,10 @@ int bambu_network_set_queue_on_main_fn(void* agentp, BBL::QueueOnMainFn fn) {
 }
 
 std::string bambu_network_build_logout_cmd(void* agentp) {
+  #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp);
+  #endif
+
   return try_or_default([]() {
     auto json = R"({
       "command": "studio_useroffline",

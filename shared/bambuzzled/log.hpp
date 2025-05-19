@@ -48,6 +48,10 @@ static inline void error_fmt(std::format_string<Args...> fmt, Args&&... args) no
   log_internal(log_level::ERROR, std::format(fmt, std::forward<Args>(args)...));
 }
 
+static inline void stub(std::string const& s) noexcept {
+  log_internal(log_level::TRACE, s);
+}
+
 static inline void trace(std::string const& s) noexcept {
   log_internal(log_level::TRACE, s);
 }
@@ -127,6 +131,29 @@ static inline trace_scope_guard trace_scope_named(
 #define BBZL_TRACE_SCOPE_NAMED(name, ...) \
 ::bbzl::log::trace_scope_named( \
   name, \
+  std::source_location::current() \
+  __VA_OPT__(,) __VA_ARGS__ \
+)
+
+template<typename... Args>
+static inline void log_stub(
+  std::source_location const&& location,
+  Args&&... args
+) noexcept {
+  std::ostringstream oss;
+  oss << "HIT STUB: " << location.function_name();
+
+  size_t i = 0;
+  (([&](auto const& arg) {
+    oss << "\n  " << i << ": " << bbzl::utils::to_string(arg);
+    i++;
+  })(args), ...);
+
+  trace(oss.str());
+}
+
+#define BBZL_LOG_STUB(...) \
+::bbzl::log::log_stub( \
   std::source_location::current() \
   __VA_OPT__(,) __VA_ARGS__ \
 )
