@@ -78,7 +78,10 @@ void network_client::on_connect(int reason_code) {
       bbzl::mqtt::mosquitto_connack_string(reason_code)
     );
   } else {
-    bbzl::log::info("connected to MQTT broker");
+    bbzl::log::info_fmt(
+      "({}) connected from MQTT broker",
+      this->dev_id
+    );
   }
 
   // TODO: urlencode dev_id?
@@ -91,7 +94,10 @@ void network_client::on_connect(int reason_code) {
 }
 
 void network_client::on_disconnect(int reason_code) {
-  bbzl::log::info("disconnected from MQTT broker");
+  bbzl::log::info_fmt(
+    "({}) disconnected from MQTT broker",
+    this->dev_id
+  );
   if (reason_code != 0) {
     bbzl::log::error_fmt(
       "unexpected disconnect: {}",
