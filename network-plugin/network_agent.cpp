@@ -73,18 +73,14 @@ void network_client::on_connect(int reason_code) {
   }
 }
 
-void network_client::on_disconnect(
-  int reason_code
-) {
+void network_client::on_disconnect(int reason_code) {
   log::info("disconnected from MQTT broker");
   if (reason_code != 0) {
     log::error_fmt("unexpected disconnect: {}", mosquitto_strerror(reason_code));
   }
 }
 
-void network_client::on_message(
-  mosquitto_message const* msg
-) {
+void network_client::on_message(mosquitto_message const* msg) {
   auto msg_str = std::string((char*)msg->payload, msg->payloadlen);
   log::debug_fmt("({}) received message ({}): {}", this->dev_id, msg->topic, msg_str);
   this->agent->on_local_message_fn_(this->dev_id, msg_str);
