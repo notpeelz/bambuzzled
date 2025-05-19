@@ -76,7 +76,7 @@ public:
   );
   bool send_message(
     std::string const& dev_id,
-    std::string const& json_str,
+    std::string const& msg,
     int qos
   );
 };

@@ -260,7 +260,7 @@ bool network_agent::connect(
 
 bool network_agent::send_message(
   std::string const& dev_id,
-  std::string const& json_str,
+  std::string const& msg,
   int qos
 ) {
   auto maybe_conn = this->get_conn(dev_id);
@@ -271,7 +271,7 @@ bool network_agent::send_message(
 
   try {
     // TODO: urlencode dev_id?
-    (void)conn->mosqpp->publish("device/" + dev_id + "/request", json_str, qos);
+    (void)conn->mosqpp->publish("device/" + dev_id + "/request", msg, qos);
   } catch (std::exception& ex) {
     bbzl::log::error_fmt("mosquitto publish failed: {}", ex.what());
     return false;
