@@ -27,7 +27,7 @@ public:
     : ssl_ctx_(ssl_ctx) {}
   ~socket_encrypted() = default;
 
-  void connect(sockaddr const& addr, size_t addr_len) override;
+  void connect(sockaddr const& addr) override;
   int send(std::span<std::byte> const& data) override;
   int receive(std::span<std::byte>& buf) override;
 };

@@ -149,7 +149,7 @@ void discover(
     sock_variant
   );
 
-  sock.connect(ss.sa, sizeof(ss));
+  sock.connect(ss.sa);
 
   constexpr int timeout_seconds = 5;
   sock.set_recv_timeout(timeout_seconds);

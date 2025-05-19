@@ -24,18 +24,12 @@ public:
   void set_recv_timeout(int seconds);
   void set_send_timeout(int seconds);
 
-  virtual void connect(sockaddr const& addr, size_t addr_len);
+  virtual void connect(sockaddr const& addr);
   void connect(sockaddr_in const& addr) {
-    this->connect(
-      *reinterpret_cast<sockaddr const*>(&addr),
-      sizeof(addr)
-    );
+    this->connect(*reinterpret_cast<sockaddr const*>(&addr));
   }
   void connect(sockaddr_in6 const& addr) {
-    this->connect(
-      *reinterpret_cast<sockaddr const*>(&addr),
-      sizeof(addr)
-    );
+    this->connect(*reinterpret_cast<sockaddr const*>(&addr));
   }
 
   virtual int send(std::span<std::byte> const& data);

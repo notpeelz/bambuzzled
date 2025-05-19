@@ -86,7 +86,7 @@ void socket::set_send_timeout(int seconds) {
   }
 }
 
-void socket::connect(sockaddr const& addr, size_t addr_len) {
+void socket::connect(sockaddr const& addr) {
   using sa_union = union {
     sockaddr sa;
     sockaddr_in s4;

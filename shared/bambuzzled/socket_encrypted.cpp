@@ -17,13 +17,10 @@
 
 namespace bbzl::utils::socket {
 
-void socket_encrypted::connect(
-  sockaddr const& addr,
-  size_t addr_len
-) {
+void socket_encrypted::connect(sockaddr const& addr) {
   int r;
 
-  socket::connect(addr, addr_len);
+  socket::connect(addr);
 
   auto ssl = bbzl::ssl::openssl_ssl_handle(SSL_new(this->ssl_ctx_));
   if (ssl == nullptr) {
