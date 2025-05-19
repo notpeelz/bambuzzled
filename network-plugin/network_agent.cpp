@@ -173,7 +173,13 @@ void network_agent::connect(
   std::string const& password,
   bool use_ssl
 ) {
-  (void)use_ssl; // TODO?
+  if (!use_ssl) {
+    bbzl::log::warn(
+      "attempted to connect without SSL (not implemented);"
+      " connecting with SSL anyway"
+    );
+  }
+
   auto scope = BBZL_TRACE_SCOPE(dev_id, dev_ip, username, "*PASSWORD*"sv);
   auto conn = this->get_or_create_conn(dev_id);
   if (conn->mosqpp->connected()) {
