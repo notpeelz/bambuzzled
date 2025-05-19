@@ -14,12 +14,12 @@ struct curl_handle_deleter {
   }
 };
 
+using curl_handle_base = std::unique_ptr<CURL, curl_handle_deleter>;
 class curl_handle
-  : public std::unique_ptr<CURL, curl_handle_deleter>
+  : public curl_handle_base
 {
 public:
-  using base = std::unique_ptr<CURL, curl_handle_deleter>;
-  using base::base;
+  using curl_handle_base::curl_handle_base;
   operator CURL*() const { return this->get(); }
 };
 

@@ -12,7 +12,6 @@
 #include <exception>
 #include <stdexcept>
 #include <stop_token>
-#include <mosquitto.h>
 #include <bambuzzled/log.hpp>
 #include <bambuzzled/ssl.hpp>
 #include <openssl/crypto.h>
@@ -20,6 +19,7 @@
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
+#include "mosquitto.hpp"
 #include "mosquittopp.hpp"
 
 namespace bbzl::mqtt {
@@ -64,7 +64,7 @@ static openssl_ctx_handle create_openssl_context() {
 }
 
 void on_connect(
-  mosquitto*,
+  mosq_c::mosquitto*,
   void* obj,
   int reason_code
 ) noexcept {
@@ -76,7 +76,7 @@ void on_connect(
 }
 
 void on_disconnect(
-  mosquitto*,
+  mosq_c::mosquitto*,
   void* obj,
   int reason_code
 ) noexcept {
@@ -88,7 +88,7 @@ void on_disconnect(
 }
 
 void on_suback(
-  mosquitto*,
+  mosq_c::mosquitto*,
   void* obj,
   int mid,
   int qos_count,
@@ -105,9 +105,9 @@ void on_suback(
 }
 
 void on_message(
-  mosquitto*,
+  mosq_c::mosquitto*,
   void* obj,
-  mosquitto_message const* msg
+  mosq_c::mosquitto_message const* msg
 ) noexcept {
   auto& mosqpp = *static_cast<mosquittopp*>(obj);
   if (mosqpp.on_message_cb_ != nullptr) {
@@ -118,48 +118,62 @@ void on_message(
 mosquittopp::mosquittopp() {
   int r;
 
-  auto mosq = mosquitto_handle(mosquitto_new(nullptr, true, this));
+  auto mosq = mosquitto_handle(
+    mosq_c::mosquitto_new(nullptr, true, this)
+  );
   if (mosq == nullptr) {
     throw std::runtime_error("failed to create Mosquitto instance");
   }
 
-  r = mosquitto_threaded_set(mosq, true);
-  if (r != MOSQ_ERR_SUCCESS) {
+  r = mosq_c::mosquitto_threaded_set(mosq, true);
+  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
       "failed to enable Mosquitto threaded mode: {}",
-      mosquitto_strerror(r)
+      mosq_c::mosquitto_strerror(r)
     ));
   }
 
   auto ctx = create_openssl_context();
-  r = mosquitto_int_option(mosq, MOSQ_OPT_SSL_CTX_WITH_DEFAULTS, 0);
-  if (r != MOSQ_ERR_SUCCESS) {
+  r = mosq_c::mosquitto_int_option(
+    mosq,
+    mosq_c::MOSQ_OPT_SSL_CTX_WITH_DEFAULTS,
+    0
+  );
+  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
       "failed to disable default Mosquitto OpenSSL context: {}",
-      mosquitto_strerror(r)
+      mosq_c::mosquitto_strerror(r)
     ));
   }
 
-  r = mosquitto_void_option(mosq, MOSQ_OPT_SSL_CTX, ctx);
-  if (r != MOSQ_ERR_SUCCESS) {
+  r = mosq_c::mosquitto_void_option(
+    mosq,
+    mosq_c::MOSQ_OPT_SSL_CTX,
+    ctx
+  );
+  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
       "failed to set Mosquitto OpenSSL context: {}",
-      mosquitto_strerror(r)
+      mosq_c::mosquitto_strerror(r)
     ));
   }
 
-  r = mosquitto_int_option(mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V31);
-  if (r != MOSQ_ERR_SUCCESS) {
+  r = mosq_c::mosquitto_int_option(
+    mosq,
+    mosq_c::MOSQ_OPT_PROTOCOL_VERSION,
+    mosq_c::MQTT_PROTOCOL_V31
+  );
+  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
       "failed to set Mosquitto protocol version: {}",
-      mosquitto_strerror(r)
+      mosq_c::mosquitto_strerror(r)
     ));
   }
 
-  mosquitto_connect_callback_set(mosq, on_connect);
-  mosquitto_disconnect_callback_set(mosq, on_disconnect);
-  mosquitto_subscribe_callback_set(mosq, on_suback);
-  mosquitto_message_callback_set(mosq, on_message);
+  mosq_c::mosquitto_connect_callback_set(mosq, on_connect);
+  mosq_c::mosquitto_disconnect_callback_set(mosq, on_disconnect);
+  mosq_c::mosquitto_subscribe_callback_set(mosq, on_suback);
+  mosq_c::mosquitto_message_callback_set(mosq, on_message);
 
   this->mosq_ = std::move(mosq);
   this->ssl_ctx_ = std::move(ctx);
@@ -169,13 +183,9 @@ mosquittopp::~mosquittopp() {
   this->disconnect();
 }
 
-mosquitto* mosquittopp::get() const {
-  return this->mosq_.get();
-}
-
 void mosquittopp::thread_main(
-  std::stop_token st,
-  std::string const& addr,
+  std::stop_token&& st,
+  std::string const&& addr,
   uint16_t port
 ) {
   int r;
@@ -194,42 +204,42 @@ void mosquittopp::thread_main(
   #endif
 
   while (true) {
-    r = mosquitto_loop(this->mosq_, timeout, 1);
-    if (r != MOSQ_ERR_NO_CONN) {
+    r = mosq_c::mosquitto_loop(this->mosq_, timeout, 1);
+    if (r != mosq_c::MOSQ_ERR_NO_CONN) {
       break;
     }
 
     #if defined(_WIN32)
-    Sleep(10);
+    ::Sleep(10);
     #else
-    nanosleep(&ts, NULL);
+    ::nanosleep(&ts, NULL);
     #endif
   }
 
   while (true) {
     do {
-      r = mosquitto_loop(this->mosq_, timeout, 1);
+      r = mosq_c::mosquitto_loop(this->mosq_, timeout, 1);
       err = errno;
-    } while (!st.stop_requested() && r == MOSQ_ERR_SUCCESS);
+    } while (!st.stop_requested() && r == mosq_c::MOSQ_ERR_SUCCESS);
 
     bool fatal_error = false;
     switch (r) {
-      case MOSQ_ERR_NOMEM:
-      case MOSQ_ERR_PROTOCOL:
-      case MOSQ_ERR_INVAL:
-      case MOSQ_ERR_NOT_FOUND:
-      case MOSQ_ERR_TLS:
-      case MOSQ_ERR_PAYLOAD_SIZE:
-      case MOSQ_ERR_NOT_SUPPORTED:
-      case MOSQ_ERR_AUTH:
-      case MOSQ_ERR_ACL_DENIED:
-      case MOSQ_ERR_UNKNOWN:
-      case MOSQ_ERR_EAI:
-      case MOSQ_ERR_PROXY: {
+      case mosq_c::MOSQ_ERR_NOMEM:
+      case mosq_c::MOSQ_ERR_PROTOCOL:
+      case mosq_c::MOSQ_ERR_INVAL:
+      case mosq_c::MOSQ_ERR_NOT_FOUND:
+      case mosq_c::MOSQ_ERR_TLS:
+      case mosq_c::MOSQ_ERR_PAYLOAD_SIZE:
+      case mosq_c::MOSQ_ERR_NOT_SUPPORTED:
+      case mosq_c::MOSQ_ERR_AUTH:
+      case mosq_c::MOSQ_ERR_ACL_DENIED:
+      case mosq_c::MOSQ_ERR_UNKNOWN:
+      case mosq_c::MOSQ_ERR_EAI:
+      case mosq_c::MOSQ_ERR_PROXY: {
         fatal_error = true;
         break;
       }
-      case MOSQ_ERR_ERRNO: {
+      case mosq_c::MOSQ_ERR_ERRNO: {
         if (err == EPROTO) {
           fatal_error = true;
         }
@@ -271,11 +281,11 @@ void mosquittopp::set_on_message_cb(on_message_cb_fn&& fn) {
   this->on_message_cb_ = std::move(fn);
 }
 
-bool mosquittopp::active() const {
+bool mosquittopp::active() const noexcept {
   return this->thread_active_;
 }
 
-bool mosquittopp::connected() const {
+bool mosquittopp::connected() const noexcept {
   return this->connected_;
 }
 
@@ -299,8 +309,12 @@ void mosquittopp::connect(
     port
   ](std::stop_token st) {
     try {
-      bbzl::log::debug_fmt("({}:{}) mosquitto thread started", addr, port);
-      this->thread_main(st, addr, port);
+      bbzl::log::debug_fmt(
+        "({}:{}) mosquitto thread started",
+        addr,
+        port
+      );
+      this->thread_main(std::move(st), std::string(addr), port);
     } catch (std::exception& ex) {
       bbzl::log::error_fmt(
         "({}:{}) caught exception in mosquitto thread: {}",
@@ -310,19 +324,23 @@ void mosquittopp::connect(
       );
     }
     this->thread_active_.store(false, std::memory_order_seq_cst);
-    bbzl::log::debug_fmt("({}:{}) mosquitto thread stopped", addr, port);
+    bbzl::log::debug_fmt(
+      "({}:{}) mosquitto thread stopped",
+      addr,
+      port
+    );
   });
 
-  r = mosquitto_username_pw_set(this->mosq_, username.c_str(), password.c_str());
-  if (r != MOSQ_ERR_SUCCESS) {
+  r = mosq_c::mosquitto_username_pw_set(this->mosq_, username.c_str(), password.c_str());
+  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error("failed to set MQTT credentials");
   }
 
-  r = mosquitto_connect(this->mosq_, addr.c_str(), port, keepalive);
-  if (r != MOSQ_ERR_SUCCESS) {
+  r = mosq_c::mosquitto_connect(this->mosq_, addr.c_str(), port, keepalive);
+  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
       "failed to connect to MQTT broker: {}",
-      mosquitto_strerror(r)
+      mosq_c::mosquitto_strerror(r)
     ));
   }
 
@@ -331,11 +349,11 @@ void mosquittopp::connect(
 
 void mosquittopp::disconnect() {
   if (this->connected()) {
-    int r = mosquitto_disconnect(this->mosq_);
-    if (r != MOSQ_ERR_SUCCESS) {
+    int r = mosq_c::mosquitto_disconnect(this->mosq_);
+    if (r != mosq_c::MOSQ_ERR_SUCCESS) {
       throw std::runtime_error(std::format(
         "failed to request disconnect: ",
-        mosquitto_strerror(r)
+        mosq_c::mosquitto_strerror(r)
       ));
     }
   }
@@ -347,11 +365,16 @@ void mosquittopp::disconnect() {
 
 message_id mosquittopp::subscribe(std::string const& topic, int qos) {
   message_id mid;
-  int r = mosquitto_subscribe(this->mosq_, &mid, topic.c_str(), qos);
-  if (r != MOSQ_ERR_SUCCESS) {
+  int r = mosq_c::mosquitto_subscribe(
+    this->mosq_,
+    &mid,
+    topic.c_str(),
+    qos
+  );
+  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
       "failed subscribing to topic: {}",
-      mosquitto_strerror(r)
+      mosq_c::mosquitto_strerror(r)
     ));
   }
 
@@ -371,7 +394,7 @@ message_id mosquittopp::publish(
   }
 
   message_id mid;
-  int r = mosquitto_publish(
+  int r = mosq_c::mosquitto_publish(
     this->mosq_,
     &mid,
     topic.c_str(),
@@ -380,10 +403,10 @@ message_id mosquittopp::publish(
     qos,
     retain
   );
-  if (r != MOSQ_ERR_SUCCESS) {
+  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
       "failed to publish message: {}",
-      mosquitto_strerror(r)
+      mosq_c::mosquitto_strerror(r)
     ));
   }
 

@@ -51,7 +51,11 @@ T get_fn(std::string const& name) {
 
     return loader->get_symbol<T>(name);
   } catch (std::exception& ex) {
-    bbzl::log::error_fmt("failed to get fn ptr for {}: {}", name, ex.what());
+    bbzl::log::error_fmt(
+      "failed to get fn ptr for {}: {}",
+      name,
+      ex.what()
+    );
     return nullptr;
   }
 }
@@ -90,7 +94,7 @@ inline auto call_fn(
 }
 
 template<typename F>
-inline auto create_wrapper_non_null(F orig, auto wrapper) {
+inline auto create_wrapper_non_null(F& orig, auto wrapper) {
   if (orig == nullptr) {
     return static_cast<F>(nullptr);
   } else {

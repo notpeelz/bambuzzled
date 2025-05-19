@@ -1,4 +1,10 @@
+#include <functional>
+#include <map>
+#include <string>
+#include <vector>
 #include <bambuzzled/networking/plugin.hpp>
+#include <bambuzzled/networking/api/project_task.hpp>
+#include <bambuzzled/networking/api/bambu_networking.hpp>
 
 int bambu_network_init_log(void* agentp) {
   (void)agentp;
@@ -55,12 +61,6 @@ int bambu_network_set_on_message_fn(void* agentp, BBL::OnMessageFn fn) {
 }
 
 int bambu_network_set_on_user_message_fn(void* agentp, BBL::OnMessageFn fn) {
-  (void)agentp;
-  (void)fn;
-  return 0;
-}
-
-int bambu_network_set_queue_on_main_fn(void* agentp, BBL::QueueOnMainFn fn) {
   (void)agentp;
   (void)fn;
   return 0;

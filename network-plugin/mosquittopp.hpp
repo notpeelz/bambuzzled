@@ -9,28 +9,34 @@
 #include <span>
 #include <functional>
 #include <stop_token>
-#include <mosquitto.h>
 #include <bambuzzled/ssl.hpp>
+#include "mosquitto.hpp"
 
 namespace bbzl::mqtt {
 
+using mosq_c::mosquitto_strerror;
+using mosq_c::mosquitto_connack_string;
+using mosq_c::mosquitto_reason_string;
+
 struct mosquitto_handle_deleter {
-  void operator()(mosquitto* mosq) const {
+  void operator()(mosq_c::mosquitto* mosq) const {
     if (mosq != nullptr) {
-      mosquitto_destroy(mosq);
+      mosq_c::mosquitto_destroy(mosq);
     }
   }
 };
 
+using mosquitto_handle_base =
+  std::unique_ptr<mosq_c::mosquitto, mosquitto_handle_deleter>;
 class mosquitto_handle
-  : public std::unique_ptr<mosquitto, mosquitto_handle_deleter>
+  : public mosquitto_handle_base
 {
 public:
-  using base = std::unique_ptr<mosquitto, mosquitto_handle_deleter>;
-  using base::base;
-  operator mosquitto*() const { return this->get(); }
+  using mosquitto_handle_base::mosquitto_handle_base;
+  operator mosq_c::mosquitto*() const { return this->get(); }
 };
 
+using message = mosq_c::mosquitto_message;
 using message_id = int;
 
 class mosquittopp;
@@ -53,7 +59,7 @@ using on_suback_cb_fn = std::function<void(
 
 using on_message_cb_fn = std::function<void(
   mosquittopp& mosq,
-  mosquitto_message const* msg
+  message const* msg
 )>;
 
 class mosquittopp {
@@ -67,30 +73,30 @@ private:
   int keepalive_ = 0;
   bool connected_ = false;
   void thread_main(
-    std::stop_token st,
-    std::string const& addr,
+    std::stop_token&& st,
+    std::string const&& addr,
     uint16_t port
   );
   std::jthread thread_;
   std::atomic_bool thread_active_ = false;
 
   friend void on_connect(
-    mosquitto*,
+    mosq_c::mosquitto*,
     void* obj,
     int reason_code
   ) noexcept;
   friend void on_disconnect(
-    mosquitto*,
+    mosq_c::mosquitto*,
     void* obj,
     int reason_code
   ) noexcept;
   friend void on_message(
-    mosquitto*,
+    mosq_c::mosquitto*,
     void* obj,
-    mosquitto_message const* msg
+    mosq_c::mosquitto_message const* msg
   ) noexcept;
   friend void on_suback(
-    mosquitto*,
+    mosq_c::mosquitto*,
     void* obj,
     int mid,
     int qos_count,
@@ -100,13 +106,12 @@ private:
 public:
   mosquittopp();
   ~mosquittopp();
-  mosquitto* get() const;
   void set_on_connect_cb(on_connect_cb_fn&& fn);
   void set_on_disconnect_cb(on_disconnect_cb_fn&& fn);
   void set_on_suback_cb(on_suback_cb_fn&& fn);
   void set_on_message_cb(on_message_cb_fn&& fn);
-  bool active() const;
-  bool connected() const;
+  bool active() const noexcept;
+  bool connected() const noexcept;
   void connect(
     std::string const& addr,
     uint16_t port,

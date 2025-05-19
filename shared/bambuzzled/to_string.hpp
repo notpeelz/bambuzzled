@@ -26,7 +26,7 @@ constexpr bool is_type_complete_v<
 namespace bbzl::utils {
 
 template<typename T>
-static inline std::string stringify_value(T const& value) {
+static inline std::string stringify_value(T const& value) noexcept {
   std::ostringstream oss;
   if constexpr (std::is_arithmetic_v<T> || std::is_enum_v<T>) {
     oss << value;
@@ -41,19 +41,19 @@ static inline std::string stringify_value(T const& value) {
   return oss.str();
 }
 
-static inline std::string stringify_value(std::string const& value) {
+static inline std::string stringify_value(std::string const& value) noexcept {
   return quote_string(value);
 }
 
-static inline std::string stringify_value(std::string_view value) {
+static inline std::string stringify_value(std::string_view value) noexcept {
   return quote_string(value);
 }
 
-static inline std::string stringify_value(std::nullptr_t) {
+static inline std::string stringify_value(std::nullptr_t) noexcept {
   return "nullptr";
 }
 
-static inline std::string stringify_void_pointer(void const* ptr) {
+static inline std::string stringify_void_pointer(void const* ptr) noexcept {
   if (ptr == nullptr) {
     return "nullptr";
   }
@@ -64,7 +64,7 @@ static inline std::string stringify_void_pointer(void const* ptr) {
 }
 
 template<typename T>
-std::string stringify_pointer(T const* ptr) {
+std::string stringify_pointer(T const* ptr) noexcept {
   if (ptr == nullptr) {
     return "nullptr";
   }
@@ -87,12 +87,12 @@ std::string stringify_pointer(T const* ptr) {
 }
 
 template<typename T>
-static inline std::string to_string(T const& value) {
+static inline std::string to_string(T const& value) noexcept {
   return stringify_value(value);
 }
 
 template<typename T>
-std::string to_string(T* ptr) {
+std::string to_string(T* ptr) noexcept {
   if constexpr (!is_type_complete_v<T>) {
     return stringify_void_pointer(static_cast<void const*>(ptr));
   } else {
@@ -100,11 +100,11 @@ std::string to_string(T* ptr) {
   }
 }
 
-static inline std::string to_string(void* ptr) {
+static inline std::string to_string(void* ptr) noexcept {
   return stringify_void_pointer(ptr);
 }
 
-static inline std::string to_string(void const* ptr) {
+static inline std::string to_string(void const* ptr) noexcept {
   return stringify_void_pointer(ptr);
 }
 

@@ -73,10 +73,10 @@ private:
   std::string name;
 
 public:
-  trace_scope_guard(std::string name)
-    : name(name) {}
+  trace_scope_guard(std::string name) noexcept
+    : name(std::move(name)) {}
 
-  ~trace_scope_guard() {
+  ~trace_scope_guard() noexcept {
     trace_fmt("EXIT: {}", this->name);
   }
 };
@@ -85,7 +85,7 @@ template<typename... Args>
 static inline trace_scope_guard trace_scope(
   std::source_location const&& location,
   Args&&... args
-) {
+) noexcept {
   std::ostringstream oss;
   oss << "ENTER: " << location.function_name();
 
@@ -110,7 +110,7 @@ static inline trace_scope_guard trace_scope_named(
   std::string_view name,
   std::source_location const&& location,
   Args&&... args
-) {
+) noexcept {
   std::ostringstream oss;
   oss << "ENTER: " << name << ": " << location.function_name();
 

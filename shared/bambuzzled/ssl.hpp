@@ -16,12 +16,13 @@ struct openssl_ctx_handle_deleter {
   }
 };
 
+using openssl_ctx_handle_base =
+  std::unique_ptr<SSL_CTX, openssl_ctx_handle_deleter>;
 class openssl_ctx_handle
-  : public std::unique_ptr<SSL_CTX, openssl_ctx_handle_deleter>
+  : public openssl_ctx_handle_base
 {
 public:
-  using base = std::unique_ptr<SSL_CTX, openssl_ctx_handle_deleter>;
-  using base::base;
+  using openssl_ctx_handle_base::openssl_ctx_handle_base;
   operator SSL_CTX*() const { return this->get(); }
 };
 
@@ -33,12 +34,13 @@ struct openssl_ssl_handle_deleter {
   }
 };
 
+using openssl_ssl_handle_base =
+  std::unique_ptr<SSL, openssl_ssl_handle_deleter>;
 class openssl_ssl_handle
-  : public std::unique_ptr<SSL, openssl_ssl_handle_deleter>
+  : public openssl_ssl_handle_base
 {
 public:
-  using base = std::unique_ptr<SSL, openssl_ssl_handle_deleter>;
-  using base::base;
+  using openssl_ssl_handle_base::openssl_ssl_handle_base;
   operator SSL*() const { return this->get(); }
 };
 

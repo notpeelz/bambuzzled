@@ -17,7 +17,7 @@ class network_client {
 private:
   void on_connect(int reason_code);
   void on_disconnect(int reason_code);
-  void on_message(mosquitto_message const* msg);
+  void on_message(bbzl::mqtt::message const* msg);
   void on_suback(bbzl::mqtt::message_id mid);
 
 public:
@@ -32,37 +32,42 @@ public:
   }
 };
 
+constexpr static auto no_op = [](...) {};
+
 class network_agent {
   friend network_client;
-
 private:
   std::string config_dir_;
   std::map<std::string, network_client*> connections_;
-  BBL::OnPrinterConnectedFn on_printer_connected_fn_;
-  BBL::OnServerConnectedFn on_server_connected_fn_;
-  BBL::OnLocalConnectedFn on_local_connected_fn_;
-  BBL::OnMessageFn on_local_message_fn_;
+  BBL::OnPrinterConnectedFn on_printer_connected_fn_ = no_op;
+  BBL::OnServerConnectedFn on_server_connected_fn_ = no_op;
+  BBL::OnLocalConnectedFn on_local_connected_fn_ = no_op;
+  BBL::OnMessageFn on_local_message_fn_ = no_op;
+  BBL::QueueOnMainFn queue_on_main_fn_ = no_op;
   network_client* get_or_create_conn(std::string const& dev_id);
   std::optional<network_client*> get_conn(std::string const& dev_id);
 
 public:
   network_agent();
-  void set_config_dir(std::string&& dir);
-  void set_on_printer_connected_fn(BBL::OnPrinterConnectedFn&& fn);
-  void set_on_server_connected_fn(BBL::OnServerConnectedFn&& fn);
-  void set_on_local_connected_fn(BBL::OnLocalConnectedFn&& fn);
-  void set_on_local_message_fn(BBL::OnMessageFn&& fn);
-  std::string get_user_selected_machine();
-  void set_user_selected_machine(std::string dev_id);
+  void set_config_dir(std::string&& dir) noexcept;
+  void set_on_printer_connected_fn(BBL::OnPrinterConnectedFn&& fn) noexcept;
+  void set_on_server_connected_fn(BBL::OnServerConnectedFn&& fn) noexcept;
+  void set_on_local_connected_fn(BBL::OnLocalConnectedFn&& fn) noexcept;
+  void set_on_local_message_fn(BBL::OnMessageFn&& fn) noexcept;
+  void set_queue_on_main_fn(BBL::QueueOnMainFn&& fn) noexcept;
+  std::string get_user_selected_machine() noexcept;
+  void set_user_selected_machine(std::string dev_id) noexcept;
   void start();
-  void connect(
+  void disconnect();
+  bool disconnect(std::string const& dev_id);
+  bool connect(
     std::string const& dev_id,
     std::string const& dev_ip,
     std::string const& username,
     std::string const& password,
     bool use_ssl
   );
-  void send_message(
+  bool send_message(
     std::string const& dev_id,
     std::string const& json_str,
     int qos
