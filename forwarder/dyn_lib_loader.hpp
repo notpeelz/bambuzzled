@@ -51,8 +51,7 @@ private:
     #endif
 
     throw std::runtime_error(std::format(
-      "failed to load library '{}': {}",
-      lib_path,
+      "failed to load library: {}",
       message
     ));
   }
