@@ -211,10 +211,7 @@ void network_agent::disconnect() {
 bool network_agent::disconnect(std::string const& dev_id) {
   auto maybe_conn = this->get_conn(dev_id);
   if (!maybe_conn.has_value()) {
-    throw std::runtime_error(std::format(
-      "network client doesn't exist: {}",
-      dev_id
-    ));
+    throw network_client_not_found(dev_id);
   }
   auto conn = *maybe_conn;
 
@@ -285,10 +282,7 @@ bool network_agent::send_message(
   auto scope = BBZL_TRACE_SCOPE(dev_id, json_str, qos);
   auto maybe_conn = this->get_conn(dev_id);
   if (!maybe_conn.has_value()) {
-    throw std::runtime_error(std::format(
-      "network client doesn't exist: {}",
-      dev_id
-    ));
+    throw network_client_not_found(dev_id);
   }
   auto conn = *maybe_conn;
 

@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 #include <optional>
-#include <mosquitto.h>
+#include <stdexcept>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
 #include "mosquittopp.hpp"
 
@@ -30,6 +30,14 @@ public:
       delete this->mosqpp;
     }
   }
+};
+
+class network_client_not_found
+  : public std::runtime_error
+{
+public:
+  network_client_not_found(std::string const& id)
+    : std::runtime_error("network client doesn't exist: " + id) {}
 };
 
 constexpr static auto no_op = [](...) {};

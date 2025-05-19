@@ -107,8 +107,12 @@ int bambu_network_send_message_to_printer(
 ) {
   return try_or(BAMBU_NETWORK_ERR_SEND_MSG_FAILED, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
-    agent->send_message(dev_id, json_str, qos);
-    return 0;
+    try {
+      agent->send_message(dev_id, json_str, qos);
+    } catch (bbzl::network_client_not_found&) {
+      return BAMBU_NETWORK_ERR_SEND_MSG_FAILED;
+    }
+    return BAMBU_NETWORK_SUCCESS;
   });
 }
 

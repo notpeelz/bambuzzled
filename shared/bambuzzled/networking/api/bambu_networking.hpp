@@ -227,8 +227,7 @@ struct PrintParams {
   std::string extra_options;
 };
 
-struct TaskQueryParams
-{
+struct TaskQueryParams {
   std::string dev_id;
   int status = 0;
   int offset = 0;
