@@ -84,7 +84,7 @@ int bambu_network_connect_printer(
 ) {
   return try_or(BAMBU_NETWORK_ERR_CONNECT_FAILED, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
-    auto thread = std::thread([
+    auto thread = std::thread(wrap_try([
       agent,
       dev_id = std::move(dev_id),
       dev_ip = std::move(dev_ip),
@@ -92,10 +92,8 @@ int bambu_network_connect_printer(
       password = std::move(password),
       use_ssl
     ]() {
-      try_([&] {
-        agent->connect(dev_id, dev_ip, username, password, use_ssl);
-      });
-    });
+      agent->connect(dev_id, dev_ip, username, password, use_ssl);
+    }));
     thread.detach();
     return BAMBU_NETWORK_SUCCESS;
   });

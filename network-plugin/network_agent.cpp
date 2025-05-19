@@ -15,11 +15,16 @@
 #include "mosquittopp.hpp"
 #include "network_agent.hpp"
 
+namespace {
+
+using namespace bbzl::try_wrapper;
+
+}
+
 namespace bbzl {
 
 using namespace std::chrono_literals;
 using namespace std::string_view_literals;
-using namespace bbzl::try_wrapper;
 
 network_agent::network_agent() {}
 

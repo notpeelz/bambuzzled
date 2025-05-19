@@ -77,7 +77,7 @@ static auto wrap_try(
 ) noexcept {
   return [
     fn = std::move(fn),
-    location = std::move(location)
+    location
   ](auto&&... args) {
     try {
       fn(std::forward<decltype(args)>(args)...);
