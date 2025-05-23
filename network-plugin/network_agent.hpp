@@ -48,7 +48,6 @@ private:
   std::string config_dir_;
   std::map<std::string, network_client*> connections_;
   BBL::OnPrinterConnectedFn on_printer_connected_fn_ = no_op;
-  BBL::OnServerConnectedFn on_server_connected_fn_ = no_op;
   BBL::OnLocalConnectedFn on_local_connected_fn_ = no_op;
   BBL::OnMessageFn on_local_message_fn_ = no_op;
   BBL::QueueOnMainFn queue_on_main_fn_ = no_op;
@@ -59,7 +58,6 @@ public:
   network_agent();
   void set_config_dir(std::string&& dir) noexcept;
   void set_on_printer_connected_fn(BBL::OnPrinterConnectedFn&& fn) noexcept;
-  void set_on_server_connected_fn(BBL::OnServerConnectedFn&& fn) noexcept;
   void set_on_local_connected_fn(BBL::OnLocalConnectedFn&& fn) noexcept;
   void set_on_local_message_fn(BBL::OnMessageFn&& fn) noexcept;
   void set_queue_on_main_fn(BBL::QueueOnMainFn&& fn) noexcept;

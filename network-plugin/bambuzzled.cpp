@@ -150,17 +150,6 @@ int bambu_network_set_on_printer_connected_fn(void* agentp, BBL::OnPrinterConnec
   });
 }
 
-int bambu_network_set_on_server_connected_fn(void* agentp, BBL::OnServerConnectedFn fn) {
-  #if BBZL_TRACE_TRIVIAL
-  auto scope = BBZL_TRACE_SCOPE(agentp, fn);
-  #endif
-  return try_or(1, [&]() {
-    auto agent = static_cast<network_agent*>(agentp);
-    agent->set_on_server_connected_fn(std::move(fn));
-    return BAMBU_NETWORK_SUCCESS;
-  });
-}
-
 int bambu_network_set_on_local_connect_fn(void* agentp, BBL::OnLocalConnectedFn fn) {
   #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, fn);

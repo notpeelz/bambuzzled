@@ -49,6 +49,16 @@ int bambu_network_set_on_user_login_fn(
   return 0;
 }
 
+int bambu_network_set_on_server_connected_fn(
+  void* agentp,
+  BBL::OnServerConnectedFn fn
+) {
+  #if BBZL_TRACE_TRIVIAL
+  auto scope = BBZL_TRACE_SCOPE(agentp, fn);
+  #endif
+  return 0;
+}
+
 int bambu_network_set_on_http_error_fn(
   void* agentp,
   BBL::OnHttpErrorFn fn

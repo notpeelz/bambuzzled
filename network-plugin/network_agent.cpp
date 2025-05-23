@@ -30,12 +30,6 @@ void network_agent::set_on_printer_connected_fn(BBL::OnPrinterConnectedFn&& fn) 
     : std::move(fn);
 }
 
-void network_agent::set_on_server_connected_fn(BBL::OnServerConnectedFn&& fn) noexcept {
-  this->on_server_connected_fn_ = fn == nullptr
-    ? no_op
-    : std::move(fn);
-}
-
 void network_agent::set_on_local_connected_fn(BBL::OnLocalConnectedFn&& fn) noexcept {
   this->on_local_connected_fn_ = fn == nullptr
     ? no_op
@@ -70,18 +64,13 @@ void network_client::on_connect(int reason_code) {
     );
   } else {
     bbzl::log::info_fmt(
-      "({}) connected from MQTT broker",
+      "({}) connected to MQTT broker",
       this->dev_id
     );
   }
 
   // TODO: urlencode dev_id?
   this->report_sub_mid = this->mosqpp->subscribe("device/" + this->dev_id + "/report", 1);
-
-  // TODO(?): return_code = 5: "login information expired"
-  try {
-    this->agent->on_server_connected_fn_(0, reason_code);
-  } catch (...) {}
 }
 
 void network_client::on_disconnect(int reason_code) {
