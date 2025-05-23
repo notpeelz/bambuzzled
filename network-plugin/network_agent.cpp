@@ -55,13 +55,11 @@ void network_agent::set_queue_on_main_fn(BBL::QueueOnMainFn&& fn) noexcept {
 }
 
 std::string network_agent::get_user_selected_machine() noexcept {
-  auto lock = std::lock_guard(this->mutex_);
   return "";
 }
 
 void network_agent::set_user_selected_machine(std::string dev_id) noexcept {
   (void)dev_id;
-  auto lock = std::lock_guard(this->mutex_);
 }
 
 void network_client::on_connect(int reason_code) {
@@ -157,7 +155,7 @@ void network_client::on_suback(mqtt::message_id mid) {
 }
 
 std::optional<network_client*> network_agent::get_conn(std::string const& dev_id) {
-  auto lock = std::lock_guard(this->mutex_);
+  auto lock = std::lock_guard(this->mosq_mutex_);
 
   auto pos = this->connections_.find(dev_id);
   if (pos != this->connections_.end()) {
@@ -168,7 +166,7 @@ std::optional<network_client*> network_agent::get_conn(std::string const& dev_id
 }
 
 network_client* network_agent::get_or_create_conn(std::string const& dev_id) {
-  auto lock = std::lock_guard(this->mutex_);
+  auto lock = std::lock_guard(this->mosq_mutex_);
 
   auto pos = this->connections_.find(dev_id);
   if (pos != this->connections_.end()) {
@@ -216,7 +214,7 @@ network_client* network_agent::get_or_create_conn(std::string const& dev_id) {
 }
 
 void network_agent::disconnect() {
-  auto lock = std::lock_guard(this->mutex_);
+  auto lock = std::lock_guard(this->mosq_mutex_);
 
   for (auto& [_, conn] : this->connections_) {
     (void)this->disconnect(conn->dev_id);
@@ -224,7 +222,7 @@ void network_agent::disconnect() {
 }
 
 bool network_agent::disconnect(std::string const& dev_id) {
-  auto lock = std::lock_guard(this->mutex_);
+  auto lock = std::lock_guard(this->mosq_mutex_);
 
   auto maybe_conn = this->get_conn(dev_id);
   if (!maybe_conn.has_value()) {
@@ -260,7 +258,7 @@ bool network_agent::connect(
   std::string const& password,
   bool use_ssl
 ) {
-  auto lock = std::lock_guard(this->mutex_);
+  auto lock = std::lock_guard(this->mosq_mutex_);
 
   if (!use_ssl) {
     bbzl::log::warn(
@@ -305,7 +303,7 @@ bool network_agent::send_message(
   std::string const& msg,
   int qos
 ) {
-  auto lock = std::lock_guard(this->mutex_);
+  auto lock = std::lock_guard(this->mosq_mutex_);
 
   auto maybe_conn = this->get_conn(dev_id);
   if (!maybe_conn.has_value()) {
