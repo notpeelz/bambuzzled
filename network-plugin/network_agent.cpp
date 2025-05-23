@@ -1,5 +1,6 @@
 #include <cassert>
 #include <format>
+#include <mutex>
 #include <span>
 #include <chrono>
 #include <thread>
@@ -21,42 +22,51 @@ using namespace bbzl::try_wrapper;
 network_agent::network_agent() {}
 
 void network_agent::set_config_dir(std::string&& dir) noexcept {
+  auto lock = std::lock_guard(this->mutex_);
   bbzl::log::trace_fmt("set_config_dir: {}", dir);
 }
 
 void network_agent::set_on_printer_connected_fn(BBL::OnPrinterConnectedFn&& fn) noexcept {
+  auto lock = std::lock_guard(this->mutex_);
   this->on_printer_connected_fn_ = fn == nullptr
     ? no_op
     : std::move(fn);
 }
 
 void network_agent::set_on_local_connected_fn(BBL::OnLocalConnectedFn&& fn) noexcept {
+  auto lock = std::lock_guard(this->mutex_);
   this->on_local_connected_fn_ = fn == nullptr
     ? no_op
     : std::move(fn);
 }
 
 void network_agent::set_on_local_message_fn(BBL::OnMessageFn&& fn) noexcept {
+  auto lock = std::lock_guard(this->mutex_);
   this->on_local_message_fn_ = fn == nullptr
     ? no_op
     : std::move(fn);
 }
 
 void network_agent::set_queue_on_main_fn(BBL::QueueOnMainFn&& fn) noexcept {
+  auto lock = std::lock_guard(this->mutex_);
   this->queue_on_main_fn_ = fn == nullptr
     ? no_op
     : std::move(fn);
 }
 
 std::string network_agent::get_user_selected_machine() noexcept {
+  auto lock = std::lock_guard(this->mutex_);
   return "";
 }
 
 void network_agent::set_user_selected_machine(std::string dev_id) noexcept {
   (void)dev_id;
+  auto lock = std::lock_guard(this->mutex_);
 }
 
 void network_client::on_connect(int reason_code) {
+  auto lock = std::lock_guard(this->agent->mutex_);
+
   if (reason_code != 0) {
     bbzl::log::error_fmt(
       "failed connecting to MQTT broker: {}",
@@ -74,6 +84,8 @@ void network_client::on_connect(int reason_code) {
 }
 
 void network_client::on_disconnect(int reason_code) {
+  auto lock = std::lock_guard(this->agent->mutex_);
+
   bbzl::log::info_fmt(
     "({}) disconnected from MQTT broker",
     this->dev_id
@@ -87,6 +99,8 @@ void network_client::on_disconnect(int reason_code) {
 }
 
 void network_client::on_message(mqtt::message const* msg) {
+  auto lock = std::lock_guard(this->agent->mutex_);
+
   auto msg_str = std::string((char*)msg->payload, msg->payloadlen);
   bbzl::log::debug_fmt(
     "({}) received message ({}): {}",
@@ -96,10 +110,21 @@ void network_client::on_message(mqtt::message const* msg) {
   );
   try {
     this->agent->on_local_message_fn_(this->dev_id, msg_str);
-  } catch (...) {}
+  } catch (std::exception& ex) {
+    bbzl::log::error_fmt(
+      "caught exception from on_local_message callback: {}",
+      ex.what()
+    );
+  } catch (...) {
+    bbzl::log::error_fmt(
+      "caught exception from on_local_message callback"
+    );
+  }
 }
 
 void network_client::on_suback(mqtt::message_id mid) {
+  auto lock = std::lock_guard(this->agent->mutex_);
+
   bbzl::log::debug_fmt("received suback for mid {}", mid);
 
   if (mid == this->report_sub_mid) {
@@ -111,7 +136,16 @@ void network_client::on_suback(mqtt::message_id mid) {
     );
     try {
       this->agent->on_local_connected_fn_(0, this->dev_id, "ssl:");
-    } catch (...) {}
+    } catch (std::exception& ex) {
+      bbzl::log::error_fmt(
+        "caught exception from on_local_connected callback: {}",
+        ex.what()
+      );
+    } catch (...) {
+      bbzl::log::error_fmt(
+        "caught exception from on_local_connected callback"
+      );
+    }
     return;
   }
 
@@ -123,6 +157,8 @@ void network_client::on_suback(mqtt::message_id mid) {
 }
 
 std::optional<network_client*> network_agent::get_conn(std::string const& dev_id) {
+  auto lock = std::lock_guard(this->mutex_);
+
   auto pos = this->connections_.find(dev_id);
   if (pos != this->connections_.end()) {
     return pos->second;
@@ -132,6 +168,8 @@ std::optional<network_client*> network_agent::get_conn(std::string const& dev_id
 }
 
 network_client* network_agent::get_or_create_conn(std::string const& dev_id) {
+  auto lock = std::lock_guard(this->mutex_);
+
   auto pos = this->connections_.find(dev_id);
   if (pos != this->connections_.end()) {
     return pos->second;
@@ -178,12 +216,16 @@ network_client* network_agent::get_or_create_conn(std::string const& dev_id) {
 }
 
 void network_agent::disconnect() {
+  auto lock = std::lock_guard(this->mutex_);
+
   for (auto& [_, conn] : this->connections_) {
     (void)this->disconnect(conn->dev_id);
   }
 }
 
 bool network_agent::disconnect(std::string const& dev_id) {
+  auto lock = std::lock_guard(this->mutex_);
+
   auto maybe_conn = this->get_conn(dev_id);
   if (!maybe_conn.has_value()) {
     throw network_client_not_found(dev_id);
@@ -218,6 +260,8 @@ bool network_agent::connect(
   std::string const& password,
   bool use_ssl
 ) {
+  auto lock = std::lock_guard(this->mutex_);
+
   if (!use_ssl) {
     bbzl::log::warn(
       "attempted to connect without SSL (not implemented);"
@@ -240,7 +284,16 @@ bool network_agent::connect(
     bbzl::log::error_fmt("mosquitto connect failed: {}", ex.what());
     try {
       this->on_local_connected_fn_(1, dev_id, "-1");
-    } catch (...) {}
+    } catch (std::exception& ex) {
+      bbzl::log::error_fmt(
+        "caught exception from on_local_connected callback: {}",
+        ex.what()
+      );
+    } catch (...) {
+      bbzl::log::error_fmt(
+        "caught exception from on_local_connected callback"
+      );
+    }
     return false;
   }
 
@@ -252,6 +305,8 @@ bool network_agent::send_message(
   std::string const& msg,
   int qos
 ) {
+  auto lock = std::lock_guard(this->mutex_);
+
   auto maybe_conn = this->get_conn(dev_id);
   if (!maybe_conn.has_value()) {
     throw network_client_not_found(dev_id);

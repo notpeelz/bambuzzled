@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <mutex>
 #include <string>
 #include <optional>
 #include <stdexcept>
@@ -46,6 +47,7 @@ class network_agent {
   friend network_client;
 private:
   std::string config_dir_;
+  std::recursive_mutex mutex_;
   std::map<std::string, network_client*> connections_;
   BBL::OnPrinterConnectedFn on_printer_connected_fn_ = no_op;
   BBL::OnLocalConnectedFn on_local_connected_fn_ = no_op;
