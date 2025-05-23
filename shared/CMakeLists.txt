@@ -6,6 +6,7 @@ add_library(
   STATIC
   bambuzzled/log.cpp
   bambuzzled/ssl.cpp
+  bambuzzled/curl.cpp
   bambuzzled/quote.cpp
   bambuzzled/demangle.cpp
   bambuzzled/win32.cpp

@@ -1,7 +1,7 @@
 #pragma once
 
+#include <string>
 #include <memory>
-
 #include <curl/curl.h>
 
 namespace bbzl::curl {
@@ -22,5 +22,9 @@ public:
   using curl_handle_base::curl_handle_base;
   operator CURL*() const { return this->get(); }
 };
+
+std::string urlencode(std::string const& s);
+
+std::string urldecode(std::string const& s);
 
 }

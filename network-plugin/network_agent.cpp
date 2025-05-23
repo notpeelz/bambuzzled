@@ -9,6 +9,7 @@
 #include <optional>
 #include <exception>
 #include <bambuzzled/log.hpp>
+#include <bambuzzled/curl.hpp>
 #include <bambuzzled/try_wrapper.hpp>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
 #include "mosquittopp.hpp"
@@ -77,8 +78,11 @@ void network_client::on_connect(int reason_code) {
     );
   }
 
-  // TODO: urlencode dev_id?
-  this->report_sub_mid = this->mosqpp->subscribe("device/" + this->dev_id + "/report", 1);
+  auto topic = std::format(
+    "device/{}/report",
+    bbzl::curl::urlencode(this->dev_id)
+  );
+  this->report_sub_mid = this->mosqpp->subscribe(topic, 1);
 }
 
 void network_client::on_disconnect(int reason_code) {
@@ -312,8 +316,17 @@ bool network_agent::send_message(
   auto conn = *maybe_conn;
 
   try {
-    // TODO: urlencode dev_id?
-    (void)conn->mosqpp->publish("device/" + dev_id + "/request", msg, qos);
+    auto topic = std::format(
+      "device/{}/request",
+      bbzl::curl::urlencode(dev_id)
+    );
+    bbzl::log::debug_fmt(
+      "({}) sending message ({}): {}",
+      dev_id,
+      topic,
+      msg
+    );
+    (void)conn->mosqpp->publish(topic, msg, qos);
   } catch (std::exception& ex) {
     bbzl::log::error_fmt("mosquitto publish failed: {}", ex.what());
     return false;

@@ -71,7 +71,9 @@ private:
   on_message_cb_fn on_message_cb_;
   mosquitto_handle mosq_;
   int keepalive_ = 0;
-  bool connected_ = false;
+  std::atomic_bool connected_ = false;
+  std::string active_addr_;
+  uint16_t active_port_ = 0;
   void thread_main(
     std::stop_token&& st,
     std::string const&& addr,

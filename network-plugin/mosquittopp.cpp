@@ -308,6 +308,8 @@ void mosquittopp::connect(
     throw std::runtime_error("already connected or connecting");
   }
 
+  this->active_addr_ = addr;
+  this->active_port_ = port;
   this->thread_active_.store(true, std::memory_order_seq_cst);
   this->thread_ = std::jthread([
     this,
@@ -355,6 +357,11 @@ void mosquittopp::connect(
 
 void mosquittopp::disconnect() {
   if (this->connected()) {
+    bbzl::log::trace_fmt(
+      "({}:{}) requesting disconnect",
+      this->active_addr_,
+      this->active_port_
+    );
     int r = mosq_c::mosquitto_disconnect(this->mosq_);
     if (r != mosq_c::MOSQ_ERR_SUCCESS) {
       throw std::runtime_error(std::format(
@@ -365,6 +372,11 @@ void mosquittopp::disconnect() {
   }
 
   if (this->active()) {
+    bbzl::log::trace_fmt(
+      "({}:{}) requesting mosquitto thread stop",
+      this->active_addr_,
+      this->active_port_
+    );
     (void)this->thread_.get_stop_source().request_stop();
   }
 }

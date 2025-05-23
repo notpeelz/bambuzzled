@@ -9,6 +9,7 @@
 #include <system_error>
 #include <nlohmann/json.hpp>
 #include <bambuzzled/log.hpp>
+#include <bambuzzled/curl.hpp>
 #include <bambuzzled/try_wrapper.hpp>
 #include <bambuzzled/networking/plugin.hpp>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
@@ -311,11 +312,23 @@ int bambu_network_start_local_print(
       return BAMBU_NETWORK_ERR_PRINT_LP_FILE_OVER_SIZE;
     }
 
-    // TODO: urlencode
     auto file_name = std::format("{}.gcode.3mf", params.project_name);
     try {
+      auto url = std::format(
+        "ftps://{}/{}",
+        bbzl::curl::urlencode(params.dev_ip),
+        bbzl::curl::urlencode(file_name)
+      );
+
+      bbzl::log::debug_fmt(
+        "uploading file via FTP to {}: {}",
+        params.dev_ip,
+        params.filename
+      );
+      bbzl::log::trace_fmt("FTP url: {}", url);
+
       bbzl::ftp::upload_file(
-        std::format("ftps://{}/{}", params.dev_ip, file_name),
+        url,
         params.username,
         params.password,
         params.filename,
@@ -406,12 +419,23 @@ int bambu_network_start_local_print(
 
     if (params.print_type == "from_normal") {
       if (ftp_folder.empty()) {
-        p["url"] = std::format("file:///mnt/sdcard/{}", file_name);
+        p["url"] = std::format(
+          "file:///mnt/sdcard/{}",
+          bbzl::curl::urlencode(file_name)
+        );
       } else {
-        p["url"] = std::format("file:///{}/{}", ftp_folder, file_name);
+        p["url"] = std::format(
+          "file:///{}/{}",
+          // XXX: this can contain slashes, so don't urlencode it
+          ftp_folder,
+          bbzl::curl::urlencode(file_name)
+        );
       }
     } else if (params.print_type == "from_sdcard_view") {
-      p["url"] = std::format("file:///{}", params.dst_file);
+      p["url"] = std::format(
+        "file:///{}",
+        bbzl::curl::urlencode(params.dst_file)
+      );
     }
 
     auto s = o.dump();
