@@ -36,59 +36,59 @@ namespace BBL {
 #define BAMBU_NETWORK_ERR_NO_CORRESPONDING_BUCKET -24
 #define BAMBU_NETWORK_ERR_GET_INSTANCE_ID_FAILED -25
 
-//bind error
-#define BAMBU_NETWORK_ERR_BIND_CREATE_SOCKET_FAILED -1010 //failed to create socket
-#define BAMBU_NETWORK_ERR_BIND_SOCKET_CONNECT_FAILED -1020 //failed to socket connect
-#define BAMBU_NETWORK_ERR_BIND_PUBLISH_LOGIN_REQUEST -1030 //failed to publish login request
-#define BAMBU_NETWORK_ERR_BIND_GET_PRINTER_TICKET_TIMEOUT -1040 //timeout to get ticket from printer
-#define BAMBU_NETWORK_ERR_BIND_GET_CLOUD_TICKET_TIMEOUT -1050 //timeout to get ticket from cloud server
-#define BAMBU_NETWORK_ERR_BIND_POST_TICKET_TO_CLOUD_FAILED -1060 //failed to post ticket to cloud server
-#define BAMBU_NETWORK_ERR_BIND_PARSE_LOGIN_REPORT_FAILED -1070 //failed to parse login report reason no error code
-#define BAMBU_NETWORK_ERR_BIND_ECODE_LOGIN_REPORT_FAILED -1080 //failed to parse login report reason has error code
-#define BAMBU_NETWORK_ERR_BIND_RECEIVE_LOGIN_REPORT_TIMEOUT -1090 //timeout to receive login report
+// bind error
+#define BAMBU_NETWORK_ERR_BIND_CREATE_SOCKET_FAILED -1010 // failed to create socket
+#define BAMBU_NETWORK_ERR_BIND_SOCKET_CONNECT_FAILED -1020 // failed to socket connect
+#define BAMBU_NETWORK_ERR_BIND_PUBLISH_LOGIN_REQUEST -1030 // failed to publish login request
+#define BAMBU_NETWORK_ERR_BIND_GET_PRINTER_TICKET_TIMEOUT -1040 // timeout to get ticket from printer
+#define BAMBU_NETWORK_ERR_BIND_GET_CLOUD_TICKET_TIMEOUT -1050 // timeout to get ticket from cloud server
+#define BAMBU_NETWORK_ERR_BIND_POST_TICKET_TO_CLOUD_FAILED -1060 // failed to post ticket to cloud server
+#define BAMBU_NETWORK_ERR_BIND_PARSE_LOGIN_REPORT_FAILED -1070 // failed to parse login report reason no error code
+#define BAMBU_NETWORK_ERR_BIND_ECODE_LOGIN_REPORT_FAILED -1080 // failed to parse login report reason has error code
+#define BAMBU_NETWORK_ERR_BIND_RECEIVE_LOGIN_REPORT_TIMEOUT -1090 // timeout to receive login report
 
-//start_local_print_with_record error
-#define BAMBU_NETWORK_ERR_PRINT_WR_REQUEST_PROJECT_ID_FAILED -2010 //failed to request project id
-#define BAMBU_NETWORK_ERR_PRINT_WR_CHECK_MD5_FAILED -2020 //failed to check md5 for upload 3mf to oss
-#define BAMBU_NETWORK_ERR_PRINT_WR_UPLOAD_3MF_CONFIG_TO_OSS_FAILED -2030 //failed to upload 3mf config to oss
-#define BAMBU_NETWORK_ERR_PRINT_WR_FILE_OVER_SIZE -2040 //the size of the uploaded file cannot exceed 1 GB
-#define BAMBU_NETWORK_ERR_PRINT_WR_PUT_NOTIFICATION_FAILED -2050 //timeout to get notification
-#define BAMBU_NETWORK_ERR_PRINT_WR_GET_NOTIFICATION_TIMEOUT -2060 //timeout to get notification
-#define BAMBU_NETWORK_ERR_PRINT_WR_GET_NOTIFICATION_FAILED -2070 //failed to get notification
-#define BAMBU_NETWORK_ERR_PRINT_WR_PATCH_PROJECT_FAILED -2080 //failed to patch project
-#define BAMBU_NETWORK_ERR_PRINT_WR_GET_MY_SETTING_FAILED -2090 //failed to get my setting
-#define BAMBU_NETWORK_ERR_PRINT_WR_FILE_NOT_EXIST -2100 //3mf file is not exists
-#define BAMBU_NETWORK_ERR_PRINT_WR_UPLOAD_3MF_TO_OSS_FAILED -2110 //failed to upload 3mf to oss
-#define BAMBU_NETWORK_ERR_PRINT_WR_POST_TASK_FAILED -2120 //failed to post task
-#define BAMBU_NETWORK_ERR_PRINT_WR_UPLOAD_FTP_FAILED -2130 //failed to upload to ftp
-#define BAMBU_NETWORK_ERR_PRINT_WR_GET_USER_UPLOAD_FAILED -2140 //failed to get_user_upload
+// start_local_print_with_record error
+#define BAMBU_NETWORK_ERR_PRINT_WR_REQUEST_PROJECT_ID_FAILED -2010 // failed to request project id
+#define BAMBU_NETWORK_ERR_PRINT_WR_CHECK_MD5_FAILED -2020 // failed to check md5 for upload 3mf to oss
+#define BAMBU_NETWORK_ERR_PRINT_WR_UPLOAD_3MF_CONFIG_TO_OSS_FAILED -2030 // failed to upload 3mf config to oss
+#define BAMBU_NETWORK_ERR_PRINT_WR_FILE_OVER_SIZE -2040 // the size of the uploaded file cannot exceed 1 GB
+#define BAMBU_NETWORK_ERR_PRINT_WR_PUT_NOTIFICATION_FAILED -2050 // timeout to get notification
+#define BAMBU_NETWORK_ERR_PRINT_WR_GET_NOTIFICATION_TIMEOUT -2060 // timeout to get notification
+#define BAMBU_NETWORK_ERR_PRINT_WR_GET_NOTIFICATION_FAILED -2070 // failed to get notification
+#define BAMBU_NETWORK_ERR_PRINT_WR_PATCH_PROJECT_FAILED -2080 // failed to patch project
+#define BAMBU_NETWORK_ERR_PRINT_WR_GET_MY_SETTING_FAILED -2090 // failed to get my setting
+#define BAMBU_NETWORK_ERR_PRINT_WR_FILE_NOT_EXIST -2100 // 3mf file is not exists
+#define BAMBU_NETWORK_ERR_PRINT_WR_UPLOAD_3MF_TO_OSS_FAILED -2110 // failed to upload 3mf to oss
+#define BAMBU_NETWORK_ERR_PRINT_WR_POST_TASK_FAILED -2120 // failed to post task
+#define BAMBU_NETWORK_ERR_PRINT_WR_UPLOAD_FTP_FAILED -2130 // failed to upload to ftp
+#define BAMBU_NETWORK_ERR_PRINT_WR_GET_USER_UPLOAD_FAILED -2140 // failed to get_user_upload
 
-//start_print error
-#define BAMBU_NETWORK_ERR_PRINT_SP_REQUEST_PROJECT_ID_FAILED -3010 //failed to request project id
-#define BAMBU_NETWORK_ERR_PRINT_SP_CHECK_MD5_FAILED -3020 //failed to check md5 for upload 3mf to oss
-#define BAMBU_NETWORK_ERR_PRINT_SP_UPLOAD_3MF_CONFIG_TO_OSS_FAILED -3030 //failed to upload 3mf config to oss
-#define BAMBU_NETWORK_ERR_PRINT_SP_PUT_NOTIFICATION_FAILED -3040 //failed to put notification
-#define BAMBU_NETWORK_ERR_PRINT_SP_GET_NOTIFICATION_TIMEOUT -3050 //timeout to get notification
-#define BAMBU_NETWORK_ERR_PRINT_SP_GET_NOTIFICATION_FAILED -3060 //failed to get notification
-#define BAMBU_NETWORK_ERR_PRINT_SP_FILE_NOT_EXIST -3070 //3mf file is not exists
-#define BAMBU_NETWORK_ERR_PRINT_SP_GET_USER_UPLOAD_FAILED -3080 //failed to get_user_upload
-#define BAMBU_NETWORK_ERR_PRINT_SP_FILE_OVER_SIZE -3090 //the size of the uploaded file cannot exceed 1 GB
-#define BAMBU_NETWORK_ERR_PRINT_SP_UPLOAD_3MF_TO_OSS_FAILED -3100 //failed to upload 3mf to oss
-#define BAMBU_NETWORK_ERR_PRINT_SP_PATCH_PROJECT_FAILED -3110 //failed to patch project
-#define BAMBU_NETWORK_ERR_PRINT_SP_POST_TASK_FAILED -3120 //failed to post task
-#define BAMBU_NETWORK_ERR_PRINT_SP_WAIT_PRINTER_FAILED -3130 //failed to wait the ack from printer
+// start_print error
+#define BAMBU_NETWORK_ERR_PRINT_SP_REQUEST_PROJECT_ID_FAILED -3010 // failed to request project id
+#define BAMBU_NETWORK_ERR_PRINT_SP_CHECK_MD5_FAILED -3020 // failed to check md5 for upload 3mf to oss
+#define BAMBU_NETWORK_ERR_PRINT_SP_UPLOAD_3MF_CONFIG_TO_OSS_FAILED -3030 // failed to upload 3mf config to oss
+#define BAMBU_NETWORK_ERR_PRINT_SP_PUT_NOTIFICATION_FAILED -3040 // failed to put notification
+#define BAMBU_NETWORK_ERR_PRINT_SP_GET_NOTIFICATION_TIMEOUT -3050 // timeout to get notification
+#define BAMBU_NETWORK_ERR_PRINT_SP_GET_NOTIFICATION_FAILED -3060 // failed to get notification
+#define BAMBU_NETWORK_ERR_PRINT_SP_FILE_NOT_EXIST -3070 // 3mf file is not exists
+#define BAMBU_NETWORK_ERR_PRINT_SP_GET_USER_UPLOAD_FAILED -3080 // failed to get_user_upload
+#define BAMBU_NETWORK_ERR_PRINT_SP_FILE_OVER_SIZE -3090 // the size of the uploaded file cannot exceed 1 GB
+#define BAMBU_NETWORK_ERR_PRINT_SP_UPLOAD_3MF_TO_OSS_FAILED -3100 // failed to upload 3mf to oss
+#define BAMBU_NETWORK_ERR_PRINT_SP_PATCH_PROJECT_FAILED -3110 // failed to patch project
+#define BAMBU_NETWORK_ERR_PRINT_SP_POST_TASK_FAILED -3120 // failed to post task
+#define BAMBU_NETWORK_ERR_PRINT_SP_WAIT_PRINTER_FAILED -3130 // failed to wait the ack from printer
 
-//start_local_print error
-#define BAMBU_NETWORK_ERR_PRINT_LP_FILE_OVER_SIZE -4010 //the size of the uploaded file cannot exceed 1 GB
-#define BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED -4020 //failed to upload ftp
-#define BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED -4030 //failed to send mqtt message to device
+// start_local_print error
+#define BAMBU_NETWORK_ERR_PRINT_LP_FILE_OVER_SIZE -4010 // the size of the uploaded file cannot exceed 1 GB
+#define BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED -4020 // failed to upload ftp
+#define BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED -4030 // failed to send mqtt message to device
 
-//start_send_gcode_to_sdcard error
-#define BAMBU_NETWORK_ERR_PRINT_SG_UPLOAD_FTP_FAILED -5010 //failed to upload ftp
+// start_send_gcode_to_sdcard error
+#define BAMBU_NETWORK_ERR_PRINT_SG_UPLOAD_FTP_FAILED -5010 // failed to upload ftp
 
-//connection to printer failed
-#define BAMBU_NETWORK_ERR_CONNECTION_TO_PRINTER_FAILED -6010 //Connection to printer failed
-#define BAMBU_NETWORK_ERR_CONNECTION_TO_SERVER_FAILED -6020 //Connection to server failed
+// connection to printer failed
+#define BAMBU_NETWORK_ERR_CONNECTION_TO_PRINTER_FAILED -6010 // connection to printer failed
+#define BAMBU_NETWORK_ERR_CONNECTION_TO_SERVER_FAILED -6020 // connection to server failed
 
 
 #define BAMBU_NETWORK_LIBRARY "bambu_networking"
@@ -96,7 +96,7 @@ namespace BBL {
 
 #define BAMBU_NETWORK_AGENT_VERSION "01.10.01.01"
 
-//iot preset type strings
+// iot preset type strings
 #define IOT_PRINTER_TYPE_STRING "printer"
 #define IOT_FILAMENT_STRING "filament"
 #define IOT_PRINT_TYPE_STRING "print"
@@ -137,7 +137,7 @@ typedef std::function<void(int result, std::string info)> ResultFn;
 typedef std::function<bool()> CancelFn;
 typedef std::function<bool(std::map<std::string, std::string> info)> CheckFn;
 
-//err callbacks
+// err callbacks
 typedef std::function<void(std::string url, int status)> OnServerErrFn;
 
 enum SendingPrintJobStage {
@@ -185,9 +185,8 @@ struct detectResult {
   std::string connect_type;
 };
 
-/* print job*/
 struct PrintParams {
-  /* basic info */
+  // basic info
   std::string dev_id;
   std::string task_name;
   std::string project_name;
@@ -209,19 +208,19 @@ struct PrintParams {
   std::string dst_file;
   std::string dev_name;
 
-  /* access options */
+  // access options
   std::string dev_ip;
   bool use_ssl_for_ftp;
   bool use_ssl_for_mqtt;
   std::string username;
   std::string password;
 
-  /*user options */
-  bool task_bed_leveling; /* bed leveling of task */
-  bool task_flow_cali; /* flow calibration of task */
-  bool task_vibration_cali; /* vibration calibration of task */
-  bool task_layer_inspect; /* first layer inspection of task */
-  bool task_record_timelapse; /* record timelapse of task */
+  // user options
+  bool task_bed_leveling; // bed leveling of task
+  bool task_flow_cali; // flow calibration of task
+  bool task_vibration_cali; // vibration calibration of task
+  bool task_layer_inspect; // first layer inspection of task
+  bool task_record_timelapse; // record timelapse of task
   bool task_use_ams;
   std::string task_bed_type;
   std::string extra_options;
