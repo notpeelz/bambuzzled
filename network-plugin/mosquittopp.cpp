@@ -342,7 +342,7 @@ void mosquittopp::connect(
     throw std::runtime_error("failed to set MQTT credentials");
   }
 
-  r = mosq_c::mosquitto_connect(this->mosq_, addr.c_str(), port, keepalive);
+  r = mosq_c::mosquitto_connect(this->mosq_, addr.c_str(), port, 0);
   if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
       "failed to connect to MQTT broker: {}",
