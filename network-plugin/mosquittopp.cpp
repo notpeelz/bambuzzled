@@ -248,6 +248,12 @@ void mosquittopp::thread_main(
     }
 
     if (fatal_error) {
+      bbzl::log::error_fmt(
+        "({}:{}) mosquitto thread caught fatal error: {}",
+        addr,
+        port,
+        mosq_c::mosquitto_strerror(r)
+      );
       break;
     }
 
