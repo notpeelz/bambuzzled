@@ -318,7 +318,23 @@ int bambu_network_start_local_print(
         std::format("ftps://{}/{}", params.dev_ip, file_name),
         params.username,
         params.password,
-        params.filename
+        params.filename,
+        [&update_fn](
+          bbzl::ftp::file_offset total,
+          bbzl::ftp::file_offset current
+        ) {
+          auto progress = static_cast<int>(
+            100 * static_cast<double>(current) / total
+          );
+          if (update_fn == nullptr) {
+            return;
+          }
+          update_fn(
+            BBL::SendingPrintJobStage::PrintingStageUpload,
+            progress,
+            ""
+          );
+        }
       );
     } catch (std::exception& ex) {
       if (update_fn != nullptr) {

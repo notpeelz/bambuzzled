@@ -1,10 +1,12 @@
 #include <ios>
 #include <cstddef>
 #include <fstream>
-#include <filesystem>
+#include <iosfwd>
 #include <string>
-#include <stdexcept>
 #include <format>
+#include <optional>
+#include <stdexcept>
+#include <filesystem>
 #include <curl/curl.h>
 #include <openssl/crypto.h>
 #include <openssl/ssl.h>
@@ -18,8 +20,12 @@
 
 namespace bbzl::ftp {
 
-static CURLcode ssl_ctx_callback(CURL* curl, void* ssl_ctx, void* p) {
-  (void)p;
+static CURLcode ssl_ctx_callback(
+  CURL* curl,
+  void* ssl_ctx,
+  void* userdata
+) noexcept {
+  (void)userdata;
 
   auto ctx = static_cast<SSL_CTX*>(ssl_ctx);
   SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
@@ -47,17 +53,45 @@ static CURLcode ssl_ctx_callback(CURL* curl, void* ssl_ctx, void* p) {
   return CURLE_OK;
 }
 
-static size_t read_callback(char* buf, size_t size, size_t n, void* p) {
+static size_t read_callback(
+  char* buf,
+  size_t size,
+  size_t n,
+  void* p
+) noexcept {
   auto& ifs = *static_cast<std::ifstream*>(p);
   ifs.read(buf, size * n);
   return ifs.gcount();
+}
+
+static int xferinfo_callback(
+  void* userdata,
+  file_offset dltotal,
+  file_offset dlnow,
+  file_offset ultotal,
+  file_offset ulnow
+) noexcept {
+  (void)dltotal;
+  (void)dlnow;
+
+  if (ultotal <= 0 || ulnow <= 0) {
+    return CURLE_OK;
+  }
+
+  auto& fn =
+    *static_cast<std::optional<on_upload_progress_cb_fn> const*>(userdata);
+  if (fn.has_value()) {
+    (*fn)(ultotal, ulnow);
+  }
+  return CURLE_OK;
 }
 
 void upload_file(
   std::string const& url,
   std::string const& username,
   std::string const& password,
-  std::filesystem::path file_path
+  std::filesystem::path file_path,
+  std::optional<on_upload_progress_cb_fn> const& on_upload_progess_cb
 ) {
   std::ifstream ifs;
   ifs.open(file_path, std::ios::binary);
@@ -67,6 +101,13 @@ void upload_file(
       file_path.string()
     ));
   }
+
+  std::streampos ifs_size = 0;
+  ifs_size = ifs.tellg();
+  ifs.seekg(0, std::ios::end);
+  ifs_size = ifs.tellg() - ifs_size;
+  ifs.seekg(0, std::ios::beg);
+  auto file_size = static_cast<curl_off_t>(ifs_size);
 
   auto curl = bbzl::curl::curl_handle(curl_easy_init());
   if (curl) {
@@ -80,8 +121,11 @@ void upload_file(
     curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, "ftp,ftps");
     curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
     curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
+    curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, file_size);
+    curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &on_upload_progess_cb);
+    curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferinfo_callback);
     curl_easy_setopt(curl, CURLOPT_READDATA, &ifs);
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
 
     CURLcode rc = curl_easy_perform(curl);
     if (rc != CURLE_OK) {
