@@ -22,33 +22,33 @@ using namespace bbzl::try_wrapper;
 network_agent::network_agent() {}
 
 void network_agent::set_config_dir(std::string&& dir) noexcept {
-  auto lock = std::lock_guard(this->mutex_);
+  auto lock = std::lock_guard(this->cb_mutex_);
   bbzl::log::trace_fmt("set_config_dir: {}", dir);
 }
 
 void network_agent::set_on_printer_connected_fn(BBL::OnPrinterConnectedFn&& fn) noexcept {
-  auto lock = std::lock_guard(this->mutex_);
+  auto lock = std::lock_guard(this->cb_mutex_);
   this->on_printer_connected_fn_ = fn == nullptr
     ? no_op
     : std::move(fn);
 }
 
 void network_agent::set_on_local_connected_fn(BBL::OnLocalConnectedFn&& fn) noexcept {
-  auto lock = std::lock_guard(this->mutex_);
+  auto lock = std::lock_guard(this->cb_mutex_);
   this->on_local_connected_fn_ = fn == nullptr
     ? no_op
     : std::move(fn);
 }
 
 void network_agent::set_on_local_message_fn(BBL::OnMessageFn&& fn) noexcept {
-  auto lock = std::lock_guard(this->mutex_);
+  auto lock = std::lock_guard(this->cb_mutex_);
   this->on_local_message_fn_ = fn == nullptr
     ? no_op
     : std::move(fn);
 }
 
 void network_agent::set_queue_on_main_fn(BBL::QueueOnMainFn&& fn) noexcept {
-  auto lock = std::lock_guard(this->mutex_);
+  auto lock = std::lock_guard(this->cb_mutex_);
   this->queue_on_main_fn_ = fn == nullptr
     ? no_op
     : std::move(fn);
@@ -65,7 +65,7 @@ void network_agent::set_user_selected_machine(std::string dev_id) noexcept {
 }
 
 void network_client::on_connect(int reason_code) {
-  auto lock = std::lock_guard(this->agent->mutex_);
+  auto lock = std::lock_guard(this->agent->cb_mutex_);
 
   if (reason_code != 0) {
     bbzl::log::error_fmt(
@@ -84,7 +84,7 @@ void network_client::on_connect(int reason_code) {
 }
 
 void network_client::on_disconnect(int reason_code) {
-  auto lock = std::lock_guard(this->agent->mutex_);
+  auto lock = std::lock_guard(this->agent->cb_mutex_);
 
   bbzl::log::info_fmt(
     "({}) disconnected from MQTT broker",
@@ -99,7 +99,7 @@ void network_client::on_disconnect(int reason_code) {
 }
 
 void network_client::on_message(mqtt::message const* msg) {
-  auto lock = std::lock_guard(this->agent->mutex_);
+  auto lock = std::lock_guard(this->agent->cb_mutex_);
 
   auto msg_str = std::string((char*)msg->payload, msg->payloadlen);
   bbzl::log::debug_fmt(
@@ -123,7 +123,7 @@ void network_client::on_message(mqtt::message const* msg) {
 }
 
 void network_client::on_suback(mqtt::message_id mid) {
-  auto lock = std::lock_guard(this->agent->mutex_);
+  auto lock = std::lock_guard(this->agent->cb_mutex_);
 
   bbzl::log::debug_fmt("received suback for mid {}", mid);
 
