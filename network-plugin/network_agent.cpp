@@ -65,7 +65,7 @@ void network_agent::set_user_selected_machine(std::string dev_id) noexcept {
 }
 
 void network_client::on_connect(int reason_code) {
-  auto lock = std::lock_guard(this->agent->cb_mutex_);
+  auto lock = std::lock_guard(this->agent->mosq_mutex_);
 
   if (reason_code != 0) {
     bbzl::log::error_fmt(
@@ -87,8 +87,6 @@ void network_client::on_connect(int reason_code) {
 }
 
 void network_client::on_disconnect(int reason_code) {
-  auto lock = std::lock_guard(this->agent->cb_mutex_);
-
   bbzl::log::info_fmt(
     "({}) disconnected from MQTT broker",
     this->dev_id
@@ -126,7 +124,8 @@ void network_client::on_message(mqtt::message const* msg) {
 }
 
 void network_client::on_suback(mqtt::message_id mid) {
-  auto lock = std::lock_guard(this->agent->cb_mutex_);
+  auto mosq_lock = std::lock_guard(this->agent->mosq_mutex_);
+  auto cb_lock = std::lock_guard(this->agent->cb_mutex_);
 
   bbzl::log::debug_fmt("received suback for mid {}", mid);
 
