@@ -13,7 +13,6 @@ set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(WIN32)
-  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
   bbzl_add_global_defines(
     # don't complain about POSIX APIs
     _CRT_SECURE_NO_WARNINGS
@@ -28,6 +27,9 @@ if(WIN32)
 endif()
 
 if(MSVC)
+  # use the runtime library that matches the build type
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+
   # workaround for broken __VA_OPT__
   # https://stackoverflow.com/questions/77700691/getting-va-opt-to-be-recognized-by-visual-studio
   bbzl_add_global_compile_options(
