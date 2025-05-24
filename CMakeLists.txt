@@ -2,9 +2,10 @@ cmake_minimum_required(VERSION 4.0.1)
 
 project(
   bambuzzled
-  LANGUAGES CXX
+  LANGUAGES C CXX
 )
 
+include(CheckCompilerFlag)
 include(${PROJECT_SOURCE_DIR}/cmake/bbzl-private-functions.cmake)
 
 set(CMAKE_CXX_STANDARD 20)
