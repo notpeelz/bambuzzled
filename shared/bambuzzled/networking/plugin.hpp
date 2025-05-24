@@ -4,7 +4,6 @@
 #include <vector>
 #include <functional>
 #include <map>
-
 #include "api/bambu_networking.hpp"
 #include "api/project_task.hpp"
 
