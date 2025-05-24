@@ -33,7 +33,7 @@ static openssl_ctx_handle create_openssl_context() {
 
   if (ctx == nullptr) {
     throw std::runtime_error(std::format(
-      "failed to create OpenSSL context: {}",
+      "failed to create ssl context: {}",
       bbzl::ssl::get_err_msg()
     ));
   }
@@ -122,13 +122,13 @@ mosquittopp::mosquittopp() {
     mosq_c::mosquitto_new(nullptr, true, this)
   );
   if (mosq == nullptr) {
-    throw std::runtime_error("failed to create Mosquitto instance");
+    throw std::runtime_error("failed to create mosquitto instance");
   }
 
   r = mosq_c::mosquitto_threaded_set(mosq, true);
   if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
-      "failed to enable Mosquitto threaded mode: {}",
+      "failed to enable mosquitto threaded mode: {}",
       mosq_c::mosquitto_strerror(r)
     ));
   }
@@ -141,7 +141,7 @@ mosquittopp::mosquittopp() {
   );
   if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
-      "failed to disable default Mosquitto OpenSSL context: {}",
+      "failed to disable default mosquitto ssl context: {}",
       mosq_c::mosquitto_strerror(r)
     ));
   }
@@ -153,7 +153,7 @@ mosquittopp::mosquittopp() {
   );
   if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
-      "failed to set Mosquitto OpenSSL context: {}",
+      "failed to set mosquitto ssl context: {}",
       mosq_c::mosquitto_strerror(r)
     ));
   }
@@ -165,7 +165,7 @@ mosquittopp::mosquittopp() {
   );
   if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error(std::format(
-      "failed to set Mosquitto protocol version: {}",
+      "failed to set mosquitto protocol version: {}",
       mosq_c::mosquitto_strerror(r)
     ));
   }
