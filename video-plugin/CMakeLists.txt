@@ -8,7 +8,7 @@ bbzl_target_link_options_no_undefined(bambuzzled-video-plugin)
 set_target_properties(
   bambuzzled-video-plugin
   PROPERTIES
-  OUTPUT_NAME BambuSource
+  OUTPUT_NAME bbzl-video-plugin
   DEFINE_SYMBOL ""
   CXX_VISIBILITY_PRESET hidden
   C_VISIBILITY_PRESET hidden

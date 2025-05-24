@@ -24,7 +24,7 @@ target_compile_definitions(
 set_target_properties(
   bambuzzled-network-plugin
   PROPERTIES
-  OUTPUT_NAME bambu_networking
+  OUTPUT_NAME bbzl-network-plugin
   DEFINE_SYMBOL ""
   CXX_VISIBILITY_PRESET hidden
   C_VISIBILITY_PRESET hidden

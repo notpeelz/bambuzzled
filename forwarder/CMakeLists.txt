@@ -13,7 +13,7 @@ target_compile_definitions(
 set_target_properties(
   bambuzzled-forwarder
   PROPERTIES
-  OUTPUT_NAME bambu_networking
+  OUTPUT_NAME bbzl-forwarder
   DEFINE_SYMBOL ""
   CXX_VISIBILITY_PRESET hidden
   C_VISIBILITY_PRESET hidden
@@ -26,5 +26,5 @@ target_link_libraries(
 )
 install(
   TARGETS bambuzzled-forwarder
-  DESTINATION lib/bambuzzled/forwarder
+  DESTINATION lib/bambuzzled
 )
