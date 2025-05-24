@@ -414,7 +414,7 @@ message_id mosquittopp::publish(
   auto payload_ptr = payload.data();
   auto payload_size = payload.size_bytes();
   if (payload_size > INT_MAX) {
-    throw std::runtime_error("payload is too large");
+    throw std::length_error("payload is too large");
   }
 
   message_id mid;
