@@ -13,7 +13,6 @@ static inline void log_exception(
   std::exception const& ex,
   std::source_location const& location
 ) noexcept {
-  // TODO: don't log file_name/line in release builds
   bbzl::log::error_fmt(
     "CAUGHT EXCEPTION: {}\n"
     "  Function: {}\n"

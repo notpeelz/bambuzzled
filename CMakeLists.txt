@@ -38,6 +38,25 @@ if(MSVC)
   )
 endif()
 
+foreach(LANG IN ITEMS C CXX)
+  check_compiler_flag(
+    ${LANG}
+    -ffile-prefix-map=/prefix/to/hide=.
+    HAVE_FFILE_PREFIX_MAP
+  )
+  if(HAVE_FFILE_PREFIX_MAP)
+    cmake_path(
+      NORMAL_PATH CMAKE_CURRENT_SOURCE_DIR
+      OUTPUT_VARIABLE CMAKE_CURRENT_SOURCE_DIR_NORMALIZED
+    )
+    list(
+      APPEND
+      CMAKE_${LANG}_FLAGS
+      -ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR_NORMALIZED}=.
+    )
+  endif()
+endforeach()
+
 set(BBZL_DEFAULT_LOG_LEVEL "INFO" CACHE STRING "Default log level")
 set_property(
   CACHE BBZL_DEFAULT_LOG_LEVEL
