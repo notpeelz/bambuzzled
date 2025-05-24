@@ -95,7 +95,7 @@ int bambu_network_connect_printer(
       password = std::move(password),
       use_ssl
     ]() {
-      agent->connect(dev_id, dev_ip, username, password, use_ssl);
+      (void)agent->connect(dev_id, dev_ip, username, password, use_ssl);
     }));
     thread.detach();
     return BAMBU_NETWORK_SUCCESS;
