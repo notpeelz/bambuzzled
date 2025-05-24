@@ -11,6 +11,7 @@
 #include <bambuzzled/log.hpp>
 #include <bambuzzled/curl.hpp>
 #include <bambuzzled/try_wrapper.hpp>
+#include <bambuzzled/optional_ref.hpp>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
 #include "mosquittopp.hpp"
 #include "network_agent.hpp"
@@ -305,7 +306,8 @@ bool network_agent::connect(
 bool network_agent::send_message(
   std::string const& dev_id,
   std::string const& msg,
-  int qos
+  int qos,
+  bbzl::utils::optional_ref<std::string> err
 ) {
   auto lock = std::lock_guard(this->mosq_mutex_);
 
@@ -329,6 +331,10 @@ bool network_agent::send_message(
     (void)conn->mosqpp->publish(topic, msg, qos);
   } catch (std::exception& ex) {
     bbzl::log::error_fmt("mosquitto publish failed: {}", ex.what());
+    if (err.has_value()) {
+      auto& err_ = err->get();
+      err_ = ex.what();
+    }
     return false;
   }
 

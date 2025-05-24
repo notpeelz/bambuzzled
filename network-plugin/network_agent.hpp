@@ -5,6 +5,7 @@
 #include <string>
 #include <optional>
 #include <stdexcept>
+#include <bambuzzled/optional_ref.hpp>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
 #include "mosquittopp.hpp"
 
@@ -82,7 +83,8 @@ public:
   bool send_message(
     std::string const& dev_id,
     std::string const& msg,
-    int qos
+    int qos,
+    bbzl::utils::optional_ref<std::string> err = std::nullopt
   );
 };
 

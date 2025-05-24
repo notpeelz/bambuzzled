@@ -111,11 +111,20 @@ int bambu_network_send_message_to_printer(
   auto scope = BBZL_TRACE_SCOPE(dev_id, dev_id, json_str);
   return try_or(BAMBU_NETWORK_ERR_SEND_MSG_FAILED, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
+    bool sent = false;
     try {
-      agent->send_message(dev_id, json_str, qos);
+      sent = agent->send_message(dev_id, json_str, qos);
     } catch (bbzl::network_client_not_found&) {
+      bbzl::log::warn_fmt(
+        "attempted to send message to a non-existent client: {}",
+        dev_id
+      );
+    }
+
+    if (!sent) {
       return BAMBU_NETWORK_ERR_SEND_MSG_FAILED;
     }
+
     return BAMBU_NETWORK_SUCCESS;
   });
 }
@@ -438,18 +447,37 @@ int bambu_network_start_local_print(
       );
     }
 
-    auto s = o.dump();
+    auto msg = o.dump();
+    bool sent = false;
+    std::string err;
 
     try {
-      agent->send_message(params.dev_id, s, 1);
-    } catch (std::exception& ex) {
+      sent = agent->send_message(
+        params.dev_id,
+        msg,
+        1,
+        std::ref(err)
+      );
+    } catch (bbzl::network_client_not_found&) {
+      bbzl::log::warn_fmt(
+        "attempted to send message to a non-existent client: {}",
+        params.dev_id
+      );
+    }
+
+    if (!sent) {
       if (update_fn != nullptr) {
+        auto err_msg = std::string("failed to send message");
+        if (!err.empty()) {
+          err_msg = std::format("{}: {}", err_msg, err);
+        }
         update_fn(
           BBL::SendingPrintJobStage::PrintingStageSending,
           BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED,
-          ex.what()
+          err_msg
         );
       }
+
       return BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED;
     }
 
