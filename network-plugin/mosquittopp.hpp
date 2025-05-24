@@ -112,7 +112,9 @@ public:
   void set_on_disconnect_cb(on_disconnect_cb_fn&& fn);
   void set_on_suback_cb(on_suback_cb_fn&& fn);
   void set_on_message_cb(on_message_cb_fn&& fn);
+  [[nodiscard]]
   bool active() const noexcept;
+  [[nodiscard]]
   bool connected() const noexcept;
   void connect(
     std::string const& addr,

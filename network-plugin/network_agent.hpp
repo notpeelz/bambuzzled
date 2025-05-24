@@ -64,10 +64,13 @@ public:
   void set_on_local_connected_fn(BBL::OnLocalConnectedFn&& fn) noexcept;
   void set_on_local_message_fn(BBL::OnMessageFn&& fn) noexcept;
   void set_queue_on_main_fn(BBL::QueueOnMainFn&& fn) noexcept;
+  [[nodiscard]]
   std::string get_user_selected_machine() noexcept;
   void set_user_selected_machine(std::string dev_id) noexcept;
   void disconnect();
+  [[nodiscard]]
   bool disconnect(std::string const& dev_id);
+  [[nodiscard]]
   bool connect(
     std::string const& dev_id,
     std::string const& dev_ip,
@@ -75,6 +78,7 @@ public:
     std::string const& password,
     bool use_ssl
   );
+  [[nodiscard]]
   bool send_message(
     std::string const& dev_id,
     std::string const& msg,
