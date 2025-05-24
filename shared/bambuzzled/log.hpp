@@ -86,6 +86,7 @@ public:
 };
 
 template<typename... Args>
+[[nodiscard]]
 static inline trace_scope_guard trace_scope(
   std::source_location const&& location,
   Args&&... args
@@ -110,6 +111,7 @@ static inline trace_scope_guard trace_scope(
 )
 
 template<typename... Args>
+[[nodiscard]]
 static inline trace_scope_guard trace_scope_named(
   std::string_view name,
   std::source_location const&& location,

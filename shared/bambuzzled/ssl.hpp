@@ -44,8 +44,10 @@ public:
   operator SSL*() const { return this->get(); }
 };
 
+[[nodiscard]]
 std::string get_err_msg() noexcept;
 
+[[nodiscard]]
 std::filesystem::path const& get_certs_dir() noexcept;
 
 }

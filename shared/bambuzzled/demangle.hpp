@@ -4,6 +4,7 @@
 
 namespace bbzl::utils {
 
+[[nodiscard]]
 std::string demangle(char const* name);
 
 }

@@ -64,6 +64,7 @@ static inline std::string stringify_void_pointer(void const* ptr) noexcept {
 }
 
 template<typename T>
+[[nodiscard]]
 std::string stringify_pointer(T const* ptr) noexcept {
   if (ptr == nullptr) {
     return "nullptr";
@@ -92,6 +93,7 @@ static inline std::string to_string(T const& value) noexcept {
 }
 
 template<typename T>
+[[nodiscard]]
 std::string to_string(T* ptr) noexcept {
   if constexpr (!is_type_complete_v<T>) {
     return stringify_void_pointer(static_cast<void const*>(ptr));

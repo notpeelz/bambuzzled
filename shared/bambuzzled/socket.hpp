@@ -33,6 +33,8 @@ public:
   }
 
   virtual int send(std::span<std::byte> const& data);
+
+  [[nodiscard]]
   virtual int receive(std::span<std::byte>& buf);
 };
 
