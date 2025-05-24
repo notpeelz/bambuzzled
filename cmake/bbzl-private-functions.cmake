@@ -1,17 +1,5 @@
 include(CheckLinkerFlag)
 
-function(bbzl_add_global_defines)
-  add_compile_definitions(${ARGN})
-  list(APPEND CMAKE_REQUIRED_DEFINITIONS ${ARGN})
-  set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS} PARENT_SCOPE)
-endfunction()
-
-function(bbzl_add_global_compile_options)
-  add_compile_options(${ARGN})
-  list(APPEND CMAKE_REQUIRED_FLAGS ${ARGN})
-  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} PARENT_SCOPE)
-endfunction()
-
 function(bbzl_validate_submodule DIR)
   file(GLOB FILES ${DIR}/*)
   list(LENGTH FILES FILES_COUNT)
