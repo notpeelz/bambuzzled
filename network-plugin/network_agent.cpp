@@ -19,7 +19,7 @@
 namespace bbzl {
 
 using namespace std::chrono_literals;
-using namespace bbzl::try_wrapper;
+using namespace bbzl::utils::try_wrapper;
 
 network_agent::network_agent() {}
 
@@ -69,26 +69,26 @@ void network_client::on_connect(int reason_code) {
 
   if (reason_code != 0) {
     bbzl::log::error_fmt(
-      "failed connecting to MQTT broker: {}",
+      "failed connecting to printer: {}",
       bbzl::mqtt::mosquitto_connack_string(reason_code)
     );
   } else {
     bbzl::log::info_fmt(
-      "({}) connected to MQTT broker",
+      "({}) connected to printer",
       this->dev_id
     );
   }
 
   auto topic = std::format(
     "device/{}/report",
-    bbzl::curl::urlencode(this->dev_id)
+    bbzl::utils::curl::urlencode(this->dev_id)
   );
   this->report_sub_mid = this->mosqpp->subscribe(topic, 1);
 }
 
 void network_client::on_disconnect(int reason_code) {
   bbzl::log::info_fmt(
-    "({}) disconnected from MQTT broker",
+    "({}) disconnected from printer",
     this->dev_id
   );
   if (reason_code != 0) {
@@ -319,7 +319,7 @@ bool network_agent::send_message(
   try {
     auto topic = std::format(
       "device/{}/request",
-      bbzl::curl::urlencode(dev_id)
+      bbzl::utils::curl::urlencode(dev_id)
     );
     bbzl::log::debug_fmt(
       "({}) sending message ({}): {}",

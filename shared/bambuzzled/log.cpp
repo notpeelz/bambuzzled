@@ -154,9 +154,9 @@ static std::string current_time_str() noexcept {
   std::tm tm;
 
   #if defined(_WIN32)
-  localtime_s(&tm, &time);
+  (void)localtime_s(&tm, &time);
   #else
-  localtime_r(&time, &tm);
+  (void)localtime_r(&time, &tm);
   #endif
 
   char buffer[32];
@@ -164,11 +164,15 @@ static std::string current_time_str() noexcept {
   return buffer;
 }
 
+bool log_level_enabled(log_level level) noexcept {
+  return level >= current_level;
+}
+
 void log_internal(log_level level, std::string const& msg) noexcept {
   auto lock = std::lock_guard(mutex);
   ensure_initialized();
 
-  if (level < current_level) {
+  if (!log_level_enabled(level)) {
     return;
   }
 

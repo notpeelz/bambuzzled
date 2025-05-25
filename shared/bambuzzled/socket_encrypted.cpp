@@ -1,9 +1,8 @@
 #include <span>
 #include <format>
-#include <cerrno>
 #include <cstddef>
-#include <cstdint>
 #include <stdexcept>
+#include <openssl/bio.h>
 #include <openssl/ssl.h>
 #include <bambuzzled/ssl.hpp>
 #include <bambuzzled/socket.hpp>
@@ -13,43 +12,44 @@
 #if defined(_WIN32)
 #include <winsock2.h>
 #else
+#include <unistd.h>
 #include <sys/socket.h>
 #endif
 
-namespace bbzl::utils::socket {
+namespace bbzl::utils::net {
 
-void socket_encrypted::connect(sockaddr const& addr) {
+void socket_encrypted::connect(sockaddr const& addr, socklen_t addr_len) {
   int r;
 
-  socket::connect(addr);
+  socket::connect(addr, addr_len);
 
-  auto ssl = bbzl::ssl::openssl_ssl_handle(SSL_new(this->ssl_ctx_));
+  auto ssl = bbzl::utils::net::openssl_ssl_handle(
+    SSL_new(this->ssl_ctx_)
+  );
   if (ssl == nullptr) {
-    throw std::runtime_error(std::format(
+    throw socket_encrypted_connect_failed(std::format(
       "failed to create SSL: {}",
-      bbzl::ssl::pop_error_messages()
+      bbzl::utils::net::get_ssl_error_messages()
     ));
   }
 
-  #if defined(_WIN32)
-  r = SSL_set_fd(ssl, static_cast<intptr_t>(this->handle_));
-  #else
-  r = SSL_set_fd(ssl, this->handle_);
-  #endif
+  auto socket_handle_ref = this->handle_.up_ref().into_raw();
+  SSL_set_bio(ssl, socket_handle_ref, socket_handle_ref);
 
-  if (r != 1) {
-    throw std::runtime_error(std::format(
-      "failed to set SSL fd: {}",
-      bbzl::ssl::pop_error_messages()
-    ));
-  }
+  while (true) {
+    r = SSL_connect(ssl);
+    if (r <= 0) {
+      if (BIO_should_retry(this->handle_)) {
+        continue;
+      }
 
-  r = SSL_connect(ssl);
-  if (r <= 0) {
-    throw std::runtime_error(std::format(
-      "TLS/SSL handshake failed: {}",
-      bbzl::ssl::pop_error_messages()
-    ));
+      throw socket_connect_failed(std::format(
+        "TLS/SSL handshake failed: {}",
+        bbzl::utils::net::get_ssl_error_messages()
+      ));
+    }
+
+    break;
   }
 
   this->ssl_ = std::move(ssl);
@@ -61,13 +61,13 @@ int socket_encrypted::send(std::span<std::byte> const& data) {
   while (true) {
     r = SSL_write(this->ssl_, data.data(), data.size());
     if (r <= 0) {
-      if (errno == EINTR) {
+      if (BIO_should_retry(this->handle_)) {
         continue;
       }
 
       throw std::runtime_error(std::format(
         "failed to send message (using SSL/TLS): {}",
-        bbzl::ssl::pop_error_messages()
+        bbzl::utils::net::get_ssl_error_messages()
       ));
     }
 
@@ -80,13 +80,13 @@ int socket_encrypted::receive(std::span<std::byte>& buf) {
   while (true) {
     r = SSL_read(this->ssl_, buf.data(), buf.size_bytes());
     if (r <= 0) {
-      if (errno == EINTR) {
+      if (BIO_should_retry(this->handle_)) {
         continue;
       }
 
       throw std::runtime_error(std::format(
         "failed to receive message (using SSL/TLS): {}",
-        bbzl::ssl::pop_error_messages()
+        bbzl::utils::net::get_ssl_error_messages()
       ));
     }
 

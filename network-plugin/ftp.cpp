@@ -45,7 +45,7 @@ static CURLcode ssl_ctx_callback(
   X509_LOOKUP_add_dir(
     lookup,
     reinterpret_cast<char const*>(
-      bbzl::ssl::get_certs_dir().u8string().c_str()
+      bbzl::utils::net::get_certs_dir().u8string().c_str()
     ),
     X509_FILETYPE_PEM
   );
@@ -132,7 +132,7 @@ bool upload_file(
     .progress_cb = on_upload_progess_cb,
   };
 
-  auto curl = bbzl::curl::curl_handle(curl_easy_init());
+  auto curl = bbzl::utils::curl::curl_handle(curl_easy_init());
   if (curl == nullptr) {
     throw std::runtime_error("failed to create curl instance");
   }

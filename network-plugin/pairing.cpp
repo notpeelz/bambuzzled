@@ -34,7 +34,7 @@
 #endif
 
 using json = nlohmann::json;
-using bbzl::ssl::openssl_ctx_handle;
+using bbzl::utils::net::openssl_ctx_handle;
 
 namespace bbzl::pairing {
 
@@ -65,7 +65,7 @@ static openssl_ctx_handle create_openssl_context() {
   if (ctx == nullptr) {
     throw std::runtime_error(std::format(
       "failed to create ssl context: {}",
-      bbzl::ssl::pop_error_messages()
+      bbzl::utils::net::get_ssl_error_messages()
     ));
   }
 
@@ -86,7 +86,7 @@ static openssl_ctx_handle create_openssl_context() {
   X509_LOOKUP_add_dir(
     lookup,
     reinterpret_cast<char const*>(
-      bbzl::ssl::get_certs_dir().u8string().c_str()
+      bbzl::utils::net::get_certs_dir().u8string().c_str()
     ),
     X509_FILETYPE_PEM
   );
@@ -99,8 +99,8 @@ void discover(
   bool use_ssl,
   BBL::detectResult& result
 ) {
-  using utils::socket::socket;
-  using utils::socket::socket_encrypted;
+  using bbzl::utils::net::socket;
+  using bbzl::utils::net::socket_encrypted;
 
   int r;
   union {
@@ -151,7 +151,7 @@ void discover(
     sock_variant
   );
 
-  sock.connect(ss.sa);
+  sock.connect(ss.sa, sizeof(ss));
 
   constexpr int timeout_seconds = 5;
   sock.set_recv_timeout(timeout_seconds);

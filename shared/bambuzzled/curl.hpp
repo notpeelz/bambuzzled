@@ -4,7 +4,7 @@
 #include <memory>
 #include <curl/curl.h>
 
-namespace bbzl::curl {
+namespace bbzl::utils::curl {
 
 struct curl_handle_deleter {
   void operator()(CURL* curl) const {
@@ -20,7 +20,14 @@ class curl_handle
 {
 public:
   using curl_handle_base::curl_handle_base;
-  operator CURL*() const { return this->get(); }
+
+  bool is_valid() const noexcept {
+    return this->get() != nullptr;
+  }
+
+  operator CURL*() const noexcept {
+    return this->get();
+  }
 };
 
 std::string urlencode(std::string const& s);

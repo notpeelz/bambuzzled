@@ -25,9 +25,11 @@ add_library(
   ${BBZL_SHARED_SOURCES}
 )
 add_library(bbzl::shared ALIAS bambuzzled-shared)
-add_dependencies(
+target_link_libraries(
   bambuzzled-shared
+  PRIVATE
   CURL::libcurl
+  OpenSSL::SSL
 )
 set_target_properties(
   bambuzzled-shared

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <stdexcept>
 
 #if defined(_WIN32)
 #include <winsock2.h>
@@ -10,18 +11,18 @@ using native_socket_handle = SOCKET;
 using native_socket_handle = int;
 #endif
 
-namespace bbzl::utils::socket {
+namespace bbzl::utils::net {
 
 class socket_handle {
 private:
   std::optional<native_socket_handle> handle_ = std::nullopt;
 
 public:
-  socket_handle() {}
-  socket_handle(native_socket_handle handle)
+  socket_handle() noexcept {}
+  socket_handle(native_socket_handle handle) noexcept
     : handle_(handle) {}
 
-  ~socket_handle() {
+  ~socket_handle() noexcept {
     if (this->handle_.has_value()) {
       #if defined(_WIN32)
       (void)closesocket(this->handle_.value());
@@ -49,12 +50,15 @@ public:
     return *this;
   }
 
-  native_socket_handle get() const {
-    return this->handle_.value();
+  bool is_valid() const noexcept {
+    return this->handle_.has_value();
   }
 
-  bool is_valid() const {
-    return this->handle_.has_value();
+  native_socket_handle get() const {
+    if (!is_valid()) {
+      throw std::logic_error("invalid handle");
+    }
+    return this->handle_.value();
   }
 
   operator native_socket_handle() const {

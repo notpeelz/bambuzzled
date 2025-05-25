@@ -22,7 +22,7 @@
 using json = nlohmann::json;
 using network_agent = bbzl::network_agent;
 using namespace std::string_view_literals;
-using namespace bbzl::try_wrapper;
+using namespace bbzl::utils::try_wrapper;
 
 bool bambu_network_check_debug_consistent(bool is_debug) {
   auto scope = BBZL_TRACE_SCOPE(is_debug);
@@ -378,8 +378,8 @@ int bambu_network_start_local_print(
     auto file_name = std::format("{}.gcode.3mf", params.project_name);
     auto url = std::format(
       "ftps://{}/{}",
-      bbzl::curl::urlencode(params.dev_ip),
-      bbzl::curl::urlencode(file_name)
+      bbzl::utils::curl::urlencode(params.dev_ip),
+      bbzl::utils::curl::urlencode(file_name)
     );
 
     bbzl::log::debug_fmt(
@@ -484,20 +484,20 @@ int bambu_network_start_local_print(
       if (ftp_folder.empty()) {
         p["url"] = std::format(
           "file:///mnt/sdcard/{}",
-          bbzl::curl::urlencode(file_name)
+          bbzl::utils::curl::urlencode(file_name)
         );
       } else {
         p["url"] = std::format(
           "file:///{}/{}",
           // XXX: this can contain slashes, so don't urlencode it
           ftp_folder,
-          bbzl::curl::urlencode(file_name)
+          bbzl::utils::curl::urlencode(file_name)
         );
       }
     } else if (params.print_type == "from_sdcard_view") {
       p["url"] = std::format(
         "file:///{}",
-        bbzl::curl::urlencode(params.dst_file)
+        bbzl::utils::curl::urlencode(params.dst_file)
       );
     }
 

@@ -3,7 +3,7 @@
 #include <curl/curl.h>
 #include "curl.hpp"
 
-namespace bbzl::curl {
+namespace bbzl::utils::curl {
 
 std::string urlencode(std::string const& s) {
   char* encoded = curl_easy_escape(

@@ -23,6 +23,8 @@ void set_level_filter(log_level level) noexcept;
 
 void log_internal(log_level level, std::string const& msg) noexcept;
 
+bool log_level_enabled(log_level level) noexcept;
+
 template<typename... Args>
 static inline void trace_fmt(std::format_string<Args...> fmt, Args&&... args) noexcept {
   log_internal(log_level::TRACE, std::format(fmt, std::forward<Args>(args)...));
