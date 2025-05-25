@@ -8,13 +8,14 @@
 
 namespace bbzl::ssl {
 
-std::string get_err_msg() noexcept {
+std::string pop_error_messages() noexcept {
   BIO* bio = BIO_new(BIO_s_mem());
   ERR_print_errors(bio);
   char* buf;
   size_t len = BIO_get_mem_data(bio, &buf);
   auto s = std::string(buf, len);
-  BIO_free(bio);
+  (void)BIO_free(bio);
+  ERR_clear_error();
   return s;
 }
 

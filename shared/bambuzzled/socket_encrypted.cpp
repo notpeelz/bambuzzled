@@ -2,6 +2,7 @@
 #include <format>
 #include <cerrno>
 #include <cstddef>
+#include <cstdint>
 #include <stdexcept>
 #include <openssl/ssl.h>
 #include <bambuzzled/ssl.hpp>
@@ -26,7 +27,7 @@ void socket_encrypted::connect(sockaddr const& addr) {
   if (ssl == nullptr) {
     throw std::runtime_error(std::format(
       "failed to create SSL: {}",
-      bbzl::ssl::get_err_msg()
+      bbzl::ssl::pop_error_messages()
     ));
   }
 
@@ -39,15 +40,15 @@ void socket_encrypted::connect(sockaddr const& addr) {
   if (r != 1) {
     throw std::runtime_error(std::format(
       "failed to set SSL fd: {}",
-      bbzl::ssl::get_err_msg()
+      bbzl::ssl::pop_error_messages()
     ));
   }
 
   r = SSL_connect(ssl);
-  if (r != 1) {
+  if (r <= 0) {
     throw std::runtime_error(std::format(
       "TLS/SSL handshake failed: {}",
-      bbzl::ssl::get_err_msg()
+      bbzl::ssl::pop_error_messages()
     ));
   }
 
@@ -59,14 +60,14 @@ int socket_encrypted::send(std::span<std::byte> const& data) {
 
   while (true) {
     r = SSL_write(this->ssl_, data.data(), data.size());
-    if (r < 0) {
+    if (r <= 0) {
       if (errno == EINTR) {
         continue;
       }
 
       throw std::runtime_error(std::format(
         "failed to send message (using SSL/TLS): {}",
-        bbzl::ssl::get_err_msg()
+        bbzl::ssl::pop_error_messages()
       ));
     }
 
@@ -78,14 +79,14 @@ int socket_encrypted::receive(std::span<std::byte>& buf) {
   int r;
   while (true) {
     r = SSL_read(this->ssl_, buf.data(), buf.size_bytes());
-    if (r < 0) {
+    if (r <= 0) {
       if (errno == EINTR) {
         continue;
       }
 
       throw std::runtime_error(std::format(
         "failed to receive message (using SSL/TLS): {}",
-        bbzl::ssl::get_err_msg()
+        bbzl::ssl::pop_error_messages()
       ));
     }
 

@@ -1,6 +1,6 @@
 #include "win32.hpp"
 
-#if defined(_WIN32)
+#include <windows.h>
 
 namespace bbzl::utils::win32 {
 
@@ -53,5 +53,3 @@ std::string getenv_utf8(char const* name) noexcept {
 }
 
 }
-
-#endif

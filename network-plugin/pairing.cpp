@@ -21,8 +21,10 @@
 #include "pairing.hpp"
 
 #if defined(_WIN32)
+#include <minwindef.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <ws2ipdef.h>
 #else
 #include <unistd.h>
 #include <sys/socket.h>
@@ -63,7 +65,7 @@ static openssl_ctx_handle create_openssl_context() {
   if (ctx == nullptr) {
     throw std::runtime_error(std::format(
       "failed to create ssl context: {}",
-      bbzl::ssl::get_err_msg()
+      bbzl::ssl::pop_error_messages()
     ));
   }
 

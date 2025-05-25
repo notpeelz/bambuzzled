@@ -1,17 +1,28 @@
 find_package(OpenSSL REQUIRED)
 find_package(CURL REQUIRED)
 
-add_library(
-  bambuzzled-shared
-  STATIC
+set(
+  BBZL_SHARED_SOURCES
   bambuzzled/log.cpp
   bambuzzled/ssl.cpp
   bambuzzled/curl.cpp
   bambuzzled/quote.cpp
   bambuzzled/demangle.cpp
-  bambuzzled/win32.cpp
   bambuzzled/socket.cpp
   bambuzzled/socket_encrypted.cpp
+)
+
+if(WIN32)
+  list(
+    APPEND BBZL_SHARED_SOURCES
+    bambuzzled/win32.cpp
+  )
+endif()
+
+add_library(
+  bambuzzled-shared
+  STATIC
+  ${BBZL_SHARED_SOURCES}
 )
 add_library(bbzl::shared ALIAS bambuzzled-shared)
 add_dependencies(

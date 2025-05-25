@@ -18,8 +18,8 @@ private:
 
 public:
   socket_handle() {}
-  socket_handle(native_socket_handle fd)
-    : handle_(fd) {}
+  socket_handle(native_socket_handle handle)
+    : handle_(handle) {}
 
   ~socket_handle() {
     if (this->handle_.has_value()) {

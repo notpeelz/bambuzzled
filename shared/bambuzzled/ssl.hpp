@@ -45,7 +45,7 @@ public:
 };
 
 [[nodiscard]]
-std::string get_err_msg() noexcept;
+std::string pop_error_messages() noexcept;
 
 [[nodiscard]]
 std::filesystem::path const& get_certs_dir() noexcept;
