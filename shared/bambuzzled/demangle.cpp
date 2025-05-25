@@ -1,16 +1,19 @@
-#include <cstdlib>
-#include <memory>
 #include <string>
 
 #include "demangle.hpp"
 
-namespace bbzl::utils {
-
 #if defined(_WIN32) && defined(_MSC_VER)
-
 #include <windows.h>
 #include <DbgHelp.h>
 #pragma comment(lib, "DbgHelp.lib")
+#else
+#include <cstdlib>
+#include <memory>
+#endif
+
+namespace bbzl::utils {
+
+#if defined(_WIN32) && defined(_MSC_VER)
 
 std::string demangle(char const* name) {
   if (name[0] != '?') {
