@@ -1,12 +1,14 @@
 #include <format>
+#include <fstream>
+#include <ios>
+#include <iosfwd>
 #include <string>
 #include <thread>
 #include <utility>
+#include <optional>
 #include <exception>
 #include <functional>
-#include <filesystem>
 #include <string_view>
-#include <system_error>
 #include <nlohmann/json.hpp>
 #include <bambuzzled/log.hpp>
 #include <bambuzzled/curl.hpp>
@@ -112,8 +114,14 @@ int bambu_network_send_message_to_printer(
   return try_or(BAMBU_NETWORK_ERR_SEND_MSG_FAILED, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     bool sent = false;
+    std::string mqtt_err;
     try {
-      sent = agent->send_message(dev_id, json_str, qos);
+      sent = agent->send_message(
+        dev_id,
+        json_str,
+        qos,
+        std::ref(mqtt_err)
+      );
     } catch (bbzl::network_client_not_found&) {
       bbzl::log::warn_fmt(
         "attempted to send message to a non-existent client: {}",
@@ -122,6 +130,10 @@ int bambu_network_send_message_to_printer(
     }
 
     if (!sent) {
+      bbzl::log::error_fmt(
+        "failed to send message to printer: {}",
+        mqtt_err
+      );
       return BAMBU_NETWORK_ERR_SEND_MSG_FAILED;
     }
 
@@ -270,13 +282,35 @@ int bambu_network_start_send_gcode_to_sdcard(
     wait_fn
   );
   return try_or(1, [&]() {
-    // TODO: callbacks
-    bbzl::ftp::upload_file(
+    std::ifstream ifs;
+    ifs.open(params.filename, std::ios::binary);
+    if (!ifs.is_open() || ifs.fail()) {
+      bbzl::log::error_fmt(
+        "failed to open file: {}",
+        params.filename
+      );
+      return BAMBU_NETWORK_ERR_PRINT_SG_UPLOAD_FTP_FAILED;
+    }
+
+    // TODO: callbacks, status updates, cancelling and error reporting
+    std::string ftp_err;
+    bool uploaded = bbzl::ftp::upload_file(
       std::format("ftps://{}/{}", params.dev_ip, params.project_name),
       params.username,
       params.password,
-      params.filename
+      ifs,
+      std::nullopt,
+      std::ref(ftp_err)
     );
+
+    if (!uploaded) {
+      bbzl::log::error_fmt(
+        "failed to upload file: {}",
+        ftp_err
+      );
+      return BAMBU_NETWORK_ERR_PRINT_SG_UPLOAD_FTP_FAILED;
+    }
+
     return BAMBU_NETWORK_SUCCESS;
   });
 }
@@ -293,93 +327,113 @@ int bambu_network_start_local_print(
     update_fn,
     was_cancelled_fn
   );
-  auto agent = static_cast<network_agent*>(agentp);
-
   return try_or(1, [&]() {
-    if (update_fn != nullptr) {
-      update_fn(
-        BBL::SendingPrintJobStage::PrintingStageUpload,
-        BAMBU_NETWORK_SUCCESS,
-        ""
-      );
-    }
+    auto agent = static_cast<network_agent*>(agentp);
+    auto update_fn_ = update_fn == nullptr
+      ? [](...) {}
+      : update_fn;
+    auto was_cancelled_fn_ = was_cancelled_fn == nullptr
+      ? [](...) { return false; }
+      : was_cancelled_fn;
 
-    std::error_code ec;
-    auto file_size = std::filesystem::file_size(params.filename, ec);
-    if (ec.value() != 0) {
+    update_fn_(
+      BBL::SendingPrintJobStage::PrintingStageUpload,
+      BAMBU_NETWORK_SUCCESS,
+      ""
+    );
+
+    std::ifstream ifs;
+    ifs.open(params.filename, std::ios::binary);
+    if (!ifs.is_open() || ifs.fail()) {
+      bbzl::log::error_fmt(
+        "failed to open file: {}",
+        params.filename
+      );
       return BAMBU_NETWORK_ERR_FILE_NOT_EXIST;
     }
 
-    if (file_size > 1 * 1024 * 1024 * 1024) {
-      if (update_fn != nullptr) {
-        update_fn(
-          BBL::SendingPrintJobStage::PrintingStageUpload,
-          BAMBU_NETWORK_ERR_PRINT_LP_FILE_OVER_SIZE,
-          "The size of the uploaded file cannot exceed 1 GB."
-        );
-      }
+    std::streampos ifs_size = 0;
+    ifs_size = ifs.tellg();
+    ifs.seekg(0, std::ios::end);
+    ifs_size = ifs.tellg() - ifs_size;
+    ifs.seekg(0, std::ios::beg);
+    if (ifs.fail()) {
+      update_fn_(
+        BBL::SendingPrintJobStage::PrintingStageUpload,
+        BAMBU_NETWORK_ERR_FILE_NOT_EXIST,
+        "Failed to determine file size."
+      );
+      return BAMBU_NETWORK_ERR_FILE_NOT_EXIST;
+    }
+
+    if (ifs_size > 1 * 1024 * 1024 * 1024) {
+      update_fn_(
+        BBL::SendingPrintJobStage::PrintingStageUpload,
+        BAMBU_NETWORK_ERR_PRINT_LP_FILE_OVER_SIZE,
+        "The size of the uploaded file cannot exceed 1 GB."
+      );
       return BAMBU_NETWORK_ERR_PRINT_LP_FILE_OVER_SIZE;
     }
 
     auto file_name = std::format("{}.gcode.3mf", params.project_name);
-    try {
-      auto url = std::format(
-        "ftps://{}/{}",
-        bbzl::curl::urlencode(params.dev_ip),
-        bbzl::curl::urlencode(file_name)
-      );
+    auto url = std::format(
+      "ftps://{}/{}",
+      bbzl::curl::urlencode(params.dev_ip),
+      bbzl::curl::urlencode(file_name)
+    );
 
-      bbzl::log::debug_fmt(
-        "uploading file via FTP to {}: {}",
-        params.dev_ip,
-        params.filename
-      );
-      bbzl::log::trace_fmt("FTP url: {}", url);
+    bbzl::log::debug_fmt(
+      "uploading file via FTP to {}: {}",
+      params.dev_ip,
+      params.filename
+    );
+    bbzl::log::trace_fmt("FTP url: {}", url);
 
-      bbzl::ftp::upload_file(
-        url,
-        params.username,
-        params.password,
-        params.filename,
-        [&update_fn](
-          bbzl::ftp::file_offset total,
-          bbzl::ftp::file_offset current
-        ) {
-          auto progress = static_cast<int>(
-            100 * static_cast<double>(current) / total
-          );
-          if (update_fn == nullptr) {
-            return;
-          }
-          update_fn(
-            BBL::SendingPrintJobStage::PrintingStageUpload,
-            progress,
-            ""
-          );
-        }
-      );
-    } catch (std::exception& ex) {
-      if (update_fn != nullptr) {
-        update_fn(
+    std::string ftp_err;
+    bool uploaded = bbzl::ftp::upload_file(
+      url,
+      params.username,
+      params.password,
+      ifs,
+      [&update_fn_](
+        bbzl::ftp::file_offset total,
+        bbzl::ftp::file_offset current
+      ) {
+        auto progress = static_cast<int>(
+          100 * static_cast<double>(current) / total
+        );
+        update_fn_(
           BBL::SendingPrintJobStage::PrintingStageUpload,
-          BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED,
-          ex.what()
+          progress,
+          ""
         );
       }
-      return BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED;
-    }
+    );
 
     if (was_cancelled_fn()) {
       return BAMBU_NETWORK_ERR_CANCELED;
     }
 
-    if (update_fn != nullptr) {
-      update_fn(
-        BBL::SendingPrintJobStage::PrintingStageWaiting,
-        BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED,
-        ""
+    if (!uploaded) {
+      bbzl::log::error_fmt(
+        "failed to upload file: {}",
+        ftp_err
       );
+
+      update_fn_(
+        BBL::SendingPrintJobStage::PrintingStageUpload,
+        BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED,
+        std::format("failed to upload file: {}", ftp_err)
+      );
+
+      return BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED;
     }
+
+    update_fn_(
+      BBL::SendingPrintJobStage::PrintingStageWaiting,
+      BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED,
+      ""
+    );
 
     auto o = json::object();
     auto& p = o["print"];
@@ -412,7 +466,7 @@ int bambu_network_start_local_print(
       try {
         p["ams_mapping"] = json::parse(params.ams_mapping);
       } catch (std::exception& ex) {
-        update_fn(
+        update_fn_(
           BBL::SendingPrintJobStage::PrintingStageSending,
           BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED,
           std::format("failed to parse ams mapping: {}", ex.what())
@@ -449,14 +503,13 @@ int bambu_network_start_local_print(
 
     auto msg = o.dump();
     bool sent = false;
-    std::string err;
-
+    std::string mqtt_err;
     try {
       sent = agent->send_message(
         params.dev_id,
         msg,
         1,
-        std::ref(err)
+        std::ref(mqtt_err)
       );
     } catch (bbzl::network_client_not_found&) {
       bbzl::log::warn_fmt(
@@ -466,22 +519,21 @@ int bambu_network_start_local_print(
     }
 
     if (!sent) {
-      if (update_fn != nullptr) {
-        auto err_msg = std::string("failed to send message");
-        if (!err.empty()) {
-          err_msg = std::format("{}: {}", err_msg, err);
-        }
-        update_fn(
-          BBL::SendingPrintJobStage::PrintingStageSending,
-          BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED,
-          err_msg
-        );
-      }
+      bbzl::log::error_fmt(
+        "failed to send message to printer: {}",
+        mqtt_err
+      );
 
-      return BAMBU_NETWORK_ERR_PRINT_LP_UPLOAD_FTP_FAILED;
+      update_fn_(
+        BBL::SendingPrintJobStage::PrintingStageSending,
+        BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED,
+        std::format("failed to send message: {}", mqtt_err)
+      );
+
+      return BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED;
     }
 
-    update_fn(
+    update_fn_(
       BBL::SendingPrintJobStage::PrintingStageFinished,
       BAMBU_NETWORK_SUCCESS,
       ""

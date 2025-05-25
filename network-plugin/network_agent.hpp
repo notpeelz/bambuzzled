@@ -42,8 +42,6 @@ public:
     : std::runtime_error("network client doesn't exist: " + id) {}
 };
 
-constexpr static auto no_op = [](...) {};
-
 class network_agent {
   friend network_client;
 private:
@@ -51,10 +49,10 @@ private:
   std::recursive_mutex mosq_mutex_;
   std::recursive_mutex cb_mutex_;
   std::map<std::string, network_client*> connections_;
-  BBL::OnPrinterConnectedFn on_printer_connected_fn_ = no_op;
-  BBL::OnLocalConnectedFn on_local_connected_fn_ = no_op;
-  BBL::OnMessageFn on_local_message_fn_ = no_op;
-  BBL::QueueOnMainFn queue_on_main_fn_ = no_op;
+  BBL::OnPrinterConnectedFn on_printer_connected_fn_ = [](...) {};
+  BBL::OnLocalConnectedFn on_local_connected_fn_ = [](...) {};
+  BBL::OnMessageFn on_local_message_fn_ = [](...) {};
+  BBL::QueueOnMainFn queue_on_main_fn_ = [](...) {};
   network_client* get_or_create_conn(std::string const& dev_id);
   std::optional<network_client*> get_conn(std::string const& dev_id);
 

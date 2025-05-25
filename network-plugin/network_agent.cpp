@@ -31,28 +31,28 @@ void network_agent::set_config_dir(std::string&& dir) noexcept {
 void network_agent::set_on_printer_connected_fn(BBL::OnPrinterConnectedFn&& fn) noexcept {
   auto lock = std::lock_guard(this->cb_mutex_);
   this->on_printer_connected_fn_ = fn == nullptr
-    ? no_op
+    ? [](...) {}
     : std::move(fn);
 }
 
 void network_agent::set_on_local_connected_fn(BBL::OnLocalConnectedFn&& fn) noexcept {
   auto lock = std::lock_guard(this->cb_mutex_);
   this->on_local_connected_fn_ = fn == nullptr
-    ? no_op
+    ? [](...) {}
     : std::move(fn);
 }
 
 void network_agent::set_on_local_message_fn(BBL::OnMessageFn&& fn) noexcept {
   auto lock = std::lock_guard(this->cb_mutex_);
   this->on_local_message_fn_ = fn == nullptr
-    ? no_op
+    ? [](...) {}
     : std::move(fn);
 }
 
 void network_agent::set_queue_on_main_fn(BBL::QueueOnMainFn&& fn) noexcept {
   auto lock = std::lock_guard(this->cb_mutex_);
   this->queue_on_main_fn_ = fn == nullptr
-    ? no_op
+    ? [](...) {}
     : std::move(fn);
 }
 
@@ -329,7 +329,6 @@ bool network_agent::send_message(
     );
     (void)conn->mosqpp->publish(topic, msg, qos);
   } catch (std::exception& ex) {
-    bbzl::log::error_fmt("mosquitto publish failed: {}", ex.what());
     if (err.has_value()) {
       auto& err_ = err->get();
       err_ = ex.what();

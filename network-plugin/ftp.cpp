@@ -1,6 +1,5 @@
 #include <ios>
 #include <cstddef>
-#include <fstream>
 #include <iosfwd>
 #include <string>
 #include <format>
@@ -16,6 +15,7 @@
 #include <bambuzzled/log.hpp>
 #include <bambuzzled/ssl.hpp>
 #include <bambuzzled/curl.hpp>
+#include <bambuzzled/optional_ref.hpp>
 #include "ftp.hpp"
 
 namespace bbzl::ftp {
@@ -59,10 +59,25 @@ static size_t read_callback(
   size_t n,
   void* p
 ) noexcept {
-  auto& ifs = *static_cast<std::ifstream*>(p);
-  ifs.read(buf, size * n);
-  return ifs.gcount();
+  auto& is = *static_cast<std::istream*>(p);
+  is.read(buf, size * n);
+  if (is.fail()) {
+    bbzl::log::error_fmt(
+      "failed while reading input stream for ftp upload"
+    );
+    return 0;
+  }
+
+  if (is.eof()) {
+    return 0;
+  }
+
+  return is.gcount();
 }
+
+struct curl_xferinfo_data {
+  std::optional<on_upload_progress_cb_fn> const& progress_cb;
+};
 
 static int xferinfo_callback(
   void* userdata,
@@ -78,63 +93,76 @@ static int xferinfo_callback(
     return CURLE_OK;
   }
 
-  auto& fn =
-    *static_cast<std::optional<on_upload_progress_cb_fn> const*>(userdata);
-  if (fn.has_value()) {
-    (*fn)(ultotal, ulnow);
+  auto& data = *static_cast<curl_xferinfo_data const*>(userdata);
+  if (data.progress_cb.has_value()) {
+    (*data.progress_cb)(ultotal, ulnow);
   }
   return CURLE_OK;
 }
 
-void upload_file(
+bool upload_file(
   std::string const& url,
   std::string const& username,
   std::string const& password,
-  std::filesystem::path file_path,
-  std::optional<on_upload_progress_cb_fn> const& on_upload_progess_cb
+  std::istream& is,
+  std::optional<on_upload_progress_cb_fn> const& on_upload_progess_cb,
+  bbzl::utils::optional_ref<std::string> err
 ) {
-  std::ifstream ifs;
-  ifs.open(file_path, std::ios::binary);
-  if (!ifs.is_open()) {
-    throw std::runtime_error(std::format(
-      "failed to open file: {}",
-      file_path.string()
-    ));
+  if (is.bad() || is.fail()) {
+    throw std::invalid_argument("input stream isn't valid");
   }
 
-  std::streampos ifs_size = 0;
-  ifs_size = ifs.tellg();
-  ifs.seekg(0, std::ios::end);
-  ifs_size = ifs.tellg() - ifs_size;
-  ifs.seekg(0, std::ios::beg);
-  auto file_size = static_cast<curl_off_t>(ifs_size);
+  auto _ = is.tellg();
+  if (is.fail()) {
+    throw std::logic_error("input stream isn't seekable");
+  }
+
+  std::streampos is_size = 0;
+  is_size = is.tellg();
+  is.seekg(0, std::ios::end);
+  is_size = is.tellg() - is_size;
+  is.seekg(0, std::ios::beg);
+
+  if (is.fail()) {
+    throw std::runtime_error("failed to determine file size");
+  }
+
+  auto file_size = static_cast<curl_off_t>(is_size);
+  auto userdata = curl_xferinfo_data {
+    .progress_cb = on_upload_progess_cb,
+  };
 
   auto curl = bbzl::curl::curl_handle(curl_easy_init());
-  if (curl) {
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYSTATUS, 0L);
-    curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, ssl_ctx_callback);
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_USERNAME, username.c_str());
-    curl_easy_setopt(curl, CURLOPT_PASSWORD, password.c_str());
-    curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, "ftp,ftps");
-    curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-    curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
-    curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, file_size);
-    curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &on_upload_progess_cb);
-    curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferinfo_callback);
-    curl_easy_setopt(curl, CURLOPT_READDATA, &ifs);
-    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
-
-    CURLcode rc = curl_easy_perform(curl);
-    if (rc != CURLE_OK) {
-      throw std::runtime_error(std::format(
-        "failed to upload file: {}",
-        curl_easy_strerror(rc)
-      ));
-    }
+  if (curl == nullptr) {
+    throw std::runtime_error("failed to create curl instance");
   }
+
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYSTATUS, 0L);
+  curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, ssl_ctx_callback);
+  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+  curl_easy_setopt(curl, CURLOPT_USERNAME, username.c_str());
+  curl_easy_setopt(curl, CURLOPT_PASSWORD, password.c_str());
+  curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, "ftp,ftps");
+  curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+  curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
+  curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, file_size);
+  curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &userdata);
+  curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferinfo_callback);
+  curl_easy_setopt(curl, CURLOPT_READDATA, &is);
+  curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+
+  CURLcode rc = curl_easy_perform(curl);
+  if (rc != CURLE_OK) {
+    if (err.has_value()) {
+      auto& err_ = err->get();
+      err_ = curl_easy_strerror(rc);
+    }
+    return false;
+  }
+
+  return true;
 }
 
 }
