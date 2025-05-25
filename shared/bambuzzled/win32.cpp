@@ -18,7 +18,9 @@ std::string get_err_msg(DWORD error) noexcept {
     nullptr
   );
 
-  return std::string(buf, size);
+  auto s = std::string(buf, size);
+  (void)LocalFree(buf);
+  return s;
 }
 
 std::string getenv_utf8(char const* name) noexcept {
