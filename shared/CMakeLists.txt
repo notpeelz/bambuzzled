@@ -14,6 +14,10 @@ add_library(
   bambuzzled/socket_encrypted.cpp
 )
 add_library(bbzl::shared ALIAS bambuzzled-shared)
+add_dependencies(
+  bambuzzled-shared
+  CURL::libcurl
+)
 set_target_properties(
   bambuzzled-shared
   PROPERTIES
