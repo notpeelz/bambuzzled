@@ -311,9 +311,7 @@ int socket::send(std::span<std::byte> const& data) {
         continue;
       }
 
-      throw socket_send_failed(
-        bbzl::utils::net::get_openssl_error_messages()
-      );
+      throw socket_send_failed();
     }
 
     return r;
@@ -336,9 +334,7 @@ int socket::receive(std::span<std::byte>& buf) {
         continue;
       }
 
-      throw socket_recv_failed(
-        bbzl::utils::net::get_openssl_error_messages()
-      );
+      throw socket_recv_failed();
     }
 
     return r;

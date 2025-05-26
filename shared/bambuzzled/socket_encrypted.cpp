@@ -27,10 +27,7 @@ void socket_encrypted::connect(sockaddr const& addr, socklen_t addr_len) {
     SSL_new(this->ssl_ctx_)
   );
   if (ssl == nullptr) {
-    throw socket_encrypted_connect_failed(std::format(
-      "failed to create SSL: {}",
-      bbzl::utils::net::get_openssl_error_messages()
-    ));
+    throw socket_encrypted_connect_failed("failed to create ssl");
   }
 
   auto socket_handle_ref = this->handle_.up_ref().into_raw();
@@ -49,11 +46,6 @@ void socket_encrypted::connect(sockaddr const& addr, socklen_t addr_len) {
           "ssl error code: {}",
           err
         ));
-      }
-
-      auto err_msg = bbzl::utils::net::get_openssl_error_messages();
-      if (!err_msg.empty()) {
-        throw socket_encrypted_connect_failed(err_msg);
       }
 
       throw socket_encrypted_connect_failed();
@@ -83,11 +75,6 @@ int socket_encrypted::send(std::span<std::byte> const& data) {
         ));
       }
 
-      auto err_msg = bbzl::utils::net::get_openssl_error_messages();
-      if (!err_msg.empty()) {
-        throw socket_encrypted_send_failed(err_msg);
-      }
-
       throw socket_encrypted_send_failed();
     }
 
@@ -110,11 +97,6 @@ int socket_encrypted::receive(std::span<std::byte>& buf) {
           "ssl error code: {}",
           err
         ));
-      }
-
-      auto err_msg = bbzl::utils::net::get_openssl_error_messages();
-      if (!err_msg.empty()) {
-        throw socket_encrypted_recv_failed(err_msg);
       }
 
       throw socket_encrypted_recv_failed();

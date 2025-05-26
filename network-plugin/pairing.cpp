@@ -7,7 +7,6 @@
 #include <string>
 #include <variant>
 #include <vector>
-#include <format>
 #include <nlohmann/json.hpp>
 #include <openssl/crypto.h>
 #include <openssl/ssl.h>
@@ -45,10 +44,7 @@ static openssl_ctx_handle create_openssl_context() {
   auto method = TLS_client_method();
   auto ctx = openssl_ctx_handle(SSL_CTX_new(method));
   if (ctx == nullptr) {
-    throw std::runtime_error(std::format(
-      "failed to create ssl context: {}",
-      bbzl::utils::net::get_openssl_error_messages()
-    ));
+    throw std::runtime_error("failed to create ssl context");
   }
 
   SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
