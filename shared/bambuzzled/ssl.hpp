@@ -6,9 +6,9 @@
 #include <optional>
 #include <stdexcept>
 #include <filesystem>
-#include <openssl/crypto.h>
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
+#include <openssl/crypto.h>
 
 namespace bbzl::utils::net {
 
@@ -180,7 +180,9 @@ public:
     return *this;
   }
 
-  openssl_bio_native_handle(openssl_bio_native_handle&& rhs) noexcept
+  openssl_bio_native_handle(
+    openssl_bio_native_handle&& rhs
+  ) noexcept
     : openssl_bio_handle(std::move(rhs)) {}
   openssl_bio_native_handle& operator=(
     openssl_bio_native_handle&& rhs

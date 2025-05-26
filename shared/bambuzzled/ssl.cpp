@@ -1,9 +1,9 @@
 #include <string>
 #include <cstddef>
 #include <filesystem>
-#include <openssl/crypto.h>
 #include <openssl/bio.h>
 #include <openssl/err.h>
+#include <openssl/crypto.h>
 #include "ssl.hpp"
 
 namespace bbzl::utils::net {
