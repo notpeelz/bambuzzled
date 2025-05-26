@@ -163,12 +163,13 @@ void socket::set_recv_timeout(int seconds) {
   bool errored;
 
   #if defined(_WIN32)
+  int miliseconds = seconds * 1000;
   r = ::setsockopt(
     this->handle_.native_handle(),
     SOL_SOCKET,
     SO_RCVTIMEO,
-    reinterpret_cast<char const*>(&seconds),
-    sizeof(seconds)
+    reinterpret_cast<char const*>(&miliseconds),
+    sizeof(miliseconds)
   );
   errored = r == SOCKET_ERROR;
   #else
@@ -198,12 +199,13 @@ void socket::set_send_timeout(int seconds) {
   bool errored;
 
   #if defined(_WIN32)
+  int miliseconds = seconds * 1000;
   r = ::setsockopt(
     this->handle_.native_handle(),
     SOL_SOCKET,
     SO_SNDTIMEO,
-    reinterpret_cast<char const*>(&seconds),
-    sizeof(seconds)
+    reinterpret_cast<char const*>(&miliseconds),
+    sizeof(miliseconds)
   );
   errored = r == SOCKET_ERROR;
   #else
