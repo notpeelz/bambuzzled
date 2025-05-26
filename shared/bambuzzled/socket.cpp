@@ -83,7 +83,7 @@ std::string sockaddr_to_string(
   };
   auto& sa = *reinterpret_cast<sa_union const*>(&addr);
   void const* data = nullptr;
-  net_port const* port = nullptr;
+  net_port const* port_network_order = nullptr;
 
   switch (sa.sa.sa_family) {
     case AF_INET: {
@@ -93,7 +93,7 @@ std::string sockaddr_to_string(
         );
       }
       data = reinterpret_cast<void const*>(&sa.s4.sin_addr);
-      port = &sa.s4.sin_port;
+      port_network_order = &sa.s4.sin_port;
       break;
     }
     case AF_INET6: {
@@ -103,7 +103,7 @@ std::string sockaddr_to_string(
         );
       }
       data = reinterpret_cast<void const*>(&sa.s6.sin6_addr);
-      port = &sa.s6.sin6_port;
+      port_network_order = &sa.s6.sin6_port;
       break;
     }
     default: {
@@ -125,7 +125,8 @@ std::string sockaddr_to_string(
   }
 
   if (with_port) {
-    return std::format("{}:{}", host, *port);
+    auto port = ::ntohs(*port_network_order);
+    return std::format("{}:{}", host, port);
   }
 
   return std::string(host);

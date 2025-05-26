@@ -90,7 +90,7 @@ static std::string probe_binding_info(
 
   int r;
   openssl_ctx_handle ssl_ctx;
-  auto port_network_order = ::htons(port);
+  utils::net::net_port port_network_order = ::htons(port);
   auto sock_variant = std::variant<socket, socket_encrypted>();
   if (use_ssl) {
     ssl_ctx = create_openssl_context();
