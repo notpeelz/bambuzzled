@@ -1,7 +1,6 @@
 #include <span>
 #include <format>
 #include <cstddef>
-#include <stdexcept>
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
 #include <bambuzzled/ssl.hpp>
@@ -44,10 +43,9 @@ void socket_encrypted::connect(sockaddr const& addr, socklen_t addr_len) {
         continue;
       }
 
-      throw socket_connect_failed(std::format(
-        "TLS/SSL handshake failed: {}",
+      throw socket_encrypted_connect_failed(
         bbzl::utils::net::get_ssl_error_messages()
-      ));
+      );
     }
 
     break;
@@ -66,10 +64,9 @@ int socket_encrypted::send(std::span<std::byte> const& data) {
         continue;
       }
 
-      throw std::runtime_error(std::format(
-        "failed to send message (using SSL/TLS): {}",
+      throw socket_encrypted_send_failed(
         bbzl::utils::net::get_ssl_error_messages()
-      ));
+      );
     }
 
     return r;
@@ -85,10 +82,9 @@ int socket_encrypted::receive(std::span<std::byte>& buf) {
         continue;
       }
 
-      throw std::runtime_error(std::format(
-        "failed to receive message (using SSL/TLS): {}",
+      throw socket_encrypted_recv_failed(
         bbzl::utils::net::get_ssl_error_messages()
-      ));
+      );
     }
 
     return r;
