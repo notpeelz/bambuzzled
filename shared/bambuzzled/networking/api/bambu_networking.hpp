@@ -94,7 +94,12 @@ namespace BBL {
 #define BAMBU_NETWORK_LIBRARY "bambu_networking"
 #define BAMBU_NETWORK_AGENT_NAME "bambu_network_agent"
 
+// TODO: the slicer should have a setting to disable auto-updating
+#if defined(_WIN32)
+#define BAMBU_NETWORK_AGENT_VERSION "01.10.01.09"
+#else
 #define BAMBU_NETWORK_AGENT_VERSION "01.10.01.01"
+#endif
 
 // iot preset type strings
 #define IOT_PRINTER_TYPE_STRING "printer"
