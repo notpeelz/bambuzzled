@@ -89,9 +89,23 @@ public:
   void swap(openssl_bio_handle& o) noexcept {
     o.handle_.swap(this->handle_);
   }
-  openssl_bio_handle& operator=(openssl_bio_handle const& rhs) noexcept {
+  openssl_bio_handle& operator=(
+    openssl_bio_handle const& rhs
+  ) noexcept {
     openssl_bio_handle tmp(rhs);
     tmp.swap(*this);
+    return *this;
+  }
+
+  openssl_bio_handle(openssl_bio_handle&& o) noexcept {
+    this->handle_ = std::move(o.handle_);
+  }
+  openssl_bio_handle& operator=(openssl_bio_handle&& rhs) noexcept {
+    if (this == &rhs) {
+      return *this;
+    }
+
+    this->handle_ = std::move(rhs.handle_);
     return *this;
   }
 
@@ -150,15 +164,32 @@ public:
   openssl_bio_native_handle(BIO* handle) noexcept
     : openssl_bio_handle(handle) {}
 
-  openssl_bio_native_handle(openssl_bio_native_handle const& o) noexcept {
+  openssl_bio_native_handle(
+    openssl_bio_native_handle const& o
+  ) noexcept {
     this->handle_ = o.handle_;
   }
   void swap(openssl_bio_native_handle& o) noexcept {
     o.handle_.swap(this->handle_);
   }
-  openssl_bio_native_handle& operator=(openssl_bio_native_handle const& rhs) noexcept {
+  openssl_bio_native_handle& operator=(
+    openssl_bio_native_handle const& rhs
+  ) noexcept {
     openssl_bio_native_handle tmp(rhs);
     tmp.swap(*this);
+    return *this;
+  }
+
+  openssl_bio_native_handle(openssl_bio_native_handle&& rhs) noexcept
+    : openssl_bio_handle(std::move(rhs)) {}
+  openssl_bio_native_handle& operator=(
+    openssl_bio_native_handle&& rhs
+  ) noexcept {
+    if (this == &rhs) {
+      return *this;
+    }
+
+    openssl_bio_handle::operator=(std::move(rhs));
     return *this;
   }
 

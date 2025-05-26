@@ -41,7 +41,7 @@ public:
     rhs.handle_ = std::nullopt;
   }
   socket_handle& operator=(socket_handle&& rhs) noexcept {
-    if (&rhs == this) {
+    if (this == &rhs) {
       return *this;
     }
 
