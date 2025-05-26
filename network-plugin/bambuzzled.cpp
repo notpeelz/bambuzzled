@@ -284,15 +284,20 @@ int bambu_network_bind_detect(
     }
     result.result_msg = s;
 
-    auto json = json::parse(s);
-    auto& login = json["login"];
-    result.command = login["command"];
-    result.dev_id = login["id"];
-    result.model_id = login["model"];
-    result.dev_name = login["name"];
-    result.version = login["version"];
-    result.bind_state = login["bind"];
-    result.connect_type = login["connect"];
+    try {
+      auto json = json::parse(s);
+      auto& login = json["login"];
+      result.command = login["command"];
+      result.dev_id = login["id"];
+      result.model_id = login["model"];
+      result.dev_name = login["name"];
+      result.version = login["version"];
+      result.bind_state = login["bind"];
+      result.connect_type = login["connect"];
+    } catch (...) {
+      bbzl::log::error_fmt("failed to parse json response: {}", s);
+      return RC_CONNECT_FAILED;
+    }
 
     return RC_SUCCESS;
   });
