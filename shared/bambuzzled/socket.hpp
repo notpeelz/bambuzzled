@@ -140,7 +140,15 @@ public:
 
 class socket {
 protected:
-  bbzl::utils::net::openssl_bio_handle handle_;
+  #if defined(_WIN32)
+  using socket_handle =
+    bbzl::utils::net::openssl_bio_handle<SOCKET, INVALID_SOCKET>;
+  #else
+  using socket_handle =
+    bbzl::utils::net::openssl_bio_handle<int, -1>;
+  #endif
+
+  socket_handle handle_;
   std::string addr_str_;
 
 public:

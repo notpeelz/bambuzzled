@@ -243,7 +243,7 @@ void socket::connect(sockaddr const& addr, socklen_t addr_len) {
     IPPROTO_TCP,
     0
   );
-  auto sock_handle = bbzl::utils::net::openssl_bio_handle(
+  auto sock_handle = socket_handle(
     ::BIO_new_socket(sockfd, BIO_CLOSE)
   );
 

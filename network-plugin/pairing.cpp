@@ -53,6 +53,7 @@ static openssl_ctx_handle create_openssl_context() {
     ));
   }
 
+  SSL_CTX_set_mode(ctx, SSL_MODE_AUTO_RETRY);
   SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
 
   X509_STORE* store = SSL_CTX_get_cert_store(ctx);
