@@ -33,7 +33,7 @@ static openssl_ctx_handle create_openssl_context() {
   if (ctx == nullptr) {
     throw std::runtime_error(std::format(
       "failed to create ssl context: {}",
-      bbzl::utils::net::get_ssl_error_messages()
+      bbzl::utils::net::get_openssl_error_messages()
     ));
   }
 

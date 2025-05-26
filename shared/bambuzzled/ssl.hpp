@@ -218,7 +218,7 @@ public:
 };
 
 [[nodiscard]]
-std::string get_ssl_error_messages() noexcept;
+std::string get_openssl_error_messages() noexcept;
 
 [[nodiscard]]
 std::filesystem::path const& get_certs_dir() noexcept;

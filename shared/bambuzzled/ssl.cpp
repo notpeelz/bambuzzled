@@ -8,7 +8,7 @@
 
 namespace bbzl::utils::net {
 
-std::string get_ssl_error_messages() noexcept {
+std::string get_openssl_error_messages() noexcept {
   auto bio = bbzl::utils::net::openssl_bio_handle(
     BIO_new(BIO_s_mem())
   );
