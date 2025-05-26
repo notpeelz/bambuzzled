@@ -125,20 +125,20 @@ public:
   }
 };
 
-template<typename T, T invalid_handle>
+template<typename T>
 class openssl_bio_native_handle
   : public openssl_bio_handle {
 private:
   [[nodiscard]]
   std::optional<T> maybe_fd() const noexcept {
     if (this->to_raw() == nullptr) {
-      return invalid_handle;
+      return std::nullopt;
     }
 
     int fd;
     auto r = BIO_get_fd(this->to_raw(), &fd);
     if (r < 0) {
-      return invalid_handle;
+      return std::nullopt;
     }
 
     return static_cast<T>(fd);
