@@ -145,7 +145,7 @@ protected:
     bbzl::utils::net::openssl_bio_native_handle<SOCKET, INVALID_SOCKET>;
   #else
   using socket_handle =
-    bbzl::utils::net::openssl_bio_handle<int, -1>;
+    bbzl::utils::net::openssl_bio_native_handle<int, -1>;
   #endif
 
   socket_handle handle_;
