@@ -43,9 +43,20 @@ void socket_encrypted::connect(sockaddr const& addr, socklen_t addr_len) {
         continue;
       }
 
-      throw socket_encrypted_connect_failed(
-        bbzl::utils::net::get_ssl_error_messages()
-      );
+      int err = SSL_get_error(this->ssl_, r);
+      if (err != SSL_ERROR_NONE) {
+        throw socket_encrypted_connect_failed(std::format(
+          "ssl error code: {}",
+          err
+        ));
+      }
+
+      auto err_msg = bbzl::utils::net::get_ssl_error_messages();
+      if (!err_msg.empty()) {
+        throw socket_encrypted_connect_failed(err_msg);
+      }
+
+      throw socket_encrypted_connect_failed();
     }
 
     break;
@@ -64,9 +75,20 @@ int socket_encrypted::send(std::span<std::byte> const& data) {
         continue;
       }
 
-      throw socket_encrypted_send_failed(
-        bbzl::utils::net::get_ssl_error_messages()
-      );
+      int err = SSL_get_error(this->ssl_, r);
+      if (err != SSL_ERROR_NONE) {
+        throw socket_encrypted_send_failed(std::format(
+          "ssl error code: {}",
+          err
+        ));
+      }
+
+      auto err_msg = bbzl::utils::net::get_ssl_error_messages();
+      if (!err_msg.empty()) {
+        throw socket_encrypted_send_failed(err_msg);
+      }
+
+      throw socket_encrypted_send_failed();
     }
 
     return r;
@@ -82,9 +104,20 @@ int socket_encrypted::receive(std::span<std::byte>& buf) {
         continue;
       }
 
-      throw socket_encrypted_recv_failed(
-        bbzl::utils::net::get_ssl_error_messages()
-      );
+      int err = SSL_get_error(this->ssl_, r);
+      if (err != SSL_ERROR_NONE) {
+        throw socket_encrypted_recv_failed(std::format(
+          "ssl error code: {}",
+          err
+        ));
+      }
+
+      auto err_msg = bbzl::utils::net::get_ssl_error_messages();
+      if (!err_msg.empty()) {
+        throw socket_encrypted_recv_failed(err_msg);
+      }
+
+      throw socket_encrypted_recv_failed();
     }
 
     return r;

@@ -71,25 +71,17 @@ struct openssl_bio_handle_deleter {
 };
 
 class openssl_bio_handle {
-private:
+protected:
   std::shared_ptr<BIO> handle_;
 
-  [[nodiscard]]
-  std::optional<int> maybe_fd() const noexcept {
-    if (this->to_raw() == nullptr) {
-      return -1;
-    }
-
-    int fd;
-    auto r = BIO_get_fd(this->to_raw(), &fd);
-    if (r < 0) {
-      return -1;
-    }
-
-    return fd;
-  }
 public:
   openssl_bio_handle() noexcept {}
+
+  openssl_bio_handle(BIO* handle) noexcept
+    : handle_(std::shared_ptr<BIO>(
+      handle,
+      openssl_bio_handle_deleter()
+    )) {}
 
   openssl_bio_handle(openssl_bio_handle const& o) noexcept {
     this->handle_ = o.handle_;
@@ -101,24 +93,6 @@ public:
     openssl_bio_handle tmp(rhs);
     tmp.swap(*this);
     return *this;
-  }
-
-  openssl_bio_handle(openssl_bio_handle&& rhs) noexcept
-    : handle_(std::move(rhs.handle_)) {}
-  openssl_bio_handle& operator=(openssl_bio_handle&& rhs) noexcept {
-    if (&rhs == this) {
-      return *this;
-    }
-
-    this->handle_ = std::move(rhs.handle_);
-    return *this;
-  }
-
-  openssl_bio_handle(BIO* o) noexcept {
-    this->handle_ = std::shared_ptr<BIO>(
-      o,
-      openssl_bio_handle_deleter()
-    );
   }
 
   operator BIO*() const noexcept {
@@ -146,7 +120,50 @@ public:
   }
 
   [[nodiscard]]
-  int native_handle() const {
+  bool is_valid() const noexcept {
+    return this->handle_ != nullptr;
+  }
+};
+
+template<typename T, T invalid_handle>
+class openssl_bio_native_handle
+  : public openssl_bio_handle {
+private:
+  [[nodiscard]]
+  std::optional<T> maybe_fd() const noexcept {
+    if (this->to_raw() == nullptr) {
+      return invalid_handle;
+    }
+
+    int fd;
+    auto r = BIO_get_fd(this->to_raw(), &fd);
+    if (r < 0) {
+      return invalid_handle;
+    }
+
+    return static_cast<T>(fd);
+  }
+
+public:
+  openssl_bio_native_handle() noexcept {}
+
+  openssl_bio_native_handle(BIO* handle) noexcept
+    : openssl_bio_handle(handle) {}
+
+  openssl_bio_native_handle(openssl_bio_native_handle const& o) noexcept {
+    this->handle_ = o.handle_;
+  }
+  void swap(openssl_bio_native_handle& o) noexcept {
+    o.handle_.swap(this->handle_);
+  }
+  openssl_bio_native_handle& operator=(openssl_bio_native_handle const& rhs) noexcept {
+    openssl_bio_native_handle tmp(rhs);
+    tmp.swap(*this);
+    return *this;
+  }
+
+  [[nodiscard]]
+  T native_handle() const {
     auto maybe_fd = this->maybe_fd();
     if (!maybe_fd.has_value()) {
       throw std::logic_error("bio handle is invalid");
@@ -158,6 +175,14 @@ public:
   [[nodiscard]]
   bool is_valid() const noexcept {
     return this->maybe_fd().has_value();
+  }
+
+  [[nodiscard]]
+  openssl_bio_native_handle up_ref() const {
+    if (BIO_up_ref(this->to_raw()) != 1) {
+      throw std::runtime_error("up_ref failed");
+    }
+    return openssl_bio_native_handle(*this);
   }
 };
 

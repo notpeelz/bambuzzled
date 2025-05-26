@@ -142,7 +142,7 @@ class socket {
 protected:
   #if defined(_WIN32)
   using socket_handle =
-    bbzl::utils::net::openssl_bio_handle<SOCKET, INVALID_SOCKET>;
+    bbzl::utils::net::openssl_bio_native_handle<SOCKET, INVALID_SOCKET>;
   #else
   using socket_handle =
     bbzl::utils::net::openssl_bio_handle<int, -1>;
