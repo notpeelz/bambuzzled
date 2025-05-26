@@ -57,7 +57,7 @@ public:
 
 static std::tuple<socket_err_code, std::string> get_socket_err() {
   #if defined(_WIN32)
-  auto err = ::WSAGetLastError();
+  auto err = WSAGetLastError();
   auto err_msg = bbzl::utils::win32::get_err_msg(err);
   #else
   auto err = errno;
@@ -125,7 +125,7 @@ std::string sockaddr_to_string(
   }
 
   if (with_port) {
-    auto port = ::ntohs(*port_network_order);
+    auto port = ntohs(*port_network_order);
     return std::format("{}:{}", host, port);
   }
 
@@ -164,7 +164,7 @@ void socket::set_recv_timeout(int seconds) {
 
   #if defined(_WIN32)
   int miliseconds = seconds * 1000;
-  r = ::setsockopt(
+  r = setsockopt(
     this->handle_.native_handle(),
     SOL_SOCKET,
     SO_RCVTIMEO,
@@ -176,7 +176,7 @@ void socket::set_recv_timeout(int seconds) {
   timeval rcvtimeout_tv = {
     .tv_sec = seconds,
   };
-  r = ::setsockopt(
+  r = setsockopt(
     this->handle_.native_handle(),
     SOL_SOCKET,
     SO_RCVTIMEO,
@@ -200,7 +200,7 @@ void socket::set_send_timeout(int seconds) {
 
   #if defined(_WIN32)
   int miliseconds = seconds * 1000;
-  r = ::setsockopt(
+  r = setsockopt(
     this->handle_.native_handle(),
     SOL_SOCKET,
     SO_SNDTIMEO,
@@ -212,7 +212,7 @@ void socket::set_send_timeout(int seconds) {
   timeval sndtimeout_tv = {
     .tv_sec = seconds,
   };
-  r = ::setsockopt(
+  r = setsockopt(
     this->handle_.native_handle(),
     SOL_SOCKET,
     SO_SNDTIMEO,
@@ -237,14 +237,14 @@ void socket::connect(sockaddr const& addr, socklen_t addr_len) {
   );
 
   int r;
-  int sockfd = ::BIO_socket(
+  int sockfd = BIO_socket(
     addr.sa_family,
     SOCK_STREAM,
     IPPROTO_TCP,
     0
   );
   auto sock_handle = socket_handle(
-    ::BIO_new_socket(sockfd, BIO_CLOSE)
+    BIO_new_socket(sockfd, BIO_CLOSE)
   );
 
   if (!sock_handle.is_valid()) {
@@ -300,7 +300,7 @@ int socket::send(std::span<std::byte> const& data) {
     data.size_bytes()
   );
   while (true) {
-    r = ::BIO_write(this->handle_, data.data(), data.size_bytes());
+    r = BIO_write(this->handle_, data.data(), data.size_bytes());
 
     if (r <= 0) {
       if (BIO_should_retry(this->handle_)) {
@@ -323,7 +323,7 @@ int socket::receive(std::span<std::byte>& buf) {
 
   bbzl::log::trace_fmt("({}) reading from socket", this->addr_str_);
   while (true) {
-    r = ::BIO_read(this->handle_, buf.data(), buf.size_bytes());
+    r = BIO_read(this->handle_, buf.data(), buf.size_bytes());
 
     if (r <= 0) {
       if (BIO_should_retry(this->handle_)) {

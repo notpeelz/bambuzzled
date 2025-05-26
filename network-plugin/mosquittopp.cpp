@@ -208,9 +208,9 @@ void mosquittopp::thread_main(
     }
 
     #if defined(_WIN32)
-    ::Sleep(10);
+    Sleep(10);
     #else
-    ::nanosleep(&ts, NULL);
+    nanosleep(&ts, NULL);
     #endif
   }
 
