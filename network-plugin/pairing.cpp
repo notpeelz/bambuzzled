@@ -14,14 +14,14 @@
 #include <openssl/prov_ssl.h>
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
+#include <bambuzzled/log.hpp>
 #include <bambuzzled/ssl.hpp>
 #include <bambuzzled/socket.hpp>
 #include <bambuzzled/socket_encrypted.hpp>
-#include <bambuzzled/networking/api/bambu_networking.hpp>
 #include "pairing.hpp"
 
 #if defined(_WIN32)
-#include <minwindef.h>
+#include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <ws2ipdef.h>
@@ -38,24 +38,8 @@ using bbzl::utils::net::openssl_ctx_handle;
 
 namespace bbzl::pairing {
 
-static bool parse_ip(std::string const& s, sockaddr_storage& sa) {
-  sa = {};
-
-  auto& sa_in6 = reinterpret_cast<sockaddr_in6&>(sa);
-
-  if (inet_pton(AF_INET6, s.c_str(), &sa_in6.sin6_addr) == 1) {
-    sa_in6.sin6_family = AF_INET6;
-    return true;
-  }
-
-  auto& sa_in4 = reinterpret_cast<sockaddr_in&>(sa);
-  if (inet_pton(AF_INET, s.c_str(), &sa_in4.sin_addr) == 1) {
-    sa_in4.sin_family = AF_INET;
-    return true;
-  }
-
-  return false;
-}
+template<class... Ts>
+struct overloads : Ts... { using Ts::operator()...; };
 
 static openssl_ctx_handle create_openssl_context() {
   auto method = TLS_client_method();
@@ -94,54 +78,24 @@ static openssl_ctx_handle create_openssl_context() {
   return ctx;
 }
 
-void discover(
-  std::string const& addr,
-  bool use_ssl,
-  BBL::detectResult& result
+using any_addr = std::variant<in_addr, in6_addr>;
+
+static std::string probe_binding_info(
+  any_addr addr,
+  bbzl::utils::net::net_port port,
+  bool use_ssl
 ) {
   using bbzl::utils::net::socket;
   using bbzl::utils::net::socket_encrypted;
 
   int r;
-  union {
-    sockaddr sa;
-    sockaddr_in s4;
-    sockaddr_in6 s6;
-    sockaddr_storage ss;
-  } ss;
-  if (!parse_ip(addr, ss.ss)) {
-    throw std::runtime_error("invalid address");
-  }
-
-  #if defined(_WIN32)
-  USHORT* ss_port = nullptr;
-  #else
-  in_port_t* ss_port = nullptr;
-  #endif
-
-  switch (ss.sa.sa_family) {
-    case AF_INET: {
-      ss_port = &ss.s4.sin_port;
-      break;
-    }
-    case AF_INET6: {
-      ss_port = &ss.s6.sin6_port;
-      break;
-    }
-    default: {
-      std::abort();
-      break;
-    }
-  }
-
   openssl_ctx_handle ssl_ctx;
+  auto port_network_order = ::htons(port);
   auto sock_variant = std::variant<socket, socket_encrypted>();
   if (use_ssl) {
-    *ss_port = ::htons(3002);
     ssl_ctx = create_openssl_context();
     sock_variant.emplace<1>(ssl_ctx);
   } else {
-    *ss_port = ::htons(3000);
     sock_variant.emplace<0>();
   }
   auto& sock = std::visit(
@@ -151,7 +105,25 @@ void discover(
     sock_variant
   );
 
-  sock.connect(ss.sa, sizeof(ss));
+  std::visit(
+    overloads {
+      [&](in_addr& addr) {
+        sock.connect(sockaddr_in {
+          .sin_family = AF_INET,
+          .sin_port = port_network_order,
+          .sin_addr = addr,
+        });
+      },
+      [&](in6_addr& addr) {
+        sock.connect(sockaddr_in6 {
+          .sin6_family = AF_INET6,
+          .sin6_port = port_network_order,
+          .sin6_addr = addr,
+        });
+      },
+    },
+    addr
+  );
 
   constexpr int timeout_seconds = 5;
   sock.set_recv_timeout(timeout_seconds);
@@ -240,17 +212,24 @@ void discover(
     }
   );
   s.erase(s_end, s.cend());
-  result.result_msg = s;
 
-  auto json = json::parse(s);
-  auto& login = json["login"];
-  result.command = login["command"];
-  result.dev_id = login["id"];
-  result.model_id = login["model"];
-  result.dev_name = login["name"];
-  result.version = login["version"];
-  result.bind_state = login["bind"];
-  result.connect_type = login["connect"];
+  return s;
+}
+
+std::string probe_binding_info(
+  in_addr addr,
+  bbzl::utils::net::net_port port,
+  bool use_ssl
+) {
+  return probe_binding_info(any_addr(addr), port, use_ssl);
+}
+
+std::string probe_binding_info(
+  in6_addr addr,
+  bbzl::utils::net::net_port port,
+  bool use_ssl
+) {
+  return probe_binding_info(any_addr(addr), port, use_ssl);
 }
 
 }

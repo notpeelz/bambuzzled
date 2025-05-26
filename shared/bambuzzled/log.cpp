@@ -2,7 +2,6 @@
 #include <optional>
 #include <iostream>
 #include <fstream>
-#include <cstdlib>
 #include <ctime>
 #include <mutex>
 #include <string>
@@ -12,6 +11,8 @@
 
 #if defined(_WIN32)
 #include <bambuzzled/win32.hpp>
+#else
+#include <cstdlib>
 #endif
 
 #include "log.hpp"

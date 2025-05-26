@@ -8,6 +8,8 @@
 #include <bambuzzled/socket.hpp>
 
 #if defined(_WIN32)
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <ws2ipdef.h>
 #else
 #include <unistd.h>
@@ -27,9 +29,11 @@ public:
       "socket_encrypted failed to connect"
     ) {}
 
-  socket_encrypted_connect_failed(std::string const& msg)
+  socket_encrypted_connect_failed(std::string const& reason)
     : socket_connect_failed(
-      "socket_encrypted failed to connect: " + msg
+      socket_connect_failed::raw_msg_tag(),
+      "socket_encrypted failed to connect: " + reason,
+      reason
     ) {}
 };
 
@@ -43,9 +47,11 @@ public:
       "socket_encrypted failed to send"
     ) {}
 
-  socket_encrypted_send_failed(std::string const& msg)
+  socket_encrypted_send_failed(std::string const& reason)
     : socket_send_failed(
-      "socket_encrypted failed to send: " + msg
+      socket_send_failed::raw_msg_tag(),
+      "socket_encrypted failed to send: " + reason,
+      reason
     ) {}
 };
 
@@ -59,9 +65,11 @@ public:
       "socket_encrypted failed to receive"
     ) {}
 
-  socket_encrypted_recv_failed(std::string const& msg)
+  socket_encrypted_recv_failed(std::string const& reason)
     : socket_recv_failed(
-      "socket_encrypted failed to receive: " + msg
+      socket_recv_failed::raw_msg_tag(),
+      "socket_encrypted failed to receive: " + reason,
+      reason
     ) {}
 };
 

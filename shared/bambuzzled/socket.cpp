@@ -14,6 +14,7 @@
 #include "socket.hpp"
 
 #if defined(_WIN32)
+#include <windows.h>
 #include <winsock2.h>
 #include <winerror.h>
 #include <ws2ipdef.h>
@@ -82,19 +83,25 @@ std::string sockaddr_to_string(
   };
   auto& sa = *reinterpret_cast<sa_union const*>(&addr);
   void const* data = nullptr;
-  #if defined(_WIN32)
-  USHORT const* port = nullptr;
-  #else
-  in_port_t const* port = nullptr;
-  #endif
+  net_port const* port = nullptr;
 
   switch (sa.sa.sa_family) {
     case AF_INET: {
+      if (addr_len < sizeof(sockaddr_in)) {
+        throw std::logic_error(
+          "addr_len should be at least sizeof(sockaddr_in)"
+        );
+      }
       data = reinterpret_cast<void const*>(&sa.s4.sin_addr);
       port = &sa.s4.sin_port;
       break;
     }
     case AF_INET6: {
+      if (addr_len < sizeof(sockaddr_in6)) {
+        throw std::logic_error(
+          "addr_len should be at least sizeof(sockaddr_in6)"
+        );
+      }
       data = reinterpret_cast<void const*>(&sa.s6.sin6_addr);
       port = &sa.s6.sin6_port;
       break;
@@ -122,6 +129,32 @@ std::string sockaddr_to_string(
   }
 
   return std::string(host);
+}
+
+sockaddr_storage string_to_sockaddr(
+  std::string const& s,
+  bool with_port = true
+) {
+  // TODO: implement with_port
+  if (with_port) {
+    throw std::logic_error("TODO: implement with_port");
+  }
+
+  sockaddr_storage ss = {};
+  auto& sa_in6 = reinterpret_cast<sockaddr_in6&>(ss);
+
+  if (inet_pton(AF_INET6, s.c_str(), &sa_in6.sin6_addr) == 1) {
+    sa_in6.sin6_family = AF_INET6;
+    return ss;
+  }
+
+  auto& sa_in4 = reinterpret_cast<sockaddr_in&>(ss);
+  if (inet_pton(AF_INET, s.c_str(), &sa_in4.sin_addr) == 1) {
+    sa_in4.sin_family = AF_INET;
+    return ss;
+  }
+
+  throw invalid_address(s);
 }
 
 void socket::set_recv_timeout(int seconds) {

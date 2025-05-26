@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include <string>
 #include <thread>
+#include <cstdlib>
 #include <utility>
 #include <optional>
 #include <exception>
@@ -12,12 +13,20 @@
 #include <nlohmann/json.hpp>
 #include <bambuzzled/log.hpp>
 #include <bambuzzled/curl.hpp>
+#include <bambuzzled/socket.hpp>
 #include <bambuzzled/try_wrapper.hpp>
 #include <bambuzzled/networking/plugin.hpp>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
 #include "network_agent.hpp"
 #include "ftp.hpp"
 #include "pairing.hpp"
+
+#if defined(_WIN32)
+#include <winsock2.h>
+#include <ws2ipdef.h>
+#else
+#include <sys/socket.h>
+#endif
 
 using json = nlohmann::json;
 using network_agent = bbzl::network_agent;
@@ -223,13 +232,69 @@ int bambu_network_bind_detect(
   void* agentp,
   std::string dev_ip,
   std::string sec_link,
-  BBL::detectResult& detect
+  BBL::detectResult& result
 ) {
-  auto scope = BBZL_TRACE_SCOPE(agentp, dev_ip, sec_link, detect);
-  return try_or(BAMBU_NETWORK_ERR_BIND_FAILED, [&]() {
+  enum return_code : int {
+    RC_SUCCESS = 0,
+    RC_CONNECT_FAILED = -1,
+    RC_LOGIN_FAILED = -2,
+    RC_INVALID_ADDRESS = -3
+  };
+
+  auto scope = BBZL_TRACE_SCOPE(agentp, dev_ip, sec_link, result);
+  return try_or(RC_CONNECT_FAILED, [&]() -> int {
     auto agent = static_cast<network_agent*>(agentp);
-    bbzl::pairing::discover(dev_ip, sec_link == "secure", detect);
-    return BAMBU_NETWORK_SUCCESS;
+    bool use_ssl = sec_link == "secure";
+    bbzl::utils::net::net_port port = use_ssl ? 3002 : 3000;
+    sockaddr_storage addr;
+    try {
+      addr = bbzl::utils::net::string_to_sockaddr(dev_ip, false);
+    } catch (bbzl::utils::net::invalid_address&) {
+      return RC_INVALID_ADDRESS;
+    }
+
+    std::function<std::string()> probe_binding_info;
+    switch (addr.ss_family) {
+      case AF_INET: {
+        auto& s4 = *reinterpret_cast<sockaddr_in const*>(&addr);
+        probe_binding_info = [&]() {
+          return bbzl::pairing::probe_binding_info(s4.sin_addr, port, use_ssl);
+        };
+        break;
+      }
+      case AF_INET6: {
+        auto& s6 = *reinterpret_cast<sockaddr_in6 const*>(&addr);
+        probe_binding_info = [&]() {
+          return bbzl::pairing::probe_binding_info(s6.sin6_addr, port, use_ssl);
+        };
+        break;
+      }
+      default: {
+        std::abort();
+        break;
+      }
+    }
+
+    std::string s;
+    try {
+      s = probe_binding_info();
+    } catch (std::exception& ex) {
+      bbzl::log::error_fmt("failed to probe for binding info: {}", ex.what());
+      return RC_CONNECT_FAILED;
+    }
+    result.result_msg = s;
+
+    auto json = json::parse(s);
+    auto& login = json["login"];
+    result.command = login["command"];
+    result.dev_id = login["id"];
+    result.model_id = login["model"];
+    result.dev_name = login["name"];
+    result.version = login["version"];
+    result.bind_state = login["bind"];
+    result.connect_type = login["connect"];
+
+    return RC_SUCCESS;
   });
 }
 
