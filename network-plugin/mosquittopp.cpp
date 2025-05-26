@@ -27,10 +27,9 @@ namespace bbzl::mqtt {
 using bbzl::utils::net::openssl_ctx_handle;
 
 static openssl_ctx_handle create_openssl_context() {
-  auto method = TLS_client_method();
-  auto ctx = openssl_ctx_handle(SSL_CTX_new(method));
-  SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
-
+  auto ctx = openssl_ctx_handle(
+    SSL_CTX_new(TLS_client_method())
+  );
   if (ctx == nullptr) {
     throw std::runtime_error(std::format(
       "failed to create ssl context: {}",
@@ -38,6 +37,7 @@ static openssl_ctx_handle create_openssl_context() {
     ));
   }
 
+  SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
   SSL_CTX_set_mode(ctx, SSL_MODE_AUTO_RETRY);
   SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
 
