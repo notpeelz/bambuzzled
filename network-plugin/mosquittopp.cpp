@@ -303,7 +303,7 @@ void mosquittopp::connect(
   int r;
 
   if (this->active()) {
-    throw std::runtime_error("already connected or connecting");
+    throw connect_in_progress();
   }
 
   this->active_addr_ = addr;
@@ -337,7 +337,11 @@ void mosquittopp::connect(
     );
   });
 
-  r = mosq_c::mosquitto_username_pw_set(this->mosq_, username.c_str(), password.c_str());
+  r = mosq_c::mosquitto_username_pw_set(
+    this->mosq_,
+    username.c_str(),
+    password.c_str()
+  );
   if (r != mosq_c::MOSQ_ERR_SUCCESS) {
     throw std::runtime_error("failed to set MQTT credentials");
   }
@@ -350,10 +354,7 @@ void mosquittopp::connect(
 
   r = mosq_c::mosquitto_connect(this->mosq_, addr.c_str(), port, 0);
   if (r != mosq_c::MOSQ_ERR_SUCCESS) {
-    throw std::runtime_error(std::format(
-      "failed to connect to MQTT broker: {}",
-      mosq_c::mosquitto_strerror(r)
-    ));
+    throw connect_failed(mosq_c::mosquitto_strerror(r));
   }
 
   this->keepalive_ = keepalive;
@@ -368,10 +369,7 @@ void mosquittopp::disconnect() {
     );
     int r = mosq_c::mosquitto_disconnect(this->mosq_);
     if (r != mosq_c::MOSQ_ERR_SUCCESS) {
-      throw std::runtime_error(std::format(
-        "failed to request disconnect: ",
-        mosq_c::mosquitto_strerror(r)
-      ));
+      throw disconnect_failed(mosq_c::mosquitto_strerror(r));
     }
   }
 
@@ -394,10 +392,7 @@ message_id mosquittopp::subscribe(std::string const& topic, int qos) {
     qos
   );
   if (r != mosq_c::MOSQ_ERR_SUCCESS) {
-    throw std::runtime_error(std::format(
-      "failed subscribing to topic: {}",
-      mosq_c::mosquitto_strerror(r)
-    ));
+    throw subscribe_failed(mosq_c::mosquitto_strerror(r));
   }
 
   return mid;
@@ -412,7 +407,7 @@ message_id mosquittopp::publish(
   auto payload_ptr = payload.data();
   auto payload_size = payload.size_bytes();
   if (payload_size > INT_MAX) {
-    throw std::length_error("payload is too large");
+    throw publish_failed("payload is too large");
   }
 
   message_id mid;
@@ -426,10 +421,7 @@ message_id mosquittopp::publish(
     retain
   );
   if (r != mosq_c::MOSQ_ERR_SUCCESS) {
-    throw std::runtime_error(std::format(
-      "failed to publish message: {}",
-      mosq_c::mosquitto_strerror(r)
-    ));
+    throw publish_failed(mosq_c::mosquitto_strerror(r));
   }
 
   return mid;

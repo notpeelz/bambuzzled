@@ -1,6 +1,7 @@
 #pragma once
 
 #include <span>
+#include <format>
 #include <string>
 #include <cstddef>
 #include <stdexcept>
@@ -29,9 +30,15 @@ using net_port = in_port_t;
 class invalid_address
   : public std::runtime_error
 {
+private:
+  static constexpr char const* msg = "invalid address";
+
 public:
   invalid_address(std::string const& s)
-    : std::runtime_error("invalid address: " + s) {}
+    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+
+  invalid_address()
+    : std::runtime_error(msg) {}
 };
 
 std::string sockaddr_to_string(
@@ -62,13 +69,15 @@ protected:
     : std::runtime_error(msg),
     reason_(reason) {}
 
-public:
-  socket_connect_failed()
-    : std::runtime_error("socket failed to connect") {}
+private:
+  static constexpr char const* msg = "socket failed to connect";
 
-  socket_connect_failed(std::string const& reason)
-    : std::runtime_error("socket failed to connect: " + reason),
-    reason_(reason) {}
+public:
+  socket_connect_failed(std::string const& s)
+    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+
+  socket_connect_failed()
+    : std::runtime_error(msg) {}
 
   [[nodiscard]]
   std::string& reason() {
@@ -93,13 +102,15 @@ protected:
     : std::runtime_error(msg),
     reason_(reason) {}
 
-public:
-  socket_send_failed()
-    : std::runtime_error("socket failed to send") {}
+private:
+  static constexpr char const* msg = "socket failed to send";
 
-  socket_send_failed(std::string const& reason)
-    : std::runtime_error("socket failed to send: " + reason),
-    reason_(reason) {}
+public:
+  socket_send_failed(std::string const& s)
+    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+
+  socket_send_failed()
+    : std::runtime_error(msg) {}
 
   [[nodiscard]]
   std::string& reason() {
@@ -124,13 +135,15 @@ protected:
     : std::runtime_error(msg),
     reason_(reason) {}
 
-public:
-  socket_recv_failed()
-    : std::runtime_error("socket failed to receive") {}
+private:
+  static constexpr char const* msg = "socket failed to receive";
 
-  socket_recv_failed(std::string const& reason)
-    : std::runtime_error("socket failed to receive: " + reason),
-    reason_(reason) {}
+public:
+  socket_recv_failed(std::string const& s)
+    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+
+  socket_recv_failed()
+    : std::runtime_error(msg) {}
 
   [[nodiscard]]
   std::string& reason() {
