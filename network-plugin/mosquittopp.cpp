@@ -1,6 +1,6 @@
 #include <cstddef>
 #include <span>
-#include <ctime>
+#include <chrono>
 #include <atomic>
 #include <thread>
 #include <format>
@@ -25,6 +25,7 @@
 namespace bbzl::mqtt {
 
 using bbzl::utils::net::openssl_ctx_handle;
+using namespace std::chrono_literals;
 
 static openssl_ctx_handle create_openssl_context() {
   auto ctx = openssl_ctx_handle(
@@ -195,23 +196,13 @@ void mosquittopp::thread_main(
     timeout = this->keepalive_ * 1000;
   }
 
-  #if !defined(_WIN32)
-  timespec ts;
-  ts.tv_sec = 0;
-  ts.tv_nsec = 10000000;
-  #endif
-
   while (true) {
     r = mosq_c::mosquitto_loop(this->mosq_, timeout, 1);
     if (r != mosq_c::MOSQ_ERR_NO_CONN) {
       break;
     }
 
-    #if defined(_WIN32)
-    Sleep(10);
-    #else
-    nanosleep(&ts, NULL);
-    #endif
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 
   while (true) {
@@ -380,6 +371,15 @@ void mosquittopp::disconnect() {
       this->active_port_
     );
     (void)this->thread_.get_stop_source().request_stop();
+
+    while (this->active()) {
+      bbzl::log::debug_fmt(
+        "({}:{}) waiting for mosquitto thread to terminate",
+        this->active_addr_,
+        this->active_port_
+      );
+      std::this_thread::sleep_for(200ms);
+    }
   }
 }
 

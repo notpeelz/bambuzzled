@@ -2,8 +2,6 @@
 #include <format>
 #include <mutex>
 #include <span>
-#include <chrono>
-#include <thread>
 #include <utility>
 #include <string>
 #include <optional>
@@ -18,7 +16,6 @@
 
 namespace bbzl {
 
-using namespace std::chrono_literals;
 using namespace bbzl::utils::try_wrapper;
 
 network_agent::network_agent() {}
@@ -240,13 +237,6 @@ bool network_agent::disconnect(std::string const& dev_id) {
 
   try {
     conn->mosqpp->disconnect();
-    while (conn->mosqpp->active()) {
-      bbzl::log::debug_fmt(
-        "({}) waiting for mosquitto thread to terminate",
-        dev_id
-      );
-      std::this_thread::sleep_for(200ms);
-    }
   } catch (std::exception& ex) {
     bbzl::log::error_fmt("mosquitto disconnect failed: {}", ex.what());
     return false;
