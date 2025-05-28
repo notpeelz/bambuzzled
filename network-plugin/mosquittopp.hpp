@@ -38,7 +38,7 @@ class disconnect_failed
   : public std::runtime_error
 {
 private:
-  static constexpr char const* msg = "failed to disconnect";
+  static constexpr char const msg[] = "failed to disconnect";
 
 public:
   disconnect_failed(std::string const& s)
@@ -52,7 +52,8 @@ class connect_in_progress
   : public std::runtime_error
 {
 private:
-  static constexpr char const* msg = "failed to connect";
+  std::string reason_;
+  static constexpr char const msg[] = "failed to connect";
 
 public:
   connect_in_progress(std::string const& s)
@@ -66,7 +67,7 @@ class subscribe_failed
   : public std::runtime_error
 {
 private:
-  static constexpr char const* msg = "failed subscribing to topic";
+  static constexpr char const msg[] = "failed subscribing to topic";
 
 public:
   subscribe_failed(std::string const& s)
@@ -80,7 +81,7 @@ class publish_failed
   : public std::runtime_error
 {
 private:
-  static constexpr char const* msg = "failed to publish message";
+  static constexpr char const msg[] = "failed to publish message";
 
 public:
   publish_failed(std::string const& s)

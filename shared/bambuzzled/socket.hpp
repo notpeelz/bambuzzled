@@ -70,7 +70,7 @@ protected:
     reason_(reason) {}
 
 private:
-  static constexpr char const* msg = "socket failed to connect";
+  static constexpr char const msg[] = "socket failed to connect";
 
 public:
   socket_connect_failed(std::string const& s)
@@ -103,7 +103,7 @@ protected:
     reason_(reason) {}
 
 private:
-  static constexpr char const* msg = "socket failed to send";
+  static constexpr char const msg[] = "socket failed to send";
 
 public:
   socket_send_failed(std::string const& s)
@@ -136,7 +136,7 @@ protected:
     reason_(reason) {}
 
 private:
-  static constexpr char const* msg = "socket failed to receive";
+  static constexpr char const msg[] = "socket failed to receive";
 
 public:
   socket_recv_failed(std::string const& s)
