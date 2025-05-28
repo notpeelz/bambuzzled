@@ -206,7 +206,9 @@ public:
     : network_client(std::forward<Args>(args)...) {}
 };
 
-void network_agent::create_conn(std::string const& dev_id) {
+std::shared_ptr<network_client> network_agent::create_conn(
+  std::string const& dev_id
+) {
   auto pos = this->connections_.find(dev_id);
   if (pos != this->connections_.end()) {
     throw invalid_network_client("client id already exists");
@@ -219,6 +221,7 @@ void network_agent::create_conn(std::string const& dev_id) {
   auto const& [_, emplaced] =
     this->connections_.emplace(dev_id, client);
   assert(emplaced);
+  return client;
 }
 
 void network_agent::disconnect() {
@@ -300,10 +303,8 @@ void network_agent::connect(
     auto conn_lock = std::unique_lock(this->connections_mutex_);
     maybe_client = this->get_conn(dev_id);
     if (!maybe_client.has_value()) {
-      this->create_conn(dev_id);
+      maybe_client = this->create_conn(dev_id);
     }
-    maybe_client = this->get_conn(dev_id);
-    assert(maybe_client.has_value());
   }
 
   auto& client = *maybe_client;

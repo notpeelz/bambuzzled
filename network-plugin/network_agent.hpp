@@ -96,7 +96,9 @@ private:
   BBL::OnLocalConnectedFn on_local_connected_fn_ = [](...) {};
   BBL::OnMessageFn on_local_message_fn_ = [](...) {};
   BBL::QueueOnMainFn queue_on_main_fn_ = [](...) {};
-  void create_conn(std::string const& dev_id);
+  std::shared_ptr<network_client> create_conn(
+    std::string const& dev_id
+  );
   std::optional<std::shared_ptr<network_client>> get_conn(
     std::string const& dev_id
   );
