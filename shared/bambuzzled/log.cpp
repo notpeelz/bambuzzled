@@ -19,7 +19,9 @@
 
 namespace bbzl::log {
 
-static constexpr std::string_view level_to_str(log_level level) noexcept {
+static constexpr std::string_view level_to_str(
+  log_level level
+) noexcept {
   switch (level) {
     case log_level::TRACE: {
       return "TRACE";
@@ -49,7 +51,9 @@ static constexpr char to_lower_ascii(const char c) {
   return c;
 }
 
-static constexpr std::optional<log_level> str_to_level(char const* level) noexcept {
+static constexpr std::optional<log_level> str_to_level(
+  char const* level
+) noexcept {
   if (level == nullptr) {
     return std::nullopt;
   }
@@ -161,7 +165,12 @@ static std::string current_time_str() noexcept {
   #endif
 
   char buffer[32];
-  (void)std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);
+  (void)std::strftime(
+    buffer,
+    sizeof(buffer),
+    "%Y-%m-%d %H:%M:%S",
+    &tm
+  );
   return buffer;
 }
 
