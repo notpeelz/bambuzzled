@@ -8,10 +8,12 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <stdexcept>
 #include <functional>
 #include <stop_token>
 #include <bambuzzled/ssl.hpp>
+#include <bambuzzled/optional_ref.hpp>
 #include "mosquitto.hpp"
 
 namespace bbzl::mqtt {
@@ -20,75 +22,98 @@ using mosq_c::mosquitto_strerror;
 using mosq_c::mosquitto_connack_string;
 using mosq_c::mosquitto_reason_string;
 
-class connect_failed
+class mosquittopp_error
   : public std::runtime_error
 {
 private:
-  static constexpr char const* msg = "failed to connect";
+  std::string reason_;
 
 public:
-  connect_failed(std::string const& s)
-    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+  mosquittopp_error(
+    std::string const& msg,
+    std::string const& reason
+  )
+    : std::runtime_error(std::format("{}: {}", msg, reason)),
+      reason_(reason) {}
+
+  mosquittopp_error(std::string const& msg)
+    : std::runtime_error(msg) {}
+
+  [[nodiscard]]
+  bbzl::utils::optional_ref<std::string const> reason() {
+    return std::make_optional(std::cref(this->reason_));
+  }
+};
+
+class connect_failed
+  : public mosquittopp_error
+{
+private:
+  static constexpr char const msg[] = "failed to connect";
+
+public:
+  connect_failed(std::string const& reason)
+    : mosquittopp_error(msg, reason) {}
 
   connect_failed()
-    : std::runtime_error(msg) {}
+    : mosquittopp_error(msg) {}
 };
 
 class disconnect_failed
-  : public std::runtime_error
+  : public mosquittopp_error
 {
 private:
   static constexpr char const msg[] = "failed to disconnect";
 
 public:
-  disconnect_failed(std::string const& s)
-    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+  disconnect_failed(std::string const& reason)
+    : mosquittopp_error(msg, reason) {}
 
   disconnect_failed()
-    : std::runtime_error(msg) {}
+    : mosquittopp_error(msg) {}
 };
 
 class connect_in_progress
-  : public std::runtime_error
+  : public mosquittopp_error
 {
 private:
   std::string reason_;
   static constexpr char const msg[] = "failed to connect";
 
 public:
-  connect_in_progress(std::string const& s)
-    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+  connect_in_progress(std::string const& reason)
+    : mosquittopp_error(msg, reason) {}
 
   connect_in_progress()
-    : std::runtime_error(msg) {}
+    : mosquittopp_error(msg) {}
 };
 
 class subscribe_failed
-  : public std::runtime_error
+  : public mosquittopp_error
 {
 private:
   static constexpr char const msg[] = "failed subscribing to topic";
 
 public:
-  subscribe_failed(std::string const& s)
-    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+  subscribe_failed(std::string const& reason)
+    : mosquittopp_error(msg, reason) {}
 
   subscribe_failed()
-    : std::runtime_error(msg) {}
+    : mosquittopp_error(msg) {}
 };
 
 class publish_failed
-  : public std::runtime_error
+  : public mosquittopp_error
 {
 private:
   static constexpr char const msg[] = "failed to publish message";
 
 public:
-  publish_failed(std::string const& s)
-    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+  publish_failed(std::string const& reason)
+    : mosquittopp_error(msg, reason) {}
 
   publish_failed()
-    : std::runtime_error(msg) {}
+    : mosquittopp_error(msg) {}
 };
 
 struct mosquitto_handle_deleter {

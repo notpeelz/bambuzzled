@@ -5,7 +5,6 @@
 #include <string>
 #include <optional>
 #include <stdexcept>
-#include <bambuzzled/optional_ref.hpp>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
 #include "mosquittopp.hpp"
 
@@ -67,22 +66,18 @@ public:
   std::string get_user_selected_machine() noexcept;
   void set_user_selected_machine(std::string dev_id) noexcept;
   void disconnect();
-  [[nodiscard]]
   bool disconnect(std::string const& dev_id);
-  [[nodiscard]]
-  bool connect(
+  void connect(
     std::string const& dev_id,
     std::string const& dev_ip,
     std::string const& username,
     std::string const& password,
     bool use_ssl
   );
-  [[nodiscard]]
-  bool send_message(
+  void send_message(
     std::string const& dev_id,
     std::string const& msg,
-    int qos,
-    bbzl::utils::optional_ref<std::string> err = std::nullopt
+    int qos
   );
 };
 

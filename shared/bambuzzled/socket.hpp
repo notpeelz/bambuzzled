@@ -4,9 +4,12 @@
 #include <format>
 #include <string>
 #include <cstddef>
+#include <optional>
 #include <stdexcept>
+#include <functional>
 #include <bambuzzled/ssl.hpp>
 #include <bambuzzled/socket_handle.hpp>
+#include <bambuzzled/optional_ref.hpp>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -27,18 +30,42 @@ using net_port = USHORT;
 using net_port = in_port_t;
 #endif
 
-class invalid_address
+class socket_error
   : public std::runtime_error
 {
 private:
-  static constexpr char const* msg = "invalid address";
+  std::string reason_;
 
 public:
-  invalid_address(std::string const& s)
-    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+  socket_error(
+    std::string const& msg,
+    std::string const& reason
+  )
+    : std::runtime_error(std::format("{}: {}", msg, reason)),
+      reason_(reason) {}
+
+  socket_error(std::string const& msg)
+    : std::runtime_error(msg) {}
+
+  [[nodiscard]]
+  bbzl::utils::optional_ref<std::string const> reason() {
+    return std::make_optional(std::cref(this->reason_));
+  }
+};
+
+class invalid_address
+  : public socket_error
+{
+private:
+  std::string reason_;
+  static constexpr char const msg[] = "invalid address";
+
+public:
+  invalid_address(std::string const& reason)
+    : socket_error(msg, reason) {}
 
   invalid_address()
-    : std::runtime_error(msg) {}
+    : socket_error(msg) {}
 };
 
 std::string sockaddr_to_string(
@@ -53,102 +80,83 @@ sockaddr_storage string_to_sockaddr(
 );
 
 class socket_connect_failed
-  : public std::runtime_error
+  : public socket_error
 {
 protected:
-  std::string reason_;
-
   struct raw_msg_tag {};
+
   socket_connect_failed(raw_msg_tag, std::string const& msg)
-    : std::runtime_error(msg) {}
+    : socket_error(msg) {}
+
   socket_connect_failed(
     raw_msg_tag,
     std::string const& msg,
     std::string reason
   )
-    : std::runtime_error(msg),
-    reason_(reason) {}
+    : socket_error(msg) {}
 
 private:
   static constexpr char const msg[] = "socket failed to connect";
 
 public:
-  socket_connect_failed(std::string const& s)
-    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+  socket_connect_failed(std::string const& reason)
+    : socket_error(msg, reason) {}
 
   socket_connect_failed()
-    : std::runtime_error(msg) {}
-
-  [[nodiscard]]
-  std::string& reason() {
-    return this->reason_;
-  }
+    : socket_error(msg) {}
 };
 
 class socket_send_failed
-  : public std::runtime_error
+  : public socket_error
 {
 protected:
-  std::string reason_;
-
   struct raw_msg_tag {};
+
   socket_send_failed(raw_msg_tag, std::string const& msg)
-    : std::runtime_error(msg) {}
+    : socket_error(msg) {}
+
   socket_send_failed(
     raw_msg_tag,
     std::string const& msg,
     std::string reason
   )
-    : std::runtime_error(msg),
-    reason_(reason) {}
+    : socket_error(msg) {}
 
 private:
   static constexpr char const msg[] = "socket failed to send";
 
 public:
-  socket_send_failed(std::string const& s)
-    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+  socket_send_failed(std::string const& reason)
+    : socket_error(msg, reason) {}
 
   socket_send_failed()
-    : std::runtime_error(msg) {}
-
-  [[nodiscard]]
-  std::string& reason() {
-    return this->reason_;
-  }
+    : socket_error(msg) {}
 };
 
 class socket_recv_failed
-  : public std::runtime_error
+  : public socket_error
 {
 protected:
-  std::string reason_;
-
   struct raw_msg_tag {};
   socket_recv_failed(raw_msg_tag, std::string const& msg)
-    : std::runtime_error(msg) {}
+    : socket_error(msg) {}
+
   socket_recv_failed(
     raw_msg_tag,
     std::string const& msg,
     std::string reason
   )
-    : std::runtime_error(msg),
-    reason_(reason) {}
+    : socket_error(msg, reason) {}
 
 private:
   static constexpr char const msg[] = "socket failed to receive";
 
 public:
-  socket_recv_failed(std::string const& s)
-    : std::runtime_error(std::format("{}: {}", msg, s)) {}
+  socket_recv_failed(std::string const& reason)
+    : socket_error(msg, reason) {}
 
   socket_recv_failed()
-    : std::runtime_error(msg) {}
-
-  [[nodiscard]]
-  std::string& reason() {
-    return this->reason_;
-  }
+    : socket_error(msg) {}
 };
 
 class socket {

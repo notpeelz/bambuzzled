@@ -240,7 +240,7 @@ bool network_agent::disconnect(std::string const& dev_id) {
   return true;
 }
 
-bool network_agent::connect(
+void network_agent::connect(
   std::string const& dev_id,
   std::string const& dev_ip,
   std::string const& username,
@@ -281,17 +281,13 @@ bool network_agent::connect(
         "caught exception from on_local_connected callback"
       );
     }
-    return false;
   }
-
-  return true;
 }
 
-bool network_agent::send_message(
+void network_agent::send_message(
   std::string const& dev_id,
   std::string const& msg,
-  int qos,
-  bbzl::utils::optional_ref<std::string> err
+  int qos
 ) {
   auto lock = std::lock_guard(this->mosq_mutex_);
 
@@ -301,27 +297,17 @@ bool network_agent::send_message(
   }
   auto conn = *maybe_conn;
 
-  try {
-    auto topic = std::format(
-      "device/{}/request",
-      bbzl::utils::curl::urlencode(dev_id)
-    );
-    bbzl::log::debug_fmt(
-      "({}) sending message ({}): {}",
-      dev_id,
-      topic,
-      msg
-    );
-    (void)conn->mosqpp->publish(topic, msg, qos);
-  } catch (std::exception& ex) {
-    if (err.has_value()) {
-      auto& err_ = err->get();
-      err_ = ex.what();
-    }
-    return false;
-  }
-
-  return true;
+  auto topic = std::format(
+    "device/{}/request",
+    bbzl::utils::curl::urlencode(dev_id)
+  );
+  bbzl::log::debug_fmt(
+    "({}) sending message ({}): {}",
+    dev_id,
+    topic,
+    msg
+  );
+  (void)conn->mosqpp->publish(topic, msg, qos);
 }
 
 }

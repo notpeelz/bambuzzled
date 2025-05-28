@@ -17,6 +17,7 @@
 #include <bambuzzled/try_wrapper.hpp>
 #include <bambuzzled/networking/plugin.hpp>
 #include <bambuzzled/networking/api/bambu_networking.hpp>
+#include "mosquittopp.hpp"
 #include "network_agent.hpp"
 #include "ftp.hpp"
 #include "pairing.hpp"
@@ -26,6 +27,7 @@
 #include <ws2ipdef.h>
 #else
 #include <sys/socket.h>
+#include <netinet/in.h>
 #endif
 
 using json = nlohmann::json;
@@ -122,27 +124,26 @@ int bambu_network_send_message_to_printer(
   auto scope = BBZL_TRACE_SCOPE(dev_id, dev_id, json_str);
   return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
-    bool sent = false;
-    std::string mqtt_err;
     try {
-      sent = agent->send_message(
+      agent->send_message(
         dev_id,
         json_str,
-        qos,
-        std::ref(mqtt_err)
+        qos
       );
     } catch (bbzl::network_client_not_found&) {
-      bbzl::log::warn_fmt(
+      bbzl::log::error_fmt(
         "attempted to send message to a non-existent client: {}",
         dev_id
       );
-    }
-
-    if (!sent) {
-      bbzl::log::error_fmt(
-        "failed to send message to printer: {}",
-        mqtt_err
-      );
+      return BAMBU_NETWORK_ERR_SEND_MSG_FAILED;
+    } catch (bbzl::mqtt::mosquittopp_error& ex) {
+      constexpr char const err_msg[] = "failed to send message to printer";
+      if (ex.reason().has_value()) {
+        auto err_reason = ex.reason().value().get();
+        bbzl::log::error_fmt("{}: {}", err_msg, err_reason);
+      } else {
+        bbzl::log::error(err_msg);
+      }
       return BAMBU_NETWORK_ERR_SEND_MSG_FAILED;
     }
 
@@ -576,33 +577,32 @@ int bambu_network_start_local_print(
     }
 
     auto msg = o.dump();
-    bool sent = false;
-    std::string mqtt_err;
     try {
-      sent = agent->send_message(
+      agent->send_message(
         params.dev_id,
         msg,
-        1,
-        std::ref(mqtt_err)
+        1
       );
     } catch (bbzl::network_client_not_found&) {
-      bbzl::log::warn_fmt(
+      bbzl::log::error_fmt(
         "attempted to send message to a non-existent client: {}",
         params.dev_id
       );
-    }
+      return BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED;
+    } catch (bbzl::mqtt::mosquittopp_error& ex) {
+      constexpr char const err_msg[] = "failed to send message to printer";
+      if (ex.reason().has_value()) {
+        auto err_reason = ex.reason().value().get();
+        bbzl::log::error_fmt("{}: {}", err_msg, err_reason);
 
-    if (!sent) {
-      bbzl::log::error_fmt(
-        "failed to send message to printer: {}",
-        mqtt_err
-      );
-
-      update_fn_(
-        BBL::SendingPrintJobStage::PrintingStageSending,
-        BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED,
-        std::format("failed to send message: {}", mqtt_err)
-      );
+        update_fn_(
+          BBL::SendingPrintJobStage::PrintingStageSending,
+          BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED,
+          std::format("failed to send message: {}", err_msg)
+        );
+      } else {
+        bbzl::log::error(err_msg);
+      }
 
       return BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED;
     }
