@@ -235,12 +235,7 @@ bool network_agent::disconnect(std::string const& dev_id) {
     return true;
   }
 
-  try {
-    conn->mosqpp->disconnect();
-  } catch (std::exception& ex) {
-    bbzl::log::error_fmt("mosquitto disconnect failed: {}", ex.what());
-    return false;
-  }
+  conn->mosqpp->disconnect();
 
   return true;
 }

@@ -120,7 +120,7 @@ int bambu_network_send_message_to_printer(
   int qos
 ) {
   auto scope = BBZL_TRACE_SCOPE(dev_id, dev_id, json_str);
-  return try_or(BAMBU_NETWORK_ERR_SEND_MSG_FAILED, [&]() {
+  return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     bool sent = false;
     std::string mqtt_err;
@@ -152,9 +152,13 @@ int bambu_network_send_message_to_printer(
 
 int bambu_network_disconnect_printer(void* agentp) {
   auto scope = BBZL_TRACE_SCOPE(agentp);
-  return try_or(BAMBU_NETWORK_ERR_DISCONNECT_FAILED, [&]() {
+  return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
-    agent->disconnect();
+    try {
+      agent->disconnect();
+    } catch (bbzl::mqtt::disconnect_failed&) {
+      return BAMBU_NETWORK_ERR_DISCONNECT_FAILED;
+    }
     return BAMBU_NETWORK_SUCCESS;
   });
 }
@@ -242,7 +246,7 @@ int bambu_network_bind_detect(
   };
 
   auto scope = BBZL_TRACE_SCOPE(agentp, dev_ip, sec_link, result);
-  return try_or(RC_CONNECT_FAILED, [&]() -> int {
+  return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() -> int {
     auto agent = static_cast<network_agent*>(agentp);
     bool use_ssl = sec_link == "secure";
     bbzl::utils::net::net_port port = use_ssl ? 3002 : 3000;
@@ -253,19 +257,19 @@ int bambu_network_bind_detect(
       return RC_INVALID_ADDRESS;
     }
 
-    std::function<std::string()> probe_binding_info;
+    std::function<std::string()> probe_binding;
     switch (addr.ss_family) {
       case AF_INET: {
         auto& s4 = *reinterpret_cast<sockaddr_in const*>(&addr);
-        probe_binding_info = [&]() {
-          return bbzl::pairing::probe_binding_info(s4.sin_addr, port, use_ssl);
+        probe_binding = [&]() {
+          return bbzl::pairing::probe_binding(s4.sin_addr, port, use_ssl);
         };
         break;
       }
       case AF_INET6: {
         auto& s6 = *reinterpret_cast<sockaddr_in6 const*>(&addr);
-        probe_binding_info = [&]() {
-          return bbzl::pairing::probe_binding_info(s6.sin6_addr, port, use_ssl);
+        probe_binding = [&]() {
+          return bbzl::pairing::probe_binding(s6.sin6_addr, port, use_ssl);
         };
         break;
       }
@@ -277,8 +281,8 @@ int bambu_network_bind_detect(
 
     std::string s;
     try {
-      s = probe_binding_info();
-    } catch (std::exception& ex) {
+      s = probe_binding();
+    } catch (bbzl::pairing::probe_binding_error& ex) {
       bbzl::log::error_fmt("failed to probe for binding info: {}", ex.what());
       return RC_CONNECT_FAILED;
     }

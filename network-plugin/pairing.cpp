@@ -76,7 +76,7 @@ static openssl_ctx_handle create_openssl_context() {
 
 using any_addr = std::variant<in_addr, in6_addr>;
 
-static std::string probe_binding_info(
+static std::string probe_binding(
   any_addr addr,
   bbzl::utils::net::net_port port,
   bool use_ssl
@@ -170,7 +170,7 @@ static std::string probe_binding_info(
     }
 
     if (buf.size() > 0x10000) {
-      throw std::runtime_error("received message is too large");
+      throw malformed_response("message is too large");
     }
 
     auto buf_span = std::span<std::byte>(
@@ -185,13 +185,13 @@ static std::string probe_binding_info(
   }
 
   if (!found_end) {
-    throw std::runtime_error("received incomplete message");
+    throw malformed_response("incomplete message");
   }
 
   constexpr size_t header_size = 4;
   constexpr size_t trailer_size = end_pattern.size();
   if (buf.size() < (header_size + trailer_size)) {
-    throw std::runtime_error("received message is too small to parse");
+    throw malformed_response("message is too small to parse");
   }
 
   auto byte_span = std::span<std::byte const>(
@@ -212,20 +212,20 @@ static std::string probe_binding_info(
   return s;
 }
 
-std::string probe_binding_info(
+std::string probe_binding(
   in_addr addr,
   bbzl::utils::net::net_port port,
   bool use_ssl
 ) {
-  return probe_binding_info(any_addr(addr), port, use_ssl);
+  return probe_binding(any_addr(addr), port, use_ssl);
 }
 
-std::string probe_binding_info(
+std::string probe_binding(
   in6_addr addr,
   bbzl::utils::net::net_port port,
   bool use_ssl
 ) {
-  return probe_binding_info(any_addr(addr), port, use_ssl);
+  return probe_binding(any_addr(addr), port, use_ssl);
 }
 
 }
