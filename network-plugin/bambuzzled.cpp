@@ -36,6 +36,7 @@ using namespace std::string_view_literals;
 using namespace bbzl::utils::try_wrapper;
 
 bool bambu_network_check_debug_consistent(bool is_debug) {
+  // TODO(windows): check if MSVC runtime library is consistent
   auto scope = BBZL_TRACE_SCOPE(is_debug);
   return true;
 }
@@ -67,7 +68,11 @@ int bambu_network_start(void* agentp) {
   return BAMBU_NETWORK_SUCCESS;
 }
 
-bool bambu_network_start_discovery(void* agentp, bool start, bool sending) {
+bool bambu_network_start_discovery(
+  void* agentp,
+  bool start,
+  bool sending
+) {
   auto scope = BBZL_TRACE_SCOPE(agentp, start, sending);
   return true;
 }
@@ -80,7 +85,10 @@ std::string bambu_network_get_user_selected_machine(void* agentp) {
   });
 }
 
-int bambu_network_set_user_selected_machine(void* agentp, std::string dev_id) {
+int bambu_network_set_user_selected_machine(
+  void* agentp,
+  std::string dev_id
+) {
   auto scope = BBZL_TRACE_SCOPE(agentp, dev_id);
   return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
@@ -97,7 +105,13 @@ int bambu_network_connect_printer(
   std::string password,
   bool use_ssl
 ) {
-  auto scope = BBZL_TRACE_SCOPE(dev_id, dev_ip, username, "*PASSWORD*"sv);
+  auto scope = BBZL_TRACE_SCOPE(
+    agentp,
+    dev_id,
+    dev_ip,
+    username,
+    "*PASSWORD*"sv
+  );
   return try_or(BAMBU_NETWORK_ERR_CONNECT_FAILED, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     auto thread = std::thread(wrap_try([
@@ -121,7 +135,7 @@ int bambu_network_send_message_to_printer(
   std::string json_str,
   int qos
 ) {
-  auto scope = BBZL_TRACE_SCOPE(dev_id, dev_id, json_str);
+  auto scope = BBZL_TRACE_SCOPE(agentp, dev_id, json_str);
   return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     try {
