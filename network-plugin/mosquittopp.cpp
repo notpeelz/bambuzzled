@@ -297,6 +297,26 @@ void mosquittopp::connect(
     throw connect_in_progress();
   }
 
+  r = mosq_c::mosquitto_username_pw_set(
+    this->mosq_,
+    username.c_str(),
+    password.c_str()
+  );
+  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
+    throw std::runtime_error("failed to set MQTT credentials");
+  }
+
+  bbzl::log::trace_fmt(
+    "({}:{}) connecting to MQTT broker",
+    addr,
+    port
+  );
+
+  r = mosq_c::mosquitto_connect(this->mosq_, addr.c_str(), port, 0);
+  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
+    throw connect_failed(mosq_c::mosquitto_strerror(r));
+  }
+
   this->active_addr_ = addr;
   this->active_port_ = port;
   this->thread_active_.store(true, std::memory_order_seq_cst);
@@ -327,26 +347,6 @@ void mosquittopp::connect(
       port
     );
   });
-
-  r = mosq_c::mosquitto_username_pw_set(
-    this->mosq_,
-    username.c_str(),
-    password.c_str()
-  );
-  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
-    throw std::runtime_error("failed to set MQTT credentials");
-  }
-
-  bbzl::log::trace_fmt(
-    "({}:{}) connecting to MQTT broker",
-    this->active_addr_,
-    this->active_port_
-  );
-
-  r = mosq_c::mosquitto_connect(this->mosq_, addr.c_str(), port, 0);
-  if (r != mosq_c::MOSQ_ERR_SUCCESS) {
-    throw connect_failed(mosq_c::mosquitto_strerror(r));
-  }
 
   this->keepalive_ = keepalive;
 }
