@@ -348,11 +348,13 @@ void network_agent::send_message(
   }
   auto& client = *maybe_client;
 
-  auto client_lock = std::unique_lock(client->mutex_);
+  // NOTE: we check if we're connected before locking, otherwise we might
+  // deadlock if another thread is blocking on mosquitto_connect.
   if (!client->mosqpp_.connected()) {
     throw invalid_network_client(dev_id);
   }
 
+  auto client_lock = std::unique_lock(client->mutex_);
   auto topic = std::format(
     "device/{}/request",
     bbzl::utils::curl::urlencode(dev_id)
