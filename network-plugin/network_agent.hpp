@@ -26,6 +26,7 @@ private:
   std::string id_;
   bbzl::mqtt::message_id report_sub_mid_;
   bbzl::mqtt::mosquittopp mosqpp_;
+  bool connect_done_ = false;
 
   void on_connect(int reason_code);
   void on_disconnect(int reason_code);

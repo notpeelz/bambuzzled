@@ -83,6 +83,7 @@ void network_client::on_connect(int reason_code) {
       bbzl::mqtt::mosquitto_connack_string(reason_code)
     );
   } else {
+    this->connect_done_ = true;
     bbzl::log::info_fmt(
       "({}) connected to printer",
       this->id_
@@ -97,6 +98,13 @@ void network_client::on_connect(int reason_code) {
 }
 
 void network_client::on_disconnect(int reason_code) {
+  auto client_lock = std::unique_lock(this->mutex_);
+
+  if (!this->connect_done_) {
+    return;
+  }
+
+  this->connect_done_ = false;
   bbzl::log::info_fmt(
     "({}) disconnected from printer",
     this->id_
@@ -312,6 +320,7 @@ void network_agent::connect(
     }
 
     client->mosqpp_.connect(dev_ip, 8883, username, password, 60);
+    client->connect_done_ = true;
   } catch (std::exception& ex) {
     bbzl::log::error_fmt("mosquitto connect failed: {}", ex.what());
 
