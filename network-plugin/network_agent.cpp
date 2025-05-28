@@ -98,8 +98,6 @@ void network_client::on_connect(int reason_code) {
 }
 
 void network_client::on_disconnect(int reason_code) {
-  auto client_lock = std::unique_lock(this->mutex_);
-
   if (!this->connect_done_) {
     return;
   }
