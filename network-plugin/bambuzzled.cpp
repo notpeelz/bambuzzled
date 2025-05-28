@@ -80,7 +80,7 @@ std::string bambu_network_get_user_selected_machine(void* agentp) {
 
 int bambu_network_set_user_selected_machine(void* agentp, std::string dev_id) {
   auto scope = BBZL_TRACE_SCOPE(agentp, dev_id);
-  return try_or(1, [&]() {
+  return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_user_selected_machine(dev_id);
     return BAMBU_NETWORK_SUCCESS;
@@ -163,7 +163,7 @@ int bambu_network_set_config_dir(void* agentp, std::string config_dir) {
   #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, config_dir);
   #endif
-  return try_or(1, [&]() {
+  return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_config_dir(std::move(config_dir));
     return BAMBU_NETWORK_SUCCESS;
@@ -174,7 +174,7 @@ int bambu_network_set_on_printer_connected_fn(void* agentp, BBL::OnPrinterConnec
   #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, fn);
   #endif
-  return try_or(1, [&]() {
+  return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_on_printer_connected_fn(std::move(fn));
     return BAMBU_NETWORK_SUCCESS;
@@ -185,7 +185,7 @@ int bambu_network_set_on_local_connect_fn(void* agentp, BBL::OnLocalConnectedFn 
   #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, fn);
   #endif
-  return try_or(1, [&]() {
+  return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_on_local_connected_fn(std::move(fn));
     return BAMBU_NETWORK_SUCCESS;
@@ -196,7 +196,7 @@ int bambu_network_set_on_local_message_fn(void* agentp, BBL::OnMessageFn fn) {
   #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, fn);
   #endif
-  return try_or(1, [&]() {
+  return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_on_local_message_fn(std::move(fn));
     return BAMBU_NETWORK_SUCCESS;
@@ -207,7 +207,7 @@ int bambu_network_set_queue_on_main_fn(void* agentp, BBL::QueueOnMainFn fn) {
   #if BBZL_TRACE_TRIVIAL
   auto scope = BBZL_TRACE_SCOPE(agentp, fn);
   #endif
-  return try_or(1, [&]() {
+  return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     agent->set_queue_on_main_fn(std::move(fn));
     return BAMBU_NETWORK_SUCCESS;
@@ -351,7 +351,7 @@ int bambu_network_start_send_gcode_to_sdcard(
     was_cancelled_fn,
     wait_fn
   );
-  return try_or(1, [&]() {
+  return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     std::ifstream ifs;
     ifs.open(params.filename, std::ios::binary);
     if (!ifs.is_open() || ifs.fail()) {
@@ -397,7 +397,7 @@ int bambu_network_start_local_print(
     update_fn,
     was_cancelled_fn
   );
-  return try_or(1, [&]() {
+  return try_or(BAMBU_NETWORK_ERR_UNKNOWN, [&]() {
     auto agent = static_cast<network_agent*>(agentp);
     auto update_fn_ = update_fn == nullptr
       ? [](...) {}
