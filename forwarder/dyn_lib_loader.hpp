@@ -78,7 +78,7 @@ public:
 
   template<typename T>
   T get_symbol(std::string const& name) {
-    auto lock = std::lock_guard(mutex);
+    auto lock = std::unique_lock(mutex);
 
     auto it = cached_symbols.find(name);
     if (it != cached_symbols.end()) {

@@ -1,11 +1,15 @@
-#include <cassert>
-#include <format>
 #include <mutex>
-#include <span>
-#include <utility>
+#include <format>
+#include <memory>
+#include <vector>
 #include <string>
+#include <sstream>
+#include <utility>
+#include <cassert>
 #include <optional>
+#include <stdexcept>
 #include <exception>
+#include <shared_mutex>
 #include <bambuzzled/log.hpp>
 #include <bambuzzled/curl.hpp>
 #include <bambuzzled/try_wrapper.hpp>
@@ -21,33 +25,40 @@ using namespace bbzl::utils::try_wrapper;
 network_agent::network_agent() {}
 
 void network_agent::set_config_dir(std::string&& dir) noexcept {
-  auto lock = std::lock_guard(this->cb_mutex_);
   bbzl::log::trace_fmt("set_config_dir: {}", dir);
 }
 
-void network_agent::set_on_printer_connected_fn(BBL::OnPrinterConnectedFn&& fn) noexcept {
-  auto lock = std::lock_guard(this->cb_mutex_);
+void network_agent::set_on_printer_connected_fn(
+  BBL::OnPrinterConnectedFn&& fn
+) noexcept {
+  auto cb_lock = std::unique_lock(this->cb_mutex_);
   this->on_printer_connected_fn_ = fn == nullptr
     ? [](...) {}
     : std::move(fn);
 }
 
-void network_agent::set_on_local_connected_fn(BBL::OnLocalConnectedFn&& fn) noexcept {
-  auto lock = std::lock_guard(this->cb_mutex_);
+void network_agent::set_on_local_connected_fn(
+  BBL::OnLocalConnectedFn&& fn
+) noexcept {
+  auto cb_lock = std::unique_lock(this->cb_mutex_);
   this->on_local_connected_fn_ = fn == nullptr
     ? [](...) {}
     : std::move(fn);
 }
 
-void network_agent::set_on_local_message_fn(BBL::OnMessageFn&& fn) noexcept {
-  auto lock = std::lock_guard(this->cb_mutex_);
+void network_agent::set_on_local_message_fn(
+  BBL::OnMessageFn&& fn
+) noexcept {
+  auto cb_lock = std::unique_lock(this->cb_mutex_);
   this->on_local_message_fn_ = fn == nullptr
     ? [](...) {}
     : std::move(fn);
 }
 
-void network_agent::set_queue_on_main_fn(BBL::QueueOnMainFn&& fn) noexcept {
-  auto lock = std::lock_guard(this->cb_mutex_);
+void network_agent::set_queue_on_main_fn(
+  BBL::QueueOnMainFn&& fn
+) noexcept {
+  auto cb_lock = std::unique_lock(this->cb_mutex_);
   this->queue_on_main_fn_ = fn == nullptr
     ? [](...) {}
     : std::move(fn);
@@ -57,12 +68,14 @@ std::string network_agent::get_user_selected_machine() noexcept {
   return "";
 }
 
-void network_agent::set_user_selected_machine(std::string dev_id) noexcept {
+void network_agent::set_user_selected_machine(
+  std::string dev_id
+) noexcept {
   (void)dev_id;
 }
 
 void network_client::on_connect(int reason_code) {
-  auto lock = std::lock_guard(this->agent->mosq_mutex_);
+  auto client_lock = std::unique_lock(this->mutex_);
 
   if (reason_code != 0) {
     bbzl::log::error_fmt(
@@ -72,21 +85,21 @@ void network_client::on_connect(int reason_code) {
   } else {
     bbzl::log::info_fmt(
       "({}) connected to printer",
-      this->dev_id
+      this->id_
     );
   }
 
   auto topic = std::format(
     "device/{}/report",
-    bbzl::utils::curl::urlencode(this->dev_id)
+    bbzl::utils::curl::urlencode(this->id_)
   );
-  this->report_sub_mid = this->mosqpp->subscribe(topic, 1);
+  this->report_sub_mid_ = this->mosqpp_.subscribe(topic, 1);
 }
 
 void network_client::on_disconnect(int reason_code) {
   bbzl::log::info_fmt(
     "({}) disconnected from printer",
-    this->dev_id
+    this->id_
   );
   if (reason_code != 0) {
     bbzl::log::error_fmt(
@@ -97,17 +110,21 @@ void network_client::on_disconnect(int reason_code) {
 }
 
 void network_client::on_message(mqtt::message const* msg) {
-  auto lock = std::lock_guard(this->agent->cb_mutex_);
+  BBL::OnMessageFn on_local_message;
+  {
+    auto cb_lock = std::shared_lock(this->agent_->cb_mutex_);
+    on_local_message = this->agent_->on_local_message_fn_;
+  }
 
   auto msg_str = std::string((char*)msg->payload, msg->payloadlen);
   bbzl::log::debug_fmt(
     "({}) received message ({}): {}",
-    this->dev_id,
+    this->id_,
     msg->topic,
     msg_str
   );
   try {
-    this->agent->on_local_message_fn_(this->dev_id, msg_str);
+    on_local_message(this->id_, msg_str);
   } catch (std::exception& ex) {
     bbzl::log::error_fmt(
       "caught exception from on_local_message callback: {}",
@@ -121,20 +138,25 @@ void network_client::on_message(mqtt::message const* msg) {
 }
 
 void network_client::on_suback(mqtt::message_id mid) {
-  auto mosq_lock = std::lock_guard(this->agent->mosq_mutex_);
-  auto cb_lock = std::lock_guard(this->agent->cb_mutex_);
+  auto client_lock = std::shared_lock(this->mutex_);
+
+  BBL::OnLocalConnectedFn on_local_connected;
+  {
+    auto cb_lock = std::shared_lock(this->agent_->cb_mutex_);
+    on_local_connected = this->agent_->on_local_connected_fn_;
+  }
 
   bbzl::log::debug_fmt("received suback for mid {}", mid);
 
-  if (mid == this->report_sub_mid) {
-    this->report_sub_mid = 0;
+  if (mid == this->report_sub_mid_) {
+    this->report_sub_mid_ = 0;
     bbzl::log::debug_fmt(
       "({}) subscribed to topic: device/{}/request",
-      this->dev_id,
-      this->dev_id
+      this->id_,
+      this->id_
     );
     try {
-      this->agent->on_local_connected_fn_(0, this->dev_id, "ssl:");
+      on_local_connected(0, this->id_, "ssl:");
     } catch (std::exception& ex) {
       bbzl::log::error_fmt(
         "caught exception from on_local_connected callback: {}",
@@ -150,14 +172,13 @@ void network_client::on_suback(mqtt::message_id mid) {
 
   bbzl::log::error_fmt(
     "({}) received unexpected suback for mid {}",
-    this->dev_id,
+    this->id_,
     mid
   );
 }
 
-std::optional<network_client*> network_agent::get_conn(std::string const& dev_id) {
-  auto lock = std::lock_guard(this->mosq_mutex_);
-
+std::optional<std::shared_ptr<network_client>>
+network_agent::get_conn(std::string const& dev_id) {
   auto pos = this->connections_.find(dev_id);
   if (pos != this->connections_.end()) {
     return pos->second;
@@ -166,76 +187,88 @@ std::optional<network_client*> network_agent::get_conn(std::string const& dev_id
   return std::nullopt;
 }
 
-network_client* network_agent::get_or_create_conn(std::string const& dev_id) {
-  auto lock = std::lock_guard(this->mosq_mutex_);
+// HACK: workaround for make_shared being unable to
+// access the private ctor
+class network_client_private
+  : public network_client
+{
+public:
+  template<typename... Args>
+  network_client_private(Args&&... args)
+    : network_client(std::forward<Args>(args)...) {}
+};
 
+void network_agent::create_conn(std::string const& dev_id) {
   auto pos = this->connections_.find(dev_id);
   if (pos != this->connections_.end()) {
-    return pos->second;
+    throw invalid_network_client("client id already exists");
   }
 
-  auto conn = new network_client{
-    .agent = this,
-    .dev_id = dev_id,
-    .mosqpp = new bbzl::mqtt::mosquittopp(),
-  };
-
-  conn->mosqpp->set_on_connect_cb(
-    wrap_try([conn](bbzl::mqtt::mosquittopp&, int reason_code) {
-      conn->on_connect(reason_code);
-    })
-  );
-  conn->mosqpp->set_on_disconnect_cb(
-    wrap_try([conn](bbzl::mqtt::mosquittopp&, int reason_code) {
-      conn->on_disconnect(reason_code);
-    })
-  );
-  conn->mosqpp->set_on_suback_cb(
-    wrap_try([conn](
-      bbzl::mqtt::mosquittopp&,
-      bbzl::mqtt::message_id mid,
-      const std::span<const int>& qos_arr
-    ) {
-      (void)qos_arr;
-      conn->on_suback(mid);
-    })
-  );
-  conn->mosqpp->set_on_message_cb(
-    wrap_try([conn](
-      bbzl::mqtt::mosquittopp&,
-      bbzl::mqtt::message const* msg
-    ) {
-      conn->on_message(msg);
-    })
-  );
-
-  auto const& [_, emplaced] = this->connections_.emplace(dev_id, conn);
+  auto client_dummy =
+    std::make_shared<network_client_private>(this, dev_id);
+  auto client =
+    static_cast<std::shared_ptr<network_client>>(client_dummy);
+  auto const& [_, emplaced] =
+    this->connections_.emplace(dev_id, client);
   assert(emplaced);
-  return conn;
 }
 
 void network_agent::disconnect() {
-  auto lock = std::lock_guard(this->mosq_mutex_);
+  auto conn_lock = std::unique_lock(this->connections_mutex_);
+  std::vector<std::string const*> failed_ids;
 
-  for (auto& [_, conn] : this->connections_) {
-    (void)this->disconnect(conn->dev_id);
+  for (auto& [_, client] : this->connections_) {
+    auto client_lock = std::unique_lock(client->mutex_);
+    if (!client->mosqpp_.connected()) {
+      continue;
+    }
+
+    try {
+      client->mosqpp_.disconnect();
+    } catch (std::exception& ex) {
+      bbzl::log::error_fmt(
+        "failed to disconnect client {}: {}",
+        client->id_,
+        ex.what()
+      );
+      failed_ids.push_back(&client->id_);
+    }
   }
+
+  if (failed_ids.empty()) {
+    return;
+  }
+
+  std::ostringstream oss;
+  oss << "failed to disconnect client(s): ";
+  for (auto it = failed_ids.begin(); it != failed_ids.end(); ++it) {
+    if (it != failed_ids.begin()) {
+      oss << ", ";
+    }
+    oss << **it;
+  }
+
+  throw std::runtime_error(oss.str());
 }
 
 bool network_agent::disconnect(std::string const& dev_id) {
-  auto lock = std::lock_guard(this->mosq_mutex_);
-
-  auto maybe_conn = this->get_conn(dev_id);
-  if (!maybe_conn.has_value()) {
-    throw network_client_not_found(dev_id);
+  std::optional<std::shared_ptr<network_client>> maybe_client;
+  {
+    auto conn_lock = std::shared_lock(this->connections_mutex_);
+    maybe_client = this->get_conn(dev_id);
   }
-  auto conn = *maybe_conn;
 
-  if (!conn->mosqpp->connected()) {
+  if (!maybe_client.has_value()) {
+    throw invalid_network_client(dev_id);
+  }
+  auto& client = *maybe_client;
+
+  auto client_lock = std::unique_lock(client->mutex_);
+  if (!client->mosqpp_.connected()) {
     return true;
   }
 
-  conn->mosqpp->disconnect();
+  client->mosqpp_.disconnect();
 
   return true;
 }
@@ -247,8 +280,6 @@ void network_agent::connect(
   std::string const& password,
   bool use_ssl
 ) {
-  auto lock = std::lock_guard(this->mosq_mutex_);
-
   if (!use_ssl) {
     bbzl::log::warn(
       "attempted to connect without SSL (not implemented);"
@@ -256,21 +287,42 @@ void network_agent::connect(
     );
   }
 
-  auto conn = this->get_or_create_conn(dev_id);
+  std::optional<std::shared_ptr<network_client>> maybe_client;
+  {
+    auto conn_lock = std::unique_lock(this->connections_mutex_);
+    maybe_client = this->get_conn(dev_id);
+    if (!maybe_client.has_value()) {
+      this->create_conn(dev_id);
+    }
+    maybe_client = this->get_conn(dev_id);
+    assert(maybe_client.has_value());
+  }
+
+  auto& client = *maybe_client;
+  auto client_lock = std::unique_lock(client->mutex_);
+
   try {
-    if (conn->mosqpp->connected()) {
+    if (client->mosqpp_.connected()) {
       log::debug_fmt(
-        "({}) connect called while already connected; requesting disconnect",
+        "({}) connect called while already connected;"
+        " requesting disconnect",
         dev_id
       );
-      (void)this->disconnect(dev_id);
+      (void)client->mosqpp_.disconnect();
     }
 
-    conn->mosqpp->connect(dev_ip, 8883, username, password, 60);
+    client->mosqpp_.connect(dev_ip, 8883, username, password, 60);
   } catch (std::exception& ex) {
     bbzl::log::error_fmt("mosquitto connect failed: {}", ex.what());
+
+    BBL::OnLocalConnectedFn on_local_connected;
+    {
+      auto cb_lock = std::unique_lock(this->cb_mutex_);
+      on_local_connected = this->on_local_connected_fn_;
+    }
+
     try {
-      this->on_local_connected_fn_(1, dev_id, "-1");
+      on_local_connected(1, dev_id, "-1");
     } catch (std::exception& ex) {
       bbzl::log::error_fmt(
         "caught exception from on_local_connected callback: {}",
@@ -289,13 +341,17 @@ void network_agent::send_message(
   std::string const& msg,
   int qos
 ) {
-  auto lock = std::lock_guard(this->mosq_mutex_);
-
-  auto maybe_conn = this->get_conn(dev_id);
-  if (!maybe_conn.has_value()) {
-    throw network_client_not_found(dev_id);
+  auto conn_lock = std::shared_lock(this->connections_mutex_);
+  auto maybe_client = this->get_conn(dev_id);
+  if (!maybe_client.has_value()) {
+    throw invalid_network_client(dev_id);
   }
-  auto conn = *maybe_conn;
+  auto& client = *maybe_client;
+
+  auto client_lock = std::unique_lock(client->mutex_);
+  if (!client->mosqpp_.connected()) {
+    throw invalid_network_client(dev_id);
+  }
 
   auto topic = std::format(
     "device/{}/request",
@@ -307,7 +363,7 @@ void network_agent::send_message(
     topic,
     msg
   );
-  (void)conn->mosqpp->publish(topic, msg, qos);
+  (void)client->mosqpp_.publish(topic, msg, qos);
 }
 
 }

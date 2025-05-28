@@ -130,9 +130,9 @@ int bambu_network_send_message_to_printer(
         json_str,
         qos
       );
-    } catch (bbzl::network_client_not_found&) {
+    } catch (bbzl::invalid_network_client&) {
       bbzl::log::error_fmt(
-        "attempted to send message to a non-existent client: {}",
+        "attempted to send message to an invalid client: {}",
         dev_id
       );
       return BAMBU_NETWORK_ERR_SEND_MSG_FAILED;
@@ -583,9 +583,9 @@ int bambu_network_start_local_print(
         msg,
         1
       );
-    } catch (bbzl::network_client_not_found&) {
+    } catch (bbzl::invalid_network_client&) {
       bbzl::log::error_fmt(
-        "attempted to send message to a non-existent client: {}",
+        "attempted to send message to an invalid client: {}",
         params.dev_id
       );
       return BAMBU_NETWORK_ERR_PRINT_LP_PUBLISH_MSG_FAILED;

@@ -179,7 +179,7 @@ bool log_level_enabled(log_level level) noexcept {
 }
 
 void log_internal(log_level level, std::string const& msg) noexcept {
-  auto lock = std::lock_guard(mutex);
+  auto lock = std::unique_lock(mutex);
   ensure_initialized();
 
   if (!log_level_enabled(level)) {
